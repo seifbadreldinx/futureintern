@@ -4,6 +4,10 @@ from app.models import db
 from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from datetime import datetime
+from flask_mail import Mail
+
+# Initialize extensions
+mail = Mail()
 
 # Try to import Swagger, but make it optional
 try:
@@ -44,6 +48,9 @@ def create_app():
     
     # تهيئة JWT
     jwt = JWTManager(app)
+
+    # Initialize Mail
+    mail.init_app(app)
     
     # JWT Error Handlers
     @jwt.unauthorized_loader
