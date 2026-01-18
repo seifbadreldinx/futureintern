@@ -71,7 +71,68 @@ def seed_database():
 
             title_raw = row.get('Type', f"Internship {index+1}")
             # Remove leading numbering if present (e.g. "1. Title")
-            title = re.sub(r'^\d+\.\s*', '', clean(title_raw))
+            title_cleaned = re.sub(r'^\d+\.\s*', '', clean(title_raw))
+            
+            # Title Normalization - Convert informal titles to professional ones
+            TITLE_NORMALIZATIONS = {
+                # Frontend variations
+                "front-end": "Frontend Developer Intern",
+                "frontend": "Frontend Developer Intern",
+                "front end": "Frontend Developer Intern",
+                # Backend variations
+                "back-end": "Backend Developer Intern",
+                "backend": "Backend Developer Intern",
+                "back end": "Backend Developer Intern",
+                # Full stack
+                "full-stack": "Full Stack Developer Intern",
+                "fullstack": "Full Stack Developer Intern",
+                "full stack": "Full Stack Developer Intern",
+                # Cybersecurity variations
+                "cyber": "Cybersecurity Analyst Intern",
+                "cybersecurity": "Cybersecurity Analyst Intern",
+                "cyber security": "Cybersecurity Analyst Intern",
+                # IT variations
+                "it": "IT Support Intern",
+                "it support": "IT Support Intern",
+                # AI/ML variations
+                "ai": "AI/ML Engineer Intern",
+                "ai/ml": "AI/ML Engineer Intern",
+                "artificial intelligence": "Artificial Intelligence (AI) Intern",
+                "artificial intelligence (ai)": "Artificial Intelligence (AI) Intern",
+                "machine learning": "Machine Learning Engineer Intern",
+                # Data variations
+                "data analyst": "Data Analyst Intern",
+                "data science": "Data Science Intern",
+                "data science & analytics": "Data Science & Analytics Intern",
+                "data analytics": "Data Analytics Intern",
+                # Mobile development
+                "mobile app dev": "Mobile App Development Intern",
+                "mobile development": "Mobile App Development Intern",
+                "app development": "Mobile App Development Intern",
+                # Software development
+                "software development": "Software Development Intern",
+                "software engineer": "Software Engineering Intern",
+                # Specific frameworks/languages
+                "java developer": "Java Developer Intern",
+                "python programming": "Python Developer Intern",
+                "java full stack": "Java Full Stack Developer Intern",
+                # QA/Testing
+                "qa testing": "QA Testing Intern",
+                "quality assurance": "Quality Assurance Intern",
+                # Other
+                "llm": "Large Language Model (LLM) Researcher Intern",
+                "ai automation & data analytics": "AI Automation & Data Analytics Intern",
+                "web development (full stack developer)": "Full Stack Web Developer Intern",
+                "site development intern": "Site Development Intern"
+            }
+            
+            # Apply normalization
+            title_lower = title_cleaned.lower().strip()
+            title = TITLE_NORMALIZATIONS.get(title_lower, title_cleaned)
+            
+            # If still not normalized, add "Intern" suffix if missing
+            if title == title_cleaned and not title.lower().endswith('intern') and not title.lower().endswith('internship'):
+                title = f"{title} Intern"
             
             company_name_csv = clean(row.get('Company Name', "Unknown"))
             desc = clean(row.get('Description', "No description provided."))
