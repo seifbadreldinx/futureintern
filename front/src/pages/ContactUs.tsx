@@ -1,4 +1,4 @@
-import { Mail, Send, Phone } from 'lucide-react';
+import { Mail, Phone } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export function ContactUs() {
@@ -53,7 +53,7 @@ export function ContactUs() {
                   onClick={handleEmailClick}
                   className="flex items-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
                 >
-                  <Send className="w-5 h-5" />
+                  <Mail className="w-5 h-5" />
                   <span className="font-medium">mohamedsaad@gmail.com</span>
                 </a>
               </div>
