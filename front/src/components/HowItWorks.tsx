@@ -24,7 +24,7 @@ export function HowItWorks() {
   return (
     <section
       ref={sectionRef.elementRef}
-      className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
+      className={`py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
     >
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-gray-200/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
@@ -57,10 +57,10 @@ export function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12 relative">
           {/* Connecting line for desktop */}
           <div className="hidden md:block absolute top-10 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-          
+
           {steps.map((step, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="text-center group relative"
             >
               <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center mx-auto mb-6 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg group-hover:shadow-xl relative z-10">
