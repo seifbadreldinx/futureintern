@@ -17,7 +17,7 @@ export function Hero() {
   };
 
   return (
-    <section className="education-bg relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 min-h-[600px] flex items-center">
+    <section className="education-bg relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 flex items-center">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
@@ -115,7 +115,7 @@ export function Hero() {
         </form>
 
         {/* Branded Logo Section */}
-        <div className="mt-16 animate-fade-in-up animation-delay-500">
+        <div className="mt-8 animate-fade-in-up animation-delay-500">
           <img
             src="/futureintern-logo.jpg"
             alt="FutureIntern - Ignite Your Passion"
