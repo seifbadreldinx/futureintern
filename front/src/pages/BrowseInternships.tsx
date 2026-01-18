@@ -225,15 +225,30 @@ export function BrowseInternships() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredInternships.map((internship) => {
               const companyName = internship.company?.name || internship.company || internship.company_name || 'Company';
-              const initials = companyName.split(' ').map((s: string) => s[0]).slice(0,2).join('').toUpperCase();
+              const initials = companyName.split(' ').map((s: string) => s[0]).slice(0, 2).join('').toUpperCase();
               return (
                 <Link
                   key={internship.id}
                   to={`/internship/${internship.id}`}
                   className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 transition-all"
                 >
-                  <div className="w-14 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                    <span className="text-blue-600 font-bold text-lg">{initials}</span>
+                  <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+                    {internship.company?.profile_image ? (
+                      <img
+                        src={internship.company.profile_image}
+                        alt={companyName}
+                        className="w-full h-full object-contain p-1"
+                        onError={(e) => {
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={`https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
+                        alt={companyName}
+                        className="w-full h-full object-contain p-1"
+                      />
+                    )}
                   </div>
 
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">

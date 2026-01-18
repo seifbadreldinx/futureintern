@@ -13,6 +13,8 @@ def seed_database():
     app = create_app()
     with app.app_context():
         # recreate tables if needed to ensure schema is correct
+        # Drop to enforce schema update
+        db.drop_all() 
         db.create_all()
         
         # Clear existing data
@@ -47,7 +49,8 @@ def seed_database():
                 company_name="FutureIntern Partner Network",
                 company_description="Various opportunities from our network.",
                 company_location="Global",
-                is_verified=True
+                is_verified=True,
+                profile_image="https://logo.clearbit.com/futureintern.com"
             )
             company_user.set_password("admin123")
             db.session.add(company_user)
@@ -91,7 +94,8 @@ def seed_database():
                         email=comp_email,
                         role='company',
                         company_name=company_name_csv,
-                        company_location=loc or "Global"
+                        company_location=loc or "Global",
+                        profile_image=f"https://logo.clearbit.com/{safe_name}.com"
                     )
                     existing_comp.set_password("company123") # Default password
                     db.session.add(existing_comp)

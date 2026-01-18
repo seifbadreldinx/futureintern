@@ -109,8 +109,17 @@ export function InternshipDetail() {
         <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-start space-x-4">
-              <div className="w-20 h-20 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-blue-600 font-bold text-2xl">{internship.logo}</span>
+              <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
+                {internship.company?.profile_image ? (
+                  <img
+                    src={internship.company.profile_image}
+                    alt={internship.company?.name}
+                    onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=256`}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <img src={`https://ui-avatars.com/api/?name=${internship.company?.name || 'Company'}&background=eff6ff&color=2563eb&size=256`} alt="Company Logo" className="w-full h-full object-contain p-2" />
+                )}
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{internship.title}</h1>
@@ -140,12 +149,12 @@ export function InternshipDetail() {
           <h2 className="text-2xl font-bold text-gray-900 mb-4">About the Role</h2>
           <div className="prose max-w-none text-gray-700 space-y-4">
             <p>
-              We are looking for a motivated {internship.title} to join our team at {internship.company?.name || internship.company || internship.company_name || 'the company'}. 
-              This is an excellent opportunity to gain hands-on experience in a fast-paced environment 
+              We are looking for a motivated {internship.title} to join our team at {internship.company?.name || internship.company || internship.company_name || 'the company'}.
+              This is an excellent opportunity to gain hands-on experience in a fast-paced environment
               and work alongside industry professionals.
             </p>
             <p>
-              As an intern, you will have the chance to contribute to real projects, learn from experienced 
+              As an intern, you will have the chance to contribute to real projects, learn from experienced
               mentors, and develop skills that will set you up for success in your career.
             </p>
           </div>
@@ -206,8 +215,8 @@ export function InternshipDetail() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">About {internship.company?.name || internship.company || internship.company_name || 'Company'}</h2>
           <p className="text-gray-700 leading-relaxed">
-            {internship.company?.name || internship.company || internship.company_name || 'The company'} is a leading company in the industry, committed to innovation and excellence. 
-            We provide a supportive environment where interns can learn, grow, and make meaningful contributions 
+            {internship.company?.name || internship.company || internship.company_name || 'The company'} is a leading company in the industry, committed to innovation and excellence.
+            We provide a supportive environment where interns can learn, grow, and make meaningful contributions
             to our team. Join us and be part of something great!
           </p>
         </div>

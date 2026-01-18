@@ -21,6 +21,7 @@ class User(db.Model):
     phone = db.Column(db.String(20))
     location = db.Column(db.String(100)) # Added for student location
     resume_url = db.Column(db.String(500))  # CV file path (Task 5.1)
+    profile_image = db.Column(db.String(500)) # Logo or Avatar URL
     
     # Company fields (Task 3.2)
     company_name = db.Column(db.String(100))
@@ -44,6 +45,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'role': self.role,
+            'profile_image': self.profile_image,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
         

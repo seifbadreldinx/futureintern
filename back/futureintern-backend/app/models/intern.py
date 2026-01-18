@@ -61,7 +61,8 @@ class Internship(db.Model):
                 internship_dict['company'] = {
                     'id': self.company.id,
                     'name': company_name,
-                    'location': self.company.company_location or ''
+                    'location': self.company.company_location or '',
+                    'profile_image': self.company.profile_image
                 }
             else:
                 internship_dict['company'] = {
