@@ -6,6 +6,7 @@ import { Home } from './pages/Home';
 import { Login } from './pages/Login';
 import { SignUp } from './pages/SignUp';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { BrowseInternships } from './pages/BrowseInternships';
 import { InternshipDetail } from './pages/InternshipDetail';
 import { Dashboard } from './pages/Dashboard';
@@ -38,6 +39,7 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/browse" element={<BrowseInternships />} />
           <Route path="/internship/:id" element={<InternshipDetail />} />
           <Route path="/dashboard" element={<Dashboard />} />
