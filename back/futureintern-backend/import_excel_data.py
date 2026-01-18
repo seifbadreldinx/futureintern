@@ -94,7 +94,8 @@ def seed_database():
                     "robotesta": "/logos/robotesta.jpg",
                     "e&": "/logos/eand.jpg",
                     "uniparticle": "/logos/uniparticle.jpg",
-                    "tips hindawi": "/logos/hindawi.jpg",
+                    "tips hindawi": "/logos/tips_hindawi.png",
+                    "hindawi": "/logos/tips_hindawi.png",
                     "geidea": "/logos/geidea.jpg",
                     "fawry": "/logos/fawry.jpg",
                     "xefort": "/logos/xefort.jpg",
@@ -124,8 +125,8 @@ def seed_database():
                     "robotesta": "Robotesta",
                     "e&": "e&",
                     "uniparticle": "Uniparticle",
-                    "tips hindawi": "Hindawi",
-                    "hindawi": "Hindawi",
+                    "tips hindawi": "Tips Hindawi",
+                    "hindawi": "Tips Hindawi",
                     "geidea": "Geidea",
                     "fawry": "Fawry"
                 }
