@@ -39,6 +39,7 @@ class Internship(db.Model):
             'location': self.location,
             'duration': self.duration,
             'stipend': self.stipend,
+            'type': 'Remote' if (self.location and 'remote' in self.location.lower()) else ('Part-time' if (self.duration and 'part' in self.duration.lower()) else 'Full-time'),
             'application_deadline': self.application_deadline.isoformat() if self.application_deadline else None,
             'start_date': self.start_date.isoformat() if self.start_date else None,
             'is_active': self.is_active,
