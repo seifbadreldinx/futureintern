@@ -7,10 +7,9 @@ export function Home() {
   return (
     <>
       <Hero />
-      <FeaturedOpportunities />
       <HowItWorks />
+      <FeaturedOpportunities />
       {/* <Testimonials /> - Hidden until we have real ones */}
     </>
   );
 }
-
