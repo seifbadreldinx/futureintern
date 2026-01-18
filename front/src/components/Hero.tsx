@@ -17,7 +17,7 @@ export function Hero() {
   };
 
   return (
-    <section className="education-bg relative overflow-hidden py-16 px-4 sm:px-6 lg:px-8 flex items-center">
+    <section className="education-bg relative overflow-hidden pt-16 pb-0 px-4 sm:px-6 lg:px-8 flex items-center">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
