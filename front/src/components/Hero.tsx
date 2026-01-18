@@ -119,7 +119,7 @@ export function Hero() {
           <img
             src="/futureintern-logo.jpg"
             alt="FutureIntern - Ignite Your Passion"
-            className="mx-auto max-w-2xl w-full h-auto max-h-48 opacity-90 hover:opacity-100 transition-opacity duration-300"
+            className="mx-auto w-full max-w-3xl h-auto max-h-[300px] object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
           />
         </div>
       </div>
