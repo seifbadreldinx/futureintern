@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, Filter, X } from 'lucide-react';
-import { internships as localInternships } from '../data';
 import { api } from '../services/api';
 
 export function BrowseInternships() {
@@ -11,11 +10,10 @@ export function BrowseInternships() {
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
 
-  // Internships data (load from API, fallback to local mock)
-  const [internships, setInternships] = useState<any[]>(localInternships);
+  // Internships data (live API only)
+  const [internships, setInternships] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string>('');
-  const [usingLiveData, setUsingLiveData] = useState<boolean>(false);
 
   // Update search query from URL params on mount
   useEffect(() => {
@@ -25,27 +23,18 @@ export function BrowseInternships() {
     if (loc) setLocationFilter(loc);
   }, [searchParams]);
 
-  // Fetch internships from backend (extracted for retry)
+  // Fetch internships from backend
   const fetchInternships = async () => {
     try {
       setLoadingData(true);
       setLoadError('');
       const res = await api.internships.getAll();
       const list = res?.internships || (Array.isArray(res) ? res : []);
-      if (list.length) {
-        setInternships(list);
-        setUsingLiveData(true);
-        setLoadError('');
-      } else {
-        setUsingLiveData(false);
-        setLoadError('No internships returned from server; showing local data');
-        setInternships(localInternships);
-      }
+      setInternships(list);
     } catch (err) {
-      console.error('Failed to fetch internships from API, using local data', err);
-      setLoadError('Failed to load from server; showing local data');
-      setInternships(localInternships);
-      setUsingLiveData(false);
+      console.error('Failed to fetch internships from API', err);
+      setLoadError('Failed to load internships. Please try again later.');
+      setInternships([]);
     } finally {
       setLoadingData(false);
     }
@@ -54,15 +43,6 @@ export function BrowseInternships() {
   useEffect(() => {
     fetchInternships();
   }, []);
-
-  // Auto-refresh when user focuses the window (handy after seeding the DB)
-  useEffect(() => {
-    const onFocus = () => {
-      if (!usingLiveData) fetchInternships();
-    };
-    window.addEventListener('focus', onFocus);
-    return () => window.removeEventListener('focus', onFocus);
-  }, [usingLiveData]);
 
   const filteredInternships = useMemo(() => {
     return internships.filter((internship) => {
@@ -111,25 +91,11 @@ export function BrowseInternships() {
             <div className="text-sm text-gray-600 mb-4">Loading internships...</div>
           )}
           {loadError && (
-            <div className="text-sm text-yellow-700 mb-4 flex items-center gap-3">
+            <div className="text-sm text-red-600 mb-4 flex items-center gap-3">
               <span>{loadError}</span>
               <button onClick={() => fetchInternships()} className="text-sm text-blue-600 underline">Retry</button>
             </div>
           )}
-
-          <div className="mb-4 flex items-center gap-4">
-            {usingLiveData ? (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Live data</span>
-            ) : (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">Mock data</span>
-            )}
-            <button
-              onClick={() => fetchInternships()}
-              className="text-sm text-blue-600 underline"
-            >
-              Refresh
-            </button>
-          </div>
 
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -202,7 +168,7 @@ export function BrowseInternships() {
             )}
           </div>
 
-          {hasActiveFilters && (
+          {hasActiveFilters && !loadError && (
             <div className="mt-4 text-sm text-gray-600">
               Found {filteredInternships.length} internship{filteredInternships.length !== 1 ? 's' : ''}
             </div>
@@ -211,7 +177,7 @@ export function BrowseInternships() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {filteredInternships.length === 0 ? (
+        {!loadingData && !loadError && filteredInternships.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-600 text-lg mb-4">No internships found matching your criteria.</p>
             <button
@@ -225,7 +191,6 @@ export function BrowseInternships() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredInternships.map((internship) => {
               const companyName = internship.company?.name || internship.company || internship.company_name || 'Company';
-              const initials = companyName.split(' ').map((s: string) => s[0]).slice(0, 2).join('').toUpperCase();
               return (
                 <Link
                   key={internship.id}
@@ -276,4 +241,3 @@ export function BrowseInternships() {
     </div>
   );
 }
-

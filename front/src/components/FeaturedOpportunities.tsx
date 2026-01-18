@@ -1,20 +1,38 @@
 import { Link } from 'react-router-dom';
 import { MapPin, GraduationCap, Briefcase, User, FileText } from 'lucide-react';
-import { internships } from '../data';
+import { useEffect, useState } from 'react';
+import { api } from '../services/api';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export function FeaturedOpportunities() {
   const sectionRef = useScrollReveal();
+  const [internships, setInternships] = useState<any[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.internships.getAll();
+        if (res.internships) {
+          setInternships(res.internships.slice(0, 4));
+        }
+      } catch (error) {
+        console.error("Failed to load featured opportunities", error);
+      }
+    })();
+  }, []);
+
+  if (internships.length === 0) return null; // Don't show empty section
+
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'Full-time':
-        return 'bg-gray-200 text-gray-800';
+        return 'bg-blue-100 text-blue-800';
       case 'Part-time':
-        return 'bg-gray-300 text-gray-900';
+        return 'bg-green-100 text-green-800';
       case 'Remote':
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-purple-100 text-purple-800';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -60,35 +78,48 @@ export function FeaturedOpportunities() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {internships.slice(0, 4).map((internship, index) => (
+          {internships.map((internship, index) => (
             <Link
               key={internship.id}
               to={`/internship/${internship.id}`}
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-gray-400 transition-all cursor-pointer transform hover:-translate-y-2 duration-300 animate-fade-in-up opacity-0"
+              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer transform hover:-translate-y-2 duration-300 animate-fade-in-up opacity-0"
               style={{
                 animationDelay: `${(index + 1) * 0.1}s`,
                 animationFillMode: 'forwards'
               }}
             >
-              <div className="w-14 h-14 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center mb-4 transform hover:scale-110 transition-transform duration-300">
-                <span className="text-gray-700 font-bold text-lg">{internship.logo}</span>
+              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+                {internship.company?.profile_image ? (
+                  <img
+                    src={internship.company.profile_image}
+                    alt={internship.company?.name}
+                    onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
+                    className="w-full h-full object-contain p-1"
+                  />
+                ) : (
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
+                    alt={internship.company?.name}
+                    className="w-full h-full object-contain p-1"
+                  />
+                )}
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
                 {internship.title}
               </h3>
 
-              <div className="flex items-center text-gray-600 mb-3">
-                <span className="font-medium">{internship.company?.name || internship.company || internship.company_name || 'Company'}</span>
+              <div className="flex items-center text-gray-600 mb-3 text-sm">
+                <span className="font-medium truncate">{internship.company?.name || internship.company || 'Company'}</span>
               </div>
 
               <div className="flex items-center text-gray-500 text-sm mb-4">
-                <MapPin className="w-4 h-4 mr-1" />
-                {internship.location}
+                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                <span className="truncate">{internship.location}</span>
               </div>
 
               <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type)}`}>
-                {internship.type}
+                {internship.type || 'Full-time'}
               </span>
             </Link>
           ))}

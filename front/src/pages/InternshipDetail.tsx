@@ -1,7 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, DollarSign, Briefcase, ArrowLeft, Send } from 'lucide-react';
+import { MapPin, Calendar, Briefcase, ArrowLeft, Send } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { internships as localInternships } from '../data';
 import { api } from '../services/api';
 import { isAuthenticated } from '../utils/auth';
 
@@ -20,15 +19,9 @@ export function InternshipDetail() {
         const data = res?.internship || res;
         if (data) {
           setInternship(data);
-        } else {
-          // fallback to local data
-          const local = localInternships.find((i) => i.id === intId);
-          if (local) setInternship(local);
         }
       } catch (err) {
-        console.error('Failed to fetch internship from API, falling back to local', err);
-        const local = localInternships.find((i) => i.id === intId);
-        if (local) setInternship(local);
+        console.error('Failed to fetch internship from API', err);
       } finally {
         setLoading(false);
       }
@@ -51,7 +44,8 @@ export function InternshipDetail() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Internship not found</h2>
-          <Link to="/browse" className="text-blue-600 hover:text-blue-700">
+          <p className="text-gray-600 mb-6">The internship you are looking for does not exist or has been removed.</p>
+          <Link to="/browse" className="text-blue-600 hover:text-blue-700 font-medium">
             Browse all internships
           </Link>
         </div>
@@ -224,4 +218,3 @@ export function InternshipDetail() {
     </div>
   );
 }
-
