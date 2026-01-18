@@ -172,6 +172,22 @@ export const api = {
       }
       return data;
     },
+
+    // Forgot Password
+    forgotPassword: async (email: string) => {
+      return apiRequest<{ message: string }>('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    },
+
+    // Reset Password
+    resetPassword: async (token: string, password: string) => {
+      return apiRequest<{ message: string }>('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, password }),
+      });
+    },
   },
 
   // ========== Users ==========
@@ -185,7 +201,7 @@ export const api = {
     },
 
     // Update user profile
-    updateProfile: async (userId: number, data: any) => {
+    updateProfile: async (data: any) => {
       // Backend uses JWT to identify user, so we target /profile
       // userId param remains for interface compatibility but is unused for this specific call
       return apiRequest<any>('/users/profile', {

@@ -515,7 +515,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await api.users.updateProfile(user.id, formData);
+      await api.users.updateProfile(formData);
       alert('Profile updated successfully!');
       if (onUpdate) onUpdate({ ...user, ...formData });
     } catch (err) {
