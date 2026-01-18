@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd back/futureintern-backend && pip install -r requirements.txt"
+
+[deploy]
+startCommand = "cd back/futureintern-backend && python run.py"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+[deploy.healthcheck]
+path = "/api/health"
+timeout = 100
+interval = 30
