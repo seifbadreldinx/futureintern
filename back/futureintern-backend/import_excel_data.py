@@ -1,11 +1,13 @@
 
-import pandas as pd
+import csv
 import json
 import os
 from app import create_app, db
 from app.models.intern import Internship
 from app.models.user import User
 from datetime import datetime, timedelta
+import re
+from urllib.parse import unquote
 
 def seed_database():
     app = create_app()
@@ -21,9 +23,16 @@ def seed_database():
         print("Seeding database from CSV...")
         csv_path = "internships.csv"
         
+        if not os.path.exists(csv_path):
+            print(f"Error: {csv_path} not found.")
+            return
+
+        rows = []
         try:
-            df = pd.read_csv(csv_path)
-            print("Columns found:", df.columns.tolist())
+            with open(csv_path, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                print("Columns found:", reader.fieldnames)
+                rows = list(reader)
         except Exception as e:
             print(f"Error reading CSV: {e}")
             return
@@ -48,31 +57,33 @@ def seed_database():
 
         # Iterate rows
         count = 0
-        for index, row in df.iterrows():
-            # Map CSV columns to DB fields 
-            # "Company Name","Type","Location","Description","Requirements","Link","Deadline","Duration"
+        for index, row in enumerate(rows):
+            # Clean values helper
+            def clean(val):
+                if not val or val == "-----":
+                    return ""
+                # Convert to string, URL decode, and strip whitespace
+                val_str = unquote(str(val))
+                return val_str.strip()
+
+            title_raw = row.get('Type', f"Internship {index+1}")
+            # Remove leading numbering if present (e.g. "1. Title")
+            title = re.sub(r'^\d+\.\s*', '', clean(title_raw))
             
-            title = row.get('Type', f"Internship {index+1}")
-            company_name_csv = row.get('Company Name', "Unknown")
-            desc = row.get('Description', "No description provided.")
-            reqs = row.get('Requirements', "No specific requirements.")
-            loc = row.get('Location', "Remote")
-            duration = row.get('Duration', "3 Months")
-            link = row.get('Link', "")
+            company_name_csv = clean(row.get('Company Name', "Unknown"))
+            desc = clean(row.get('Description', "No description provided."))
+            reqs = clean(row.get('Requirements', "No specific requirements."))
+            loc = clean(row.get('Location', "Remote"))
+            duration = clean(row.get('Duration', "3 Months"))
+            link = clean(row.get('Link', ""))
             
-            # Use company name from CSV if possible to segregate? 
-            # For now assign all to the Admin User but maybe include company name in title or description?
-            # Or create a user for each company?
-            # Creating a user for each company is better for "Company" field display.
-            
+            # Use company name from CSV if possible to segregate
             company_owner = company_user
             if company_name_csv and company_name_csv != "Unknown":
-                # Check if company user exists, if not create
-                # Simplify: just use the name for the internship record if possible, 
-                # but our model links to User.
-                # Let's create a User for each distinct company name to be professional.
+                # Create rudimentary email
+                safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
+                comp_email = f"info@{safe_name}.com"
                 
-                comp_email = f"info@{company_name_csv.replace(' ', '').lower()}.com"
                 existing_comp = User.query.filter_by(company_name=company_name_csv).first()
                 if not existing_comp:
                     existing_comp = User(
@@ -80,7 +91,7 @@ def seed_database():
                         email=comp_email,
                         role='company',
                         company_name=company_name_csv,
-                        company_location=str(loc) if loc else "Global"
+                        company_location=loc or "Global"
                     )
                     existing_comp.set_password("company123") # Default password
                     db.session.add(existing_comp)
@@ -92,13 +103,13 @@ def seed_database():
             title_lower = str(title).lower()
             if "market" in title_lower: major = "Marketing"
             elif "design" in title_lower or "ui" in title_lower or "front" in title_lower: major = "Design"
-            elif "engineer" in title_lower or "dev" in title_lower or "soft" in title_lower or "java" in title_lower or "python" in title_lower or "net" in title_lower or "it" in title_lower or "cyber" in title_lower or "stack" in title_lower: major = "Computer Science"
+            elif "engineer" in title_lower or "dev" in title_lower or "soft" in title_lower or "java" in title_lower or "python" in title_lower: major = "Computer Science"
             elif "business" in title_lower or "analy" in title_lower: major = "Business"
-            elif "data" in title_lower or "ai" in title_lower or "intell" in title_lower: major = "Data Science"
+            elif "data" in title_lower or "ai" in title_lower: major = "Data Science"
             
-            # Simple keyword extraction for skills
+            # Skills
             found_skills = []
-            keywords = ["python", "java", "react", "sql", "excel", "communication", "design", "figma", "marketing", "content", "javascript", "html", "css", "node", "django", "laravel", "php", "cyber", "security", "android", "ios", "mobile", "ai", "machine learning"]
+            keywords = ["python", "java", "react", "sql", "excel", "communication", "design", "figma", "marketing", "javascript", "html", "css", "node", "php"]
             content_to_search = (str(reqs) + " " + str(title) + " " + str(desc)).lower()
             
             for k in keywords:
@@ -107,10 +118,6 @@ def seed_database():
             
             if not found_skills:
                 if major == "Computer Science": found_skills = ["Tech Skills"]
-            
-            # Clean values
-            def clean(val):
-                return str(val).replace("-----", "").strip() if pd.notna(val) else ""
 
             new_intern = Internship(
                 title=str(title),
@@ -118,7 +125,7 @@ def seed_database():
                 requirements=clean(reqs),
                 location=clean(loc),
                 duration=clean(duration),
-                stipend="Unpaid", # Default as not in CSV
+                stipend="Unpaid", 
                 company_id=company_owner.id,
                 major=major,
                 required_skills=json.dumps(found_skills),
