@@ -24,7 +24,7 @@ export function HowItWorks() {
   return (
     <section
       ref={sectionRef.elementRef}
-      className={`pt-12 pb-0 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
+      className={`pt-4 pb-0 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
     >
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-gray-200/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
@@ -50,7 +50,7 @@ export function HowItWorks() {
         <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-4">
           Find Your Internship in Three Easy Steps
         </h2>
-        <p className="text-gray-600 text-center mb-16 max-w-2xl mx-auto">
+        <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
           Our simple process makes it easy for students to discover and apply to internships.
         </p>
 
