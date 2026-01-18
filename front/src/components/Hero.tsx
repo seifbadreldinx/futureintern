@@ -113,6 +113,15 @@ export function Hero() {
             </button>
           </div>
         </form>
+
+        {/* Branded Logo Section */}
+        <div className="mt-16 animate-fade-in-up animation-delay-500">
+          <img
+            src="/futureintern-logo.jpg"
+            alt="FutureIntern - Ignite Your Passion"
+            className="mx-auto max-w-2xl w-full h-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+          />
+        </div>
       </div>
     </section>
   );
