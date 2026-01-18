@@ -115,7 +115,7 @@ export function Hero() {
         </form>
 
         {/* Branded Logo Section */}
-        <div className="mt-8 animate-fade-in-up animation-delay-500">
+        <div className="mt-8 mb-12 animate-fade-in-up animation-delay-500">
           <img
             src="/futureintern-logo.jpg"
             alt="FutureIntern - Ignite Your Passion"
