@@ -83,40 +83,51 @@ def seed_database():
             # Use company name from CSV if possible to segregate
             company_owner = company_user
             if company_name_csv and company_name_csv != "Unknown":
-                # Manual Logo Map (using Google Favicons for reliability)
-                # Map company name to DOMAIN
+                # 1. Manual Asset Map (Highest Priority - User Uploaded)
+                LOGO_ASSETS = {
+                    "vodafone": "/logos/vodafone.jpg",
+                    "unicharm": "/logos/unicharm.jpg",
+                    "milkup": "/logos/milkup.jpg",
+                    "paymob": "/logos/paymob.jpg",
+                    "pwc": "/logos/pwc.jpg"
+                }
+
+                # 2. Domain Map (Fallback to Google Favicon)
                 DOMAIN_MAP = {
                     "intcore": "intcore.com",
-                    "vodafone": "vodafone.com.eg",
-                    "pwc": "pwc.com",
                     "e&": "eand.com", 
                     "etisalat": "etisalat.ae",
                     "robotesta": "robotesta.com",
                     "codtech": "codtechitsolutions.com", 
                     "weintern": "we-intern.com",
                     "tips hindawi": "hindawi.com",
-                    "milkup": "milkup.io",
                     "uniparticle": "uniparticle.com",
-                    "unicharm": "unicharm.co.jp",
                     "skillnfytech": "skillinfytech.com",
                     "skillinfytech": "skillinfytech.com"
                 }
 
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
                 clean_name_key = company_name_csv.lower().strip()
-                comp_email = f"info@{safe_name}.com"
                 
-                # Determine Domain
-                domain = f"{safe_name}.com" # Default
-                if clean_name_key in DOMAIN_MAP:
-                    domain = DOMAIN_MAP[clean_name_key]
-                elif "codtech" in clean_name_key:
-                     domain = "codtechitsolutions.com"
-                elif "robotesta" in clean_name_key:
-                     domain = "robotesta.com"
+                # Determine Email
+                comp_email = f"info@{safe_name}.com"
 
-                # Use Google Favicon Service (High reliability)
-                profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=512"
+                # Determine Logo
+                if clean_name_key in LOGO_ASSETS:
+                    profile_image = LOGO_ASSETS[clean_name_key]
+                else:
+                    # Proceed with Domain/Favicon logic
+                    # Determine Domain
+                    domain = f"{safe_name}.com" # Default
+                    if clean_name_key in DOMAIN_MAP:
+                        domain = DOMAIN_MAP[clean_name_key]
+                    elif "codtech" in clean_name_key:
+                         domain = "codtechitsolutions.com"
+                    elif "robotesta" in clean_name_key:
+                         domain = "robotesta.com"
+
+                    # Use Google Favicon Service
+                    profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=512"
 
                 existing_comp = User.query.filter_by(company_name=company_name_csv).first()
                 if not existing_comp:
