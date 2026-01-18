@@ -1,11 +1,10 @@
 {
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "cd back/futureintern-backend && pip install -r requirements.txt && python init_db.py"
+    "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd back/futureintern-backend && python run.py",
+    "startCommand": "python run.py",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

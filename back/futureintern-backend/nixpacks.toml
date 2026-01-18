@@ -2,10 +2,10 @@
 nixPkgs = ["python311"]
 
 [phases.install]
-cmds = ["cd back/futureintern-backend && pip install -r requirements.txt"]
+cmds = ["pip install -r requirements.txt"]
 
 [phases.build]
-cmds = ["cd back/futureintern-backend && python init_db.py"]
+cmds = ["python init_db.py"]
 
 [start]
-cmd = "cd back/futureintern-backend && python run.py"
+cmd = "python run.py"
