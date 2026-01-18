@@ -39,7 +39,7 @@ export function FeaturedOpportunities() {
   return (
     <section
       ref={sectionRef.elementRef}
-      className={`py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-gray-50/30 to-white relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
+      className={`py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-gray-50/30 to-white relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
     >
       {/* Subtle background pattern */}
       <div className="absolute inset-0 opacity-5">
