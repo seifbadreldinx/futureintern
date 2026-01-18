@@ -7,6 +7,7 @@ export function BrowseInternships() {
   const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [locationFilter, setLocationFilter] = useState(searchParams.get('location') || '');
+  const [companyFilter, setCompanyFilter] = useState(searchParams.get('company') || '');
   const [typeFilter, setTypeFilter] = useState<string>('');
   const [showFilters, setShowFilters] = useState(false);
 
@@ -19,8 +20,10 @@ export function BrowseInternships() {
   useEffect(() => {
     const q = searchParams.get('q');
     const loc = searchParams.get('location');
+    const comp = searchParams.get('company');
     if (q) setSearchQuery(q);
     if (loc) setLocationFilter(loc);
+    if (comp) setCompanyFilter(comp);
   }, [searchParams]);
 
   // Fetch internships from backend
@@ -53,11 +56,12 @@ export function BrowseInternships() {
         companyName.includes(searchQuery.toLowerCase());
       const loc = (internship.location || '').toString().toLowerCase();
       const matchesLocation = !locationFilter || loc.includes(locationFilter.toLowerCase());
+      const matchesCompany = !companyFilter || companyName.includes(companyFilter.toLowerCase());
       const matchesType = !typeFilter || (internship.type || '') === typeFilter;
 
-      return matchesSearch && matchesLocation && matchesType;
+      return matchesSearch && matchesLocation && matchesCompany && matchesType;
     });
-  }, [internships, searchQuery, locationFilter, typeFilter]);
+  }, [internships, searchQuery, locationFilter, companyFilter, typeFilter]);
 
   const getBadgeColor = (type: string) => {
     switch (type) {
@@ -75,6 +79,7 @@ export function BrowseInternships() {
   const clearFilters = () => {
     setSearchQuery('');
     setLocationFilter('');
+    setCompanyFilter('');
     setTypeFilter('');
   };
 
