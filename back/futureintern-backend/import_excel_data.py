@@ -95,7 +95,9 @@ def seed_database():
                     "codtech": "codtech.com", 
                     "weintern": "weintern.com",
                     "tips hindawi": "hindawi.com",
-                    "milkup": "milkup.com" # Guess
+                    "milkup": "milkup.io",
+                    "uniparticle": "uniparticle.com",
+                    "unicharm": "unicharm.co.jp"
                 }
 
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
@@ -112,7 +114,7 @@ def seed_database():
                      domain = "robotesta.com"
 
                 # Use Google Favicon Service (High reliability)
-                profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=256"
+                profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=512"
 
                 existing_comp = User.query.filter_by(company_name=company_name_csv).first()
                 if not existing_comp:
