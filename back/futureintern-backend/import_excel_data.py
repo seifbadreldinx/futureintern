@@ -92,12 +92,14 @@ def seed_database():
                     "e&": "eand.com", 
                     "etisalat": "etisalat.ae",
                     "robotesta": "robotesta.com",
-                    "codtech": "codtech.com", 
-                    "weintern": "weintern.com",
+                    "codtech": "codtechitsolutions.com", 
+                    "weintern": "we-intern.com",
                     "tips hindawi": "hindawi.com",
                     "milkup": "milkup.io",
                     "uniparticle": "uniparticle.com",
-                    "unicharm": "unicharm.co.jp"
+                    "unicharm": "unicharm.co.jp",
+                    "skillnfytech": "skillinfytech.com",
+                    "skillinfytech": "skillinfytech.com"
                 }
 
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
@@ -109,7 +111,7 @@ def seed_database():
                 if clean_name_key in DOMAIN_MAP:
                     domain = DOMAIN_MAP[clean_name_key]
                 elif "codtech" in clean_name_key:
-                     domain = "codtech.com"
+                     domain = "codtechitsolutions.com"
                 elif "robotesta" in clean_name_key:
                      domain = "robotesta.com"
 
