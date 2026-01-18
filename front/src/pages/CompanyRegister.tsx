@@ -1,8 +1,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Building2, Mail, Lock, User, MapPin, Globe, AlertCircle } from 'lucide-react';
-import { api } from '../auth'; // Assuming auth utilities exist
+import { Building2, Mail, Lock, User, AlertCircle } from 'lucide-react';
+
 
 export const CompanyRegister = () => {
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ export const CompanyRegister = () => {
                 type="text"
                 required
                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 transition-colors"
-                placeholder="Ahmed Mohamed"
+                placeholder="Contact person name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
@@ -142,20 +142,19 @@ export const CompanyRegister = () => {
               />
             </div>
           </div>
-          
+
           <button
             type="submit"
             disabled={loading}
-            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all active:scale-95 ${
-              loading ? 'opacity-75 cursor-not-allowed' : ''
-            }`}
+            className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transform transition-all active:scale-95 ${loading ? 'opacity-75 cursor-not-allowed' : ''
+              }`}
           >
             {loading ? 'Creating Account...' : 'Register Company'}
           </button>
-          
+
           <div className="text-center mt-4">
-             <span className="text-sm text-gray-600">Already have an account? </span>
-             <a href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">Login here</a>
+            <span className="text-sm text-gray-600">Already have an account? </span>
+            <a href="/login" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">Login here</a>
           </div>
         </form>
       </div>
