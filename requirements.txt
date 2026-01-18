@@ -1,0 +1,2 @@
+# This file helps Railway detect this as a Python project
+# Actual requirements are in back/futureintern-backend/requirements.txt
