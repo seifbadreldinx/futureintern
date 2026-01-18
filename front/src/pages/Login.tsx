@@ -74,8 +74,8 @@ export function Login() {
           <p className="text-gray-600">Sign in to continue your journey</p>
         </div>
 
-        <form 
-          className="mt-8 space-y-6 glass-effect p-8 rounded-2xl shadow-2xl transform hover:shadow-3xl transition-all duration-300 animate-fade-in-up animation-delay-200" 
+        <form
+          className="mt-8 space-y-6 glass-effect p-8 rounded-2xl shadow-2xl transform hover:shadow-3xl transition-all duration-300 animate-fade-in-up animation-delay-200"
           onSubmit={handleSubmit}
         >
           <div className="space-y-5">
@@ -134,9 +134,9 @@ export function Login() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-gray-900 hover:text-gray-700 transition-colors underline">
+              <Link to="/forgot-password" className="font-medium text-gray-900 hover:text-gray-700 transition-colors underline">
                 Forgot password?
-              </a>
+              </Link>
             </div>
           </div>
 
