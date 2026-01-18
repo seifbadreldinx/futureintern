@@ -1,6 +1,8 @@
 from app.models import db
 from datetime import datetime
 
+import re
+
 class Internship(db.Model):
     __tablename__ = 'internships'
     
@@ -31,9 +33,12 @@ class Internship(db.Model):
     
     def to_dict(self, include_company=True):
         """Convert internship to dictionary"""
+        # Clean title by removing leading numbers (e.g. "1. title" -> "title")
+        clean_title = re.sub(r'^\d+\.\s*', '', self.title) if self.title else ''
+        
         internship_dict = {
             'id': self.id,
-            'title': self.title,
+            'title': clean_title,
             'description': self.description,
             'requirements': self.requirements,
             'location': self.location,
