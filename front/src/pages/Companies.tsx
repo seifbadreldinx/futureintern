@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { MapPin, Users } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
 
