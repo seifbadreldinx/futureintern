@@ -23,6 +23,9 @@ export function FeaturedOpportunities() {
 
   if (internships.length === 0) return null; // Don't show empty section
 
+  // Temporarily disabled to fix layout issues
+  return null;
+
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'Full-time':
