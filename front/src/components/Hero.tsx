@@ -17,7 +17,7 @@ export function Hero() {
   };
 
   return (
-    <section className="education-bg relative overflow-hidden pt-16 pb-0 px-4 sm:px-6 lg:px-8">
+    <section className="education-bg relative overflow-hidden pt-8 pb-0 px-4 sm:px-6 lg:px-8">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
@@ -74,10 +74,10 @@ export function Hero() {
       </div>
 
       <div className="max-w-4xl mx-auto text-center relative z-10">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 animate-fade-in-up drop-shadow-lg">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-3 animate-fade-in-up drop-shadow-lg">
           Your Journey to a Dream Internship Starts Here.
         </h1>
-        <p className="text-lg sm:text-xl text-gray-700 mb-12 animate-fade-in-up animation-delay-200 drop-shadow-md">
+        <p className="text-lg sm:text-xl text-gray-700 mb-6 animate-fade-in-up animation-delay-200 drop-shadow-md">
           Connecting students with top companies to launch their careers.
         </p>
 
@@ -115,7 +115,7 @@ export function Hero() {
         </form>
 
         {/* Branded Logo Section */}
-        <div className="mt-8 mb-12 animate-fade-in-up animation-delay-500">
+        <div className="mt-6 mb-8 animate-fade-in-up animation-delay-500">
           <img
             src="/futureintern-logo.jpg"
             alt="FutureIntern - Ignite Your Passion"
