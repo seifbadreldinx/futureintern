@@ -24,7 +24,7 @@ export function HowItWorks() {
   return (
     <section
       ref={sectionRef.elementRef}
-      className={`pt-4 pb-8 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
+      className={`pt-4 pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 via-white to-gray-50 relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
     >
       {/* Decorative elements */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-gray-200/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
