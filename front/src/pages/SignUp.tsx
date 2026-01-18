@@ -227,7 +227,7 @@ export function SignUp() {
       e.preventDefault();
       e.stopPropagation();
     }
-    
+
     if (currentStep === 1) {
       const isValid = validateStep1();
       console.log('Step 1 validation:', isValid, 'Errors:', errors);
@@ -258,7 +258,7 @@ export function SignUp() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateStep3()) {
       return;
     }
@@ -279,7 +279,7 @@ export function SignUp() {
       });
 
       console.log('Registration successful:', response);
-      
+
       // If CV was provided, upload it separately (after registration)
       if (formData.cv) {
         try {
@@ -357,13 +357,12 @@ export function SignUp() {
               <div key={step} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${
-                      step < currentStep
+                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${step < currentStep
                         ? 'bg-gray-900 text-white'
                         : step === currentStep
-                        ? 'bg-gray-900 text-white ring-4 ring-gray-900/20'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
+                          ? 'bg-gray-900 text-white ring-4 ring-gray-900/20'
+                          : 'bg-gray-200 text-gray-500'
+                      }`}
                   >
                     {step < currentStep ? (
                       <Check className="w-5 h-5" />
@@ -371,16 +370,14 @@ export function SignUp() {
                       step
                     )}
                   </div>
-                  <span className={`text-xs mt-2 font-medium hidden sm:block ${
-                    step <= currentStep ? 'text-gray-900' : 'text-gray-500'
-                  }`}>
+                  <span className={`text-xs mt-2 font-medium hidden sm:block ${step <= currentStep ? 'text-gray-900' : 'text-gray-500'
+                    }`}>
                     {step === 1 ? 'Account' : step === 2 ? 'Interests' : 'CV Upload'}
                   </span>
                 </div>
                 {step < 3 && (
-                  <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${
-                    step < currentStep ? 'bg-gray-900' : 'bg-gray-200'
-                  }`} />
+                  <div className={`flex-1 h-0.5 mx-2 transition-all duration-300 ${step < currentStep ? 'bg-gray-900' : 'bg-gray-200'
+                    }`} />
                 )}
               </div>
             ))}
@@ -393,8 +390,8 @@ export function SignUp() {
           </div>
         </div>
 
-        <form 
-          className="mt-8 glass-effect p-8 rounded-2xl shadow-2xl transform hover:shadow-3xl transition-all duration-300 animate-fade-in-up animation-delay-200" 
+        <form
+          className="mt-8 glass-effect p-8 rounded-2xl shadow-2xl transform hover:shadow-3xl transition-all duration-300 animate-fade-in-up animation-delay-200"
           onSubmit={handleSubmit}
         >
           {/* Step 1: Account Information */}
@@ -414,10 +411,9 @@ export function SignUp() {
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="John Doe"
+                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${errors.name ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    placeholder="Enter your full name"
                   />
                 </div>
                 {errors.name && (
@@ -439,9 +435,8 @@ export function SignUp() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${
-                      errors.email ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -465,9 +460,8 @@ export function SignUp() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${
-                        errors.password ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${errors.password ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="••••••••"
                     />
                   </div>
@@ -490,9 +484,8 @@ export function SignUp() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${
-                        errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="••••••••"
                     />
                   </div>
@@ -533,11 +526,10 @@ export function SignUp() {
                       key={interest}
                       type="button"
                       onClick={() => handleInterestToggle(interest)}
-                      className={`px-4 py-2.5 rounded-lg border transition-all duration-200 text-sm font-medium ${
-                        formData.interests.includes(interest)
+                      className={`px-4 py-2.5 rounded-lg border transition-all duration-200 text-sm font-medium ${formData.interests.includes(interest)
                           ? 'bg-gray-900 text-white border-gray-900 shadow-md transform scale-105'
                           : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900 hover:bg-gray-50'
-                      }`}
+                        }`}
                     >
                       {interest}
                     </button>
@@ -566,9 +558,8 @@ export function SignUp() {
                     required
                     value={formData.university}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${
-                      errors.university ? 'border-red-500' : 'border-gray-300'
-                    }`}
+                    className={`w-full pl-10 pr-4 py-3.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 ${errors.university ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     placeholder="Your University"
                   />
                 </div>
@@ -648,9 +639,8 @@ export function SignUp() {
                         onChange={handleCvChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50 ${
-                        errors.cv ? 'border-red-500' : 'border-gray-300'
-                      }`}>
+                      <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50 ${errors.cv ? 'border-red-500' : 'border-gray-300'
+                        }`}>
                         <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                         <p className="text-sm text-gray-600 mb-1">
                           <span className="font-medium text-gray-900">Click to upload</span> or drag and drop
