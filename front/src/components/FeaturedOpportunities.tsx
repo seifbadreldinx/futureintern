@@ -82,10 +82,9 @@ export function FeaturedOpportunities() {
             <Link
               key={internship.id}
               to={`/internship/${internship.id}`}
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer transform hover:-translate-y-2 duration-300 animate-fade-in-up opacity-0"
+              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer transform hover:-translate-y-2 duration-300 animate-fade-in-up"
               style={{
-                animationDelay: `${(index + 1) * 0.1}s`,
-                animationFillMode: 'forwards'
+                animationDelay: `${(index + 1) * 0.1}s`
               }}
             >
               <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
@@ -137,3 +136,5 @@ export function FeaturedOpportunities() {
     </section>
   );
 }
+
+
