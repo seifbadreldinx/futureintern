@@ -101,13 +101,33 @@ def seed_database():
                     "cultiv": "/logos/cultiv.jpg",
                     "codtech": "/logos/codtech.jpg",
                     "skillnfytech": "/logos/skillinfytech.jpg",
-                    "skillinfytech": "/logos/skillinfytech.jpg"
+                    "skillinfytech": "/logos/skillinfytech.jpg",
+                    "weintern": "/logos/weintern.jpg",
+                    "breadfast": "/logos/breadfast.jpg"
                 }
 
-                # Name Corrections
+                # Name Corrections (Capitalization & Cleanup)
                 NAME_CORRECTIONS = {
                     "xefort": "XEFORT SOLUTIONS",
-                    "codtech": "CODTECH IT SOLUTIONS"
+                    "codtech": "CODTECH IT SOLUTIONS",
+                    "cultiv": "Cultiv Bureau",
+                    "skillnfytech": "SkillInfyTech",
+                    "skillinfytech": "SkillInfyTech",
+                    "weintern": "WeIntern",
+                    "breadfast": "Breadfast",
+                    "vodafone": "Vodafone",
+                    "unicharm": "Unicharm",
+                    "milkup": "Milkup",
+                    "paymob": "Paymob",
+                    "pwc": "PwC",
+                    "intcore": "Intcore",
+                    "robotesta": "Robotesta",
+                    "e&": "e&",
+                    "uniparticle": "Uniparticle",
+                    "tips hindawi": "Hindawi",
+                    "hindawi": "Hindawi",
+                    "geidea": "Geidea",
+                    "fawry": "Fawry"
                 }
 
                 # 2. Domain Map (Fallback to Google Favicon)
@@ -121,9 +141,11 @@ def seed_database():
                     "tips hindawi": "hindawi.com",
                     "uniparticle": "uniparticle.com",
                     "skillnfytech": "skillinfytech.com",
-                    "skillinfytech": "skillinfytech.com"
+                    "skillinfytech": "skillinfytech.com",
+                    "breadfast": "breadfast.com"
                 }
-
+                
+                # ... existing logic ...
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
                 clean_name_key = company_name_csv.lower().strip()
                 
