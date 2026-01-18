@@ -10,12 +10,12 @@ export function Footer() {
     ],
     support: [
       { name: 'Contact Us', href: '/contact' },
-      { name: 'FAQ', href: '#faq' },
+      { name: 'FAQ', href: '/faq' },
       { name: 'Help Center', href: '/get-help' },
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
-      { name: 'Terms of Service', href: '#terms' },
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Terms of Service', href: '/terms' },
     ],
   };
 

@@ -16,6 +16,9 @@ import { ContactUs } from './pages/ContactUs';
 import { GetHelp } from './pages/GetHelp';
 import { Careers } from './pages/Careers';
 import { Press } from './pages/Press';
+import { FAQ } from './pages/FAQ';
+import { PrivacyPolicy } from './pages/PrivacyPolicy';
+import { TermsOfService } from './pages/TermsOfService';
 import { useEffect } from 'react';
 
 function AppContent() {
@@ -44,6 +47,9 @@ function AppContent() {
           <Route path="/get-help" element={<GetHelp />} />
           <Route path="/careers" element={<Careers />} />
           <Route path="/press" element={<Press />} />
+          <Route path="/faq" element={<FAQ />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
         </Routes>
       </main>
       <Footer />
