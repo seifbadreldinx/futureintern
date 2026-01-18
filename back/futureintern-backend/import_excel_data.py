@@ -96,7 +96,18 @@ def seed_database():
                     "uniparticle": "/logos/uniparticle.jpg",
                     "tips hindawi": "/logos/hindawi.jpg",
                     "geidea": "/logos/geidea.jpg",
-                    "fawry": "/logos/fawry.jpg"
+                    "fawry": "/logos/fawry.jpg",
+                    "xefort": "/logos/xefort.jpg",
+                    "cultiv": "/logos/cultiv.jpg",
+                    "codtech": "/logos/codtech.jpg",
+                    "skillnfytech": "/logos/skillinfytech.jpg",
+                    "skillinfytech": "/logos/skillinfytech.jpg"
+                }
+
+                # Name Corrections
+                NAME_CORRECTIONS = {
+                    "xefort": "XEFORT SOLUTIONS",
+                    "codtech": "CODTECH IT SOLUTIONS"
                 }
 
                 # 2. Domain Map (Fallback to Google Favicon)
@@ -116,13 +127,25 @@ def seed_database():
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
                 clean_name_key = company_name_csv.lower().strip()
                 
+                # Apply Name Corrections
+                final_company_name = company_name_csv
+                for key, correct_name in NAME_CORRECTIONS.items():
+                    if key in clean_name_key:
+                        final_company_name = correct_name
+                        break
+                
                 # Determine Email
                 comp_email = f"info@{safe_name}.com"
 
                 # Determine Logo
-                if clean_name_key in LOGO_ASSETS:
-                    profile_image = LOGO_ASSETS[clean_name_key]
-                else:
+                profile_image = None
+                # Check for partial matches in LOGO_ASSETS keys
+                for key, asset in LOGO_ASSETS.items():
+                    if key in clean_name_key:
+                        profile_image = asset
+                        break
+                
+                if not profile_image:
                     # Proceed with Domain/Favicon logic
                     # Determine Domain
                     domain = f"{safe_name}.com" # Default
@@ -136,13 +159,13 @@ def seed_database():
                     # Use Google Favicon Service
                     profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=512"
 
-                existing_comp = User.query.filter_by(company_name=company_name_csv).first()
+                existing_comp = User.query.filter_by(company_name=final_company_name).first() # Use final name for uniqueness check
                 if not existing_comp:
                     existing_comp = User(
-                        name=company_name_csv,
+                        name=final_company_name,
                         email=comp_email,
                         role='company',
-                        company_name=company_name_csv,
+                        company_name=final_company_name,
                         company_location=loc or "Global",
                         profile_image=profile_image
                     )
