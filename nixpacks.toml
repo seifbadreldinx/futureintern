@@ -1,0 +1,14 @@
+[providers]
+python = "3.11"
+
+[phases.install]
+cmds = [
+  'pip install --upgrade pip setuptools wheel',
+  'pip install -r requirements.txt'
+]
+
+[phases.build]
+cmds = ['cd back/futureintern-backend && python init_db.py']
+
+[start]
+cmd = 'cd back/futureintern-backend && python run.py'
