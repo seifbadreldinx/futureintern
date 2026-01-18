@@ -17,5 +17,5 @@ RUN python init_db.py
 # Expose port
 EXPOSE 5000
 
-# Start the application
-CMD ["python", "run.py"]
+# Start the application with gunicorn
+CMD gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} run:app
