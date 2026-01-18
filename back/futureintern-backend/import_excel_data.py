@@ -137,9 +137,48 @@ def seed_database():
             company_name_csv = clean(row.get('Company Name', "Unknown"))
             desc = clean(row.get('Description', "No description provided."))
             reqs = clean(row.get('Requirements', "No specific requirements."))
-            loc = clean(row.get('Location', "Remote"))
+            loc_raw = clean(row.get('Location', "Remote"))
             duration = clean(row.get('Duration', "3 Months"))
             link = clean(row.get('Link', ""))
+            
+            # Location Normalization - Map companies to their actual Egypt locations
+            COMPANY_LOCATIONS = {
+                "vodafone": "Smart Village, Giza, Egypt",
+                "e&": "Smart Village, Giza, Egypt",
+                "etisalat": "Smart Village, Giza, Egypt",
+                "pwc": "Nile City Towers, Cairo, Egypt",
+                "paymob": "Maadi, Cairo, Egypt",
+                "geidea": "New Cairo, Egypt",
+                "fawry": "Smart Village, Giza, Egypt",
+                "breadfast": "New Cairo, Egypt",
+                "intcore": "5th Settlement, New Cairo, Egypt",
+                "milkup": "Dokki, Giza, Egypt",
+                "unicharm": "10th of Ramadan City, Egypt",
+                "uniparticle": "Maadi, Cairo, Egypt",
+                "tips hindawi": "Cairo, Egypt",
+                "tipshindawi": "Cairo, Egypt",
+                "hindawi": "Cairo, Egypt",
+                "cultiv bureau": "Heliopolis, Cairo, Egypt",
+                "cultiv": "Heliopolis, Cairo, Egypt"
+            }
+            
+            # Apply location normalization if location is missing or just dashes
+            loc = loc_raw
+            if not loc or loc in ["-----", "----", "-", ""]:
+                company_lower = company_name_csv.lower().strip()
+                # Check if company has a known location
+                for comp_key, location in COMPANY_LOCATIONS.items():
+                    if comp_key in company_lower:
+                        loc = location
+                        break
+                # If still no location, default to "Remote"
+                if not loc or loc in ["-----", "----", "-", ""]:
+                    loc = "Remote"
+            
+            # Normalize "remotely" to "Remote"
+            if loc.lower() == "remotely":
+                loc = "Remote"
+            
             
             # Use company name from CSV if possible to segregate
             company_owner = company_user
