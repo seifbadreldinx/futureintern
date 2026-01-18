@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export function useScrollReveal() {
   const [isRevealed, setIsRevealed] = useState(false);
-  const elementRef = useRef<HTMLElement>(null);
+  const elementRef = useRef<any>(null);
 
   useEffect(() => {
     const currentElement = elementRef.current;

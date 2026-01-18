@@ -14,6 +14,8 @@ import { Companies } from './pages/Companies';
 import { About } from './pages/About';
 import { ContactUs } from './pages/ContactUs';
 import { GetHelp } from './pages/GetHelp';
+import { Careers } from './pages/Careers';
+import { Press } from './pages/Press';
 import { useEffect } from 'react';
 
 function AppContent() {
@@ -40,6 +42,8 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/get-help" element={<GetHelp />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/press" element={<Press />} />
         </Routes>
       </main>
       <Footer />

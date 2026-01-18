@@ -5,8 +5,8 @@ export function Footer() {
   const footerLinks = {
     company: [
       { name: 'About Us', href: '/about' },
-      { name: 'Careers', href: '#careers' },
-      { name: 'Press', href: '#press' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Press', href: '/press' },
     ],
     support: [
       { name: 'Contact Us', href: '/contact' },
