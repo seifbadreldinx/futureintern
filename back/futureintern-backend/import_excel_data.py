@@ -92,7 +92,11 @@ def seed_database():
                     "pwc": "/logos/pwc.jpg",
                     "intcore": "/logos/intcore.jpg",
                     "robotesta": "/logos/robotesta.jpg",
-                    "e&": "/logos/eand.jpg"
+                    "e&": "/logos/eand.jpg",
+                    "uniparticle": "/logos/uniparticle.jpg",
+                    "tips hindawi": "/logos/hindawi.jpg",
+                    "geidea": "/logos/geidea.jpg",
+                    "fawry": "/logos/fawry.jpg"
                 }
 
                 # 2. Domain Map (Fallback to Google Favicon)
