@@ -82,7 +82,7 @@ export const CompanyRegister = () => {
                 type="text"
                 required
                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-lg py-2.5 transition-colors"
-                placeholder="FutureIntern Inc."
+                placeholder="Your company name"
                 value={formData.company_name}
                 onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
               />
