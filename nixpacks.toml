@@ -1,12 +1,10 @@
 [phases.setup]
 nixPkgs = ["python311"]
-aptPkgs = ["python3-pip"]
 
 [phases.install]
-cmds = ["python3 -m pip install --upgrade pip", "python3 -m pip install -r requirements.txt"]
 
 [phases.build]
-cmds = ["cd back/futureintern-backend && python3 init_db.py"]
+cmds = ["python3 build.py"]
 
 [start]
 cmd = "cd back/futureintern-backend && python3 run.py"
