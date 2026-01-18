@@ -83,34 +83,36 @@ def seed_database():
             # Use company name from CSV if possible to segregate
             company_owner = company_user
             if company_name_csv and company_name_csv != "Unknown":
-                # Manual Logo Map for known companies
-                LOGO_MAP = {
-                    "intcore": "https://logo.clearbit.com/intcore.com",
-                    "vodafone": "https://logo.clearbit.com/vodafone.com",
-                    "pwc": "https://logo.clearbit.com/pwc.com",
-                    "e&": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/E%26_Logo.svg/1200px-E%26_Logo.svg.png", # Specific for e&
-                    "etisalat": "https://logo.clearbit.com/etisalat.com",
-                    "robotesta": "https://robotesta.com/assets/img/logo.png", # Guessing/Placeholder
-                    "codtech": "https://media.licdn.com/dms/image/v2/D4D0BAQF_JqFq8zYy0w/company-logo_200_200/company-logo_200_200/0/1689077583626?e=2147483647&v=beta&t=example", # Placeholder for codtech if generic fails
-                    "weintern": "https://logo.clearbit.com/weintern.com",
-                    "tips hindawi": "https://yt3.googleusercontent.com/ytc/AIdro_k6a-a8z-a8z-a8z=s900-c-k-c0x00ffffff-no-rj",
-                    "tipshindawi": "https://yt3.googleusercontent.com/ytc/AIdro_k6a-a8z-a8z-a8z=s900-c-k-c0x00ffffff-no-rj"
+                # Manual Logo Map (using Google Favicons for reliability)
+                # Map company name to DOMAIN
+                DOMAIN_MAP = {
+                    "intcore": "intcore.com",
+                    "vodafone": "vodafone.com.eg",
+                    "pwc": "pwc.com",
+                    "e&": "eand.com", 
+                    "etisalat": "etisalat.ae",
+                    "robotesta": "robotesta.com",
+                    "codtech": "codtech.com", 
+                    "weintern": "weintern.com",
+                    "tips hindawi": "hindawi.com",
+                    "milkup": "milkup.com" # Guess
                 }
 
                 safe_name = re.sub(r'[^a-zA-Z0-9]', '', company_name_csv).lower()
                 clean_name_key = company_name_csv.lower().strip()
                 comp_email = f"info@{safe_name}.com"
                 
-                # Determine Logo
-                if clean_name_key in LOGO_MAP:
-                    profile_image = LOGO_MAP[clean_name_key]
+                # Determine Domain
+                domain = f"{safe_name}.com" # Default
+                if clean_name_key in DOMAIN_MAP:
+                    domain = DOMAIN_MAP[clean_name_key]
                 elif "codtech" in clean_name_key:
-                     profile_image = "https://media.licdn.com/dms/image/v2/D4D0BAQF_JqFq8zYy0w/company-logo_200_200/company-logo_200_200/0/1689077583626?e=2147483647&v=beta&t=placeholder"
+                     domain = "codtech.com"
                 elif "robotesta" in clean_name_key:
-                     # Try generic or specific if known. 
-                     profile_image = f"https://logo.clearbit.com/{safe_name}.com"
-                else:
-                    profile_image = f"https://logo.clearbit.com/{safe_name}.com"
+                     domain = "robotesta.com"
+
+                # Use Google Favicon Service (High reliability)
+                profile_image = f"https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://{domain}&size=256"
 
                 existing_comp = User.query.filter_by(company_name=company_name_csv).first()
                 if not existing_comp:
