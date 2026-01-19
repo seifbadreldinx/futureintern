@@ -24,8 +24,9 @@ export const CompanyRegister = () => {
     setError('');
 
     try {
-      // Direct API call if api utility wrapper is minimal, or fetch directly
-      const response = await fetch('http://localhost:5000/api/auth/register/company', {
+      // Use the centralized API service
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE_URL}/auth/register/company`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
