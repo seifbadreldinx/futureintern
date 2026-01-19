@@ -1,6 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { MapPin, Calendar, Briefcase, ArrowLeft, Send, X, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { api } from '../services/api';
 import { isAuthenticated } from '../utils/auth';
 
@@ -233,22 +234,22 @@ export function InternshipDetail() {
       </div>
 
       {/* CV Requirement Modal */}
-      {showCvModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+      {showCvModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200 border border-gray-100">
             <button
               onClick={() => setShowCvModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center mb-6">
-              <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+              <div className="mx-auto w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mb-4 ring-4 ring-amber-50">
                 <FileText className="w-8 h-8 text-amber-600" />
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">CV Upload Required</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 leading-relaxed">
                 To apply for this internship, you need to upload your CV/Resume to your profile first.
               </p>
             </div>
@@ -256,19 +257,20 @@ export function InternshipDetail() {
             <div className="flex space-x-3">
               <button
                 onClick={() => setShowCvModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors focus:ring-2 focus:ring-gray-200 cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={() => navigate('/dashboard?tab=profile')}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+                className="flex-1 px-4 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20 focus:ring-2 focus:ring-blue-500 cursor-pointer"
               >
                 Go to Upload
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
