@@ -4,6 +4,8 @@ from app.models.user import User
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from datetime import timedelta
 from itsdangerous import URLSafeTimedSerializer
+from app.utils.validators import validate_email, validate_password, sanitize_string
+from app.utils.rate_limiter import rate_limit_auth
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -11,13 +13,17 @@ def get_serializer():
     return URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
 
 @auth_bp.route("/forgot-password", methods=["POST"])
+@rate_limit_auth
 def forgot_password():
     try:
         data = request.get_json()
-        email = data.get('email')
+        email = sanitize_string(data.get('email', ''), max_length=120)
         
         if not email:
             return jsonify({'error': 'Email is required'}), 400
+        
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
             
         user = User.query.filter_by(email=email).first()
         if not user:
@@ -59,6 +65,7 @@ FutureIntern Team
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route("/reset-password", methods=["POST"])
+@rate_limit_auth
 def reset_password():
     try:
         data = request.get_json()
@@ -67,6 +74,11 @@ def reset_password():
         
         if not token or not password:
             return jsonify({'error': 'Token and password are required'}), 400
+        
+        # Validate password strength
+        is_valid, error_msg = validate_password(password)
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
             
         s = get_serializer()
         try:
@@ -143,17 +155,32 @@ def register_student():
             if field not in data:
                 return jsonify({'error': f'{field} is required'}), 400
         
+        # Sanitize inputs
+        email = sanitize_string(data['email'], max_length=120)
+        name = sanitize_string(data['name'], max_length=100)
+        university = sanitize_string(data['university'], max_length=100)
+        major = sanitize_string(data['major'], max_length=100)
+        
+        # Validate email
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+        
+        # Validate password strength
+        is_valid, error_msg = validate_password(data['password'])
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
+        
         # Check if email already exists
-        if User.query.filter_by(email=data['email']).first():
+        if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
         # Create new student
         user = User(
-            name=data['name'],
-            email=data['email'],
+            name=name,
+            email=email,
             role='student',
-            university=data['university'],
-            major=data['major']
+            university=university,
+            major=major
         )
         user.set_password(data['password'])  # Hash password
         
@@ -181,16 +208,30 @@ def register_company():
             if field not in data:
                 return jsonify({'error': f'{field} is required'}), 400
         
+        # Sanitize inputs
+        email = sanitize_string(data['email'], max_length=120)
+        name = sanitize_string(data['name'], max_length=100)
+        company_name = sanitize_string(data['company_name'], max_length=100)
+        
+        # Validate email
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+        
+        # Validate password strength
+        is_valid, error_msg = validate_password(data['password'])
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
+        
         # Check if email already exists
-        if User.query.filter_by(email=data['email']).first():
+        if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
         # Create new company
         user = User(
-            name=data['name'],
-            email=data['email'],
+            name=name,
+            email=email,
             role='company',
-            company_name=data['company_name']
+            company_name=company_name
         )
         user.set_password(data['password'])  # Hash password
         
@@ -209,6 +250,7 @@ def register_company():
 # ========== Task 2.3: Login API & JWT ==========
 
 @auth_bp.route("/login", methods=["POST"])
+@rate_limit_auth
 def login():
     """
     User Login
@@ -240,15 +282,22 @@ def login():
     try:
         data = request.get_json()
         
+        # Sanitize inputs
+        email = sanitize_string(data.get('email', ''), max_length=120)
+        password = data.get('password', '')
+        
         # Validation
-        if not data.get('email') or not data.get('password'):
+        if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
         
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+        
         # Find user
-        user = User.query.filter_by(email=data['email']).first()
+        user = User.query.filter_by(email=email).first()
         
         # Check credentials
-        if not user or not user.check_password(data['password']):
+        if not user or not user.check_password(password):
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Create JWT tokens with role (identity must be string for JWT 4.7.1)

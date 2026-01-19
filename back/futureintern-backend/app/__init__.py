@@ -9,6 +9,31 @@ from flask_mail import Mail
 # Initialize extensions
 mail = Mail()
 
+def add_security_headers(response):
+    """Add security headers to all responses"""
+    # Prevent clickjacking
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    
+    # Prevent MIME type sniffing
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    
+    # Enable XSS protection
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    
+    # Strict transport security (HTTPS only)
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    # Content security policy
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+    
+    # Referrer policy
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    
+    # Permissions policy
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    
+    return response
+
 # Try to import Swagger, but make it optional
 try:
     from flasgger import Swagger
@@ -76,6 +101,9 @@ def create_app():
 
     # Register global error handlers
     register_error_handlers(app)
+    
+    # Register security headers middleware
+    app.after_request(add_security_headers)
 
     # Swagger for API documentation (optional)
     if SWAGGER_AVAILABLE:

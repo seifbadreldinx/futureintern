@@ -1,5 +1,6 @@
 import os
 from datetime import timedelta
+import secrets
 
 class Config:
     # SQLite database (no server needed) - Easy setup, no MySQL required
@@ -16,8 +17,8 @@ class Config:
     
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # JWT Configuration
-    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production-flask-jwt-2024')
+    # JWT Configuration - SECURITY: Generate strong secret if not provided
+    JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') or secrets.token_urlsafe(32)
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=24)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     
@@ -35,3 +36,19 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
+
+    # Security Configuration
+    # Maximum file upload size (5MB)
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
+    
+    # Session security
+    SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+    SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
+    SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+    
+    # Security headers
+    SEND_FILE_MAX_AGE_DEFAULT = 31536000  # Cache static files for 1 year
+    
+    # Password policy
+    MIN_PASSWORD_LENGTH = 8
+    REQUIRE_PASSWORD_COMPLEXITY = True  # Require letters, numbers, special chars
