@@ -38,6 +38,14 @@ def create_app():
     # تهيئة قاعدة البيانات
     db.init_app(app)
     
+    # Create all database tables if they don't exist (for PostgreSQL production)
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✅ Database tables verified/created successfully")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not create tables: {e}")
+    
     # تهيئة CORS (للسماح بطلبات من المتصفح)
     # Allow frontend origin from environment variable or default to wildcard for development
     cors_origins = app.config.get('CORS_ORIGINS', ['*'])

@@ -32,8 +32,8 @@ export function Navbar() {
   return (
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${isHome
-          ? 'bg-white/80 backdrop-blur-md border-b border-white/20 shadow-sm'
-          : 'bg-white border-b border-gray-200 shadow-sm'
+        ? 'bg-white/80 backdrop-blur-md border-b border-white/20 shadow-sm'
+        : 'bg-white border-b border-gray-200 shadow-sm'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -59,8 +59,8 @@ export function Navbar() {
                 key={link.label}
                 to={link.to}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group ${location.pathname === link.to
-                    ? 'text-gray-900 bg-gray-100'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-gray-900 bg-gray-100'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -138,8 +138,8 @@ export function Navbar() {
                 to={link.to}
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block px-4 py-3 rounded-lg text-base font-medium transition-all ${location.pathname === link.to
-                    ? 'text-gray-900 bg-gray-100'
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                  ? 'text-gray-900 bg-gray-100'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
               >
                 {link.label}
@@ -166,6 +166,13 @@ export function Navbar() {
               ) : (
                 <>
                   <Link
+                    to="/register-company"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block px-4 py-3 text-center text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-all"
+                  >
+                    For Companies
+                  </Link>
+                  <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-4 py-3 text-center text-gray-700 border-2 border-gray-700 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 font-medium transition-all"
@@ -177,7 +184,7 @@ export function Navbar() {
                     onClick={() => setMobileMenuOpen(false)}
                     className="block px-4 py-3 text-center bg-gray-900 text-white rounded-lg font-medium transition-all hover:bg-gray-800"
                   >
-                    Sign Up
+                    Get Intern
                   </Link>
                 </>
               )}
