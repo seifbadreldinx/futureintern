@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Briefcase, BookOpen, FileText, Settings, LogOut, User } from 'lucide-react';
+import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin } from 'lucide-react';
 import { api } from '../services/api';
+import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
 
 export function Dashboard() {
@@ -461,17 +462,56 @@ export function Dashboard() {
                             </Link>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {savedInternships.map((internship) => (
-                              <Link
-                                key={internship.id}
-                                to={`/internship/${internship.id}`}
-                                className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow"
-                              >
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{internship.title}</h3>
-                                <p className="text-gray-600">{internship.company?.name || internship.company || internship.company_name || 'Company'}</p>
-                              </Link>
-                            ))}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {savedInternships.map((internship) => {
+                              const companyName = internship.company?.name || internship.company || internship.company_name || 'Company';
+                              return (
+                                <div key={internship.id} className="relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 transition-all">
+                                  <div className="absolute top-4 right-4 z-10">
+                                    <SaveButton internshipId={internship.id} />
+                                  </div>
+                                  <Link to={`/internship/${internship.id}`} className="block">
+                                    <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+                                      {internship.company?.profile_image ? (
+                                        <img
+                                          src={internship.company.profile_image}
+                                          alt={companyName}
+                                          className="w-full h-full object-contain p-1"
+                                          onError={(e) => {
+                                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
+                                          }}
+                                        />
+                                      ) : (
+                                        <img
+                                          src={`https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
+                                          alt={companyName}
+                                          className="w-full h-full object-contain p-1"
+                                        />
+                                      )}
+                                    </div>
+
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                      {internship.title}
+                                    </h3>
+
+                                    <div className="flex items-center text-gray-600 mb-3">
+                                      <span className="font-medium">{companyName}</span>
+                                    </div>
+
+                                    <div className="flex items-center text-gray-500 text-sm mb-4">
+                                      <MapPin className="w-4 h-4 mr-1" />
+                                      {internship.location}
+                                    </div>
+
+                                    {internship.type && (
+                                      <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                        {internship.type}
+                                      </span>
+                                    )}
+                                  </Link>
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
