@@ -1,1 +1,1 @@
-web: python simple_server.py
+web: cd back/futureintern-backend && python run.py
