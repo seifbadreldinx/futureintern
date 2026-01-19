@@ -206,7 +206,9 @@ export function BrowseInternships() {
                     <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
                       {internship.company?.profile_image ? (
                         <img
-                          src={internship.company.profile_image}
+                          src={internship.company.profile_image.startsWith('http')
+                            ? internship.company.profile_image
+                            : `${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '')}${internship.company.profile_image}`}
                           alt={companyName}
                           className="w-full h-full object-contain p-2"
                           onError={(e) => {
