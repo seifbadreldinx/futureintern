@@ -341,6 +341,11 @@ export const api = {
         method: 'DELETE',
       });
     },
+
+    // Get my internships (for companies)
+    getMyInternships: async () => {
+      return apiRequest<any>('/internships/my');
+    },
   },
 
   // ========== Applications ==========
