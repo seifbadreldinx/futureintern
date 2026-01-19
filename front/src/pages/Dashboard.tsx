@@ -8,6 +8,7 @@ export function Dashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'saved' | 'profile' | 'recommended' | 'post-internship' | 'my-internships'>('overview');
   const [applications, setApplications] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]); // New state
+  const [savedInternships, setSavedInternships] = useState<any[]>([]); // Saved internships
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -17,13 +18,19 @@ export function Dashboard() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [userData, applicationsData] = await Promise.all([
+        const [userData, applicationsData, savedData] = await Promise.all([
           api.auth.getCurrentUser().catch(() => null),
-          api.applications.getAll().catch(() => ({ applications: [] }))
+          api.applications.getAll().catch(() => ({ applications: [] })),
+          api.users.getSavedInternships().catch(() => ({ saved_internships: [] }))
         ]);
 
         if (userData) {
           setUser(userData.user || userData);
+        }
+
+        // Set saved internships
+        if (savedData && savedData.saved_internships) {
+          setSavedInternships(savedData.saved_internships);
         }
 
         // Try to fetch recommendations if student
@@ -70,8 +77,6 @@ export function Dashboard() {
   const handleLogout = () => {
     logout();
   };
-
-  const savedInternships: any[] = []; // TODO: Implement saved internships feature
 
   const getStatusColor = (status: string) => {
     switch (status) {
