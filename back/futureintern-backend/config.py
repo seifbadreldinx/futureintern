@@ -4,7 +4,12 @@ from datetime import timedelta
 class Config:
     # SQLite database (no server needed) - Easy setup, no MySQL required
     basedir = os.path.abspath(os.path.dirname(__file__))
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'futureintern.db')}"
+    # Database Configuration: Use PostgreSQL in production, SQLite locally
+    database_url = os.environ.get('DATABASE_URL')
+    if database_url and database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+    SQLALCHEMY_DATABASE_URI = database_url or f"sqlite:///{os.path.join(basedir, 'futureintern.db')}"
     
     # MySQL database (XAMPP) - Uncomment if you have MySQL/XAMPP running
     # SQLALCHEMY_DATABASE_URI = "mysql+pymysql://root:@localhost:3306/futureintern"
