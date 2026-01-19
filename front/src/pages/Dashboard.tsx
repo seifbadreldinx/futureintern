@@ -49,6 +49,7 @@ export function Dashboard() {
         const appsArray = applicationsData?.applications || (Array.isArray(applicationsData) ? applicationsData : []);
         const formattedApplications = appsArray.map((app: any) => ({
           id: app.id,
+          internshipId: app.internship?.id,
           title: app.internship?.title || 'Unknown Internship',
           company: app.internship?.company_name || app.internship?.company || 'Unknown Company',
           status: app.status === 'pending' ? 'Under Review' :
@@ -394,7 +395,7 @@ export function Dashboard() {
                                 <div className="flex items-center justify-between">
                                   <p className="text-sm text-gray-500">Applied on {app.date}</p>
                                   <Link
-                                    to={`/internship/${app.id}`}
+                                    to={`/internship/${app.internshipId}`}
                                     className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                                   >
                                     View Details →
