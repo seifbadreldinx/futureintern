@@ -176,3 +176,122 @@ def verify_company(user_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+# ========== Saved Internships APIs ==========
+
+@users_bp.route("/saved-internships", methods=["GET"])
+@jwt_required()
+def get_saved_internships():
+    """Get all saved internships for current user"""
+    try:
+        from app.models.intern import Internship
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get saved internships
+        saved = user.saved_internships_rel.all()
+        
+        return jsonify({
+            'saved_internships': [internship.to_dict() for internship in saved],
+            'count': len(saved)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@users_bp.route("/saved-internships/<int:internship_id>", methods=["POST"])
+@jwt_required()
+def save_internship(internship_id):
+    """Save/bookmark an internship"""
+    try:
+        from app.models.intern import Internship
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        internship = Internship.query.get(internship_id)
+        if not internship:
+            return jsonify({'error': 'Internship not found'}), 404
+        
+        # Check if already saved
+        if internship in user.saved_internships_rel:
+            return jsonify({'message': 'Internship already saved'}), 200
+        
+        # Add to saved internships
+        user.saved_internships_rel.append(internship)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Internship saved successfully',
+            'internship': internship.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@users_bp.route("/saved-internships/<int:internship_id>", methods=["DELETE"])
+@jwt_required()
+def unsave_internship(internship_id):
+    """Remove an internship from saved list"""
+    try:
+        from app.models.intern import Internship
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        internship = Internship.query.get(internship_id)
+        if not internship:
+            return jsonify({'error': 'Internship not found'}), 404
+        
+        # Check if saved
+        if internship not in user.saved_internships_rel:
+            return jsonify({'error': 'Internship not in saved list'}), 400
+        
+        # Remove from saved
+        user.saved_internships_rel.remove(internship)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Internship removed from saved list'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@users_bp.route("/saved-internships/<int:internship_id>/check", methods=["GET"])
+@jwt_required()
+def check_if_saved(internship_id):
+    """Check if an internship is saved by current user"""
+    try:
+        from app.models.intern import Internship
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        internship = Internship.query.get(internship_id)
+        if not internship:
+            return jsonify({'error': 'Internship not found'}), 404
+        
+        is_saved = internship in user.saved_internships_rel
+        
+        return jsonify({
+            'is_saved': is_saved
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

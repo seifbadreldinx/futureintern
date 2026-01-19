@@ -1,4 +1,5 @@
 from app.models import db
+from app.models.saved import saved_internships
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -29,6 +30,11 @@ class User(db.Model):
     company_website = db.Column(db.String(200))
     company_location = db.Column(db.String(200))
     is_verified = db.Column(db.Boolean, default=False)  # Verification flag
+    
+    # Relationships
+    saved_internships_rel = db.relationship('Internship', secondary=saved_internships, 
+                                           backref=db.backref('saved_by_users', lazy='dynamic'),
+                                           lazy='dynamic')
     
     def set_password(self, password):
         """Hash password before saving"""
