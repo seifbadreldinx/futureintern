@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin } from 'lucide-react';
+import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin, Upload } from 'lucide-react';
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
@@ -544,6 +544,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
     skills: user?.skills || ''
   });
   const [loading, setLoading] = useState(false);
+  const [uploadingCv, setUploadingCv] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -569,6 +570,28 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type/size
+    if (file.size > 5 * 1024 * 1024) {
+      alert("File size must be less than 5MB");
+      return;
+    }
+
+    try {
+      setUploadingCv(true);
+      const res = await api.users.uploadCV(file);
+      alert('CV uploaded successfully!');
+      if (onUpdate) onUpdate({ ...user, resume_url: res.resume_url });
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload CV');
+    } finally {
+      setUploadingCv(false);
     }
   };
 
@@ -615,16 +638,61 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
           />
         </div>
         {user?.role === 'student' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Skills (Comma separated)</label>
-            <input
-              type="text"
-              placeholder="Python, React, Design..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-              value={formData.skills}
-              onChange={e => setFormData({ ...formData, skills: e.target.value })}
-            />
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Skills (Comma separated)</label>
+              <input
+                type="text"
+                placeholder="Python, React, Design..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+                value={formData.skills}
+                onChange={e => setFormData({ ...formData, skills: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Resume / CV</label>
+              <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div className={`p-3 rounded-full ${user.resume_url ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                  <FileText className="w-6 h-6" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-900">
+                    {user.resume_url ? 'Resume Uploaded' : 'No Resume Uploaded'}
+                  </p>
+                  {user.resume_url && (
+                    <a
+                      href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/${user.resume_url}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs text-blue-600 hover:text-blue-800 underline truncate block max-w-[200px]"
+                    >
+                      View current resume
+                    </a>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".pdf,.docx"
+                    onChange={handleCvUpload}
+                    disabled={uploadingCv}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${user.resume_url
+                      ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    disabled={uploadingCv}
+                  >
+                    {uploadingCv ? 'Uploading...' : user.resume_url ? 'Replace' : 'Upload'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
         )}
         <button type="submit" disabled={loading} className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400">
           {loading ? 'Saving...' : 'Save Changes'}
