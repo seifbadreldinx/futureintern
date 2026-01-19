@@ -74,6 +74,7 @@ export function SignUp() {
   const [cvError, setCvError] = useState('');
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [cvLater, setCvLater] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -209,8 +210,17 @@ export function SignUp() {
   };
 
   const validateStep3 = (): boolean => {
-    // CV is now optional during registration
-    return true;
+    const newErrors: StepErrors = {};
+
+    if (!formData.cv && !cvLater) {
+      newErrors.cv = 'Please upload your CV or check "I will upload my CV later"';
+    }
+
+    setErrors(newErrors);
+    if (newErrors.cv) {
+      setCvError(newErrors.cv);
+    }
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = (e?: React.MouseEvent) => {
@@ -621,55 +631,74 @@ export function SignUp() {
                     Note: You must upload a CV later to apply for internships.
                   </span>
                 </p>
-                <div className="space-y-2">
-                  {!formData.cv ? (
-                    <div className="relative">
-                      <input
-                        id="cv"
-                        name="cv"
-                        type="file"
-                        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        onChange={handleCvChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50 ${errors.cv ? 'border-red-500' : 'border-gray-300'
-                        }`}>
-                        <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-sm text-gray-600 mb-1">
-                          <span className="font-medium text-gray-900">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">PDF or DOCX (MAX. 5MB)</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <div className="flex-shrink-0">
-                          <FileText className="w-8 h-8 text-gray-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{formData.cv.name}</p>
-                          <p className="text-xs text-gray-500">
-                            {(formData.cv.size / 1024 / 1024).toFixed(2)} MB
+                <div className="space-y-4">
+                  <div className={`space-y-2 transition-opacity duration-200 ${cvLater ? 'opacity-50 pointer-events-none' : ''}`}>
+                    {!formData.cv ? (
+                      <div className="relative">
+                        <input
+                          id="cv"
+                          name="cv"
+                          type="file"
+                          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                          onChange={handleCvChange}
+                          disabled={cvLater}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className={`border-2 border-dashed rounded-lg p-6 text-center hover:border-gray-900 transition-colors cursor-pointer bg-gray-50 ${errors.cv ? 'border-red-500' : 'border-gray-300'
+                          }`}>
+                          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600 mb-1">
+                            <span className="font-medium text-gray-900">Click to upload</span> or drag and drop
                           </p>
+                          <p className="text-xs text-gray-500">PDF or DOCX (MAX. 5MB)</p>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={removeCv}
-                        className="ml-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                        aria-label="Remove file"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-                  )}
-                  {(cvError || errors.cv) && (
-                    <p className="text-sm text-red-600 mt-1">{cvError || errors.cv}</p>
-                  )}
-                  <p className="text-xs text-gray-500">
-                    Accepted formats: PDF, DOCX. Maximum file size: 5MB
-                  </p>
+                    ) : (
+                      <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 flex items-center justify-between">
+                        <div className="flex items-center space-x-3 flex-1 min-w-0">
+                          <div className="flex-shrink-0">
+                            <FileText className="w-8 h-8 text-gray-600" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{formData.cv.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(formData.cv.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={removeCv}
+                          className="ml-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                          aria-label="Remove file"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+                    {(cvError || errors.cv) && (
+                      <p className="text-sm text-red-600 mt-1">{cvError || errors.cv}</p>
+                    )}
+                    <p className="text-xs text-gray-500">
+                      Accepted formats: PDF, DOCX. Maximum file size: 5MB
+                    </p>
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      id="cvLater"
+                      type="checkbox"
+                      checked={cvLater}
+                      onChange={(e) => {
+                        setCvLater(e.target.checked);
+                        if (e.target.checked) removeCv();
+                      }}
+                      className="h-4 w-4 text-gray-900 focus:ring-gray-900 border-gray-300 rounded cursor-pointer"
+                    />
+                    <label htmlFor="cvLater" className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                      I will upload my CV later
+                    </label>
+                  </div>
                 </div>
               </div>
 
