@@ -58,9 +58,29 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 ### Step 6: Deploy
 1. Go to "Deployments" tab
-2. Click "Deploy"
+2. Click "Deploy" or it will auto-deploy from GitHub
 3. Wait for deployment to complete (2-3 minutes)
-4. Check logs for "✅ Deployment build completed successfully!"
+4. **Check deployment logs** - should see "Server started"
+
+### Step 7: Initialize Data (First Time Only)
+After first successful deployment:
+1. In Railway dashboard, click on your backend service
+2. Go to "Settings" → scroll down to "Service"
+3. Click "Create TCP Proxy" (if needed for database access)
+4. Or use Railway CLI:
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Login and link project
+railway login
+railway link
+
+# Run initialization
+railway run python init_railway.py
+```
+
+This will import the 30 internships from CSV into your database.
 
 ---
 
