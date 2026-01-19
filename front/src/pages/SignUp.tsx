@@ -628,7 +628,7 @@ export function SignUp() {
                 <p className="text-sm text-gray-600 mb-4">
                   Your CV helps our AI matching system connect you with relevant internship opportunities.
                   <span className="block mt-1 text-amber-600 font-medium text-xs">
-                    Note: You must upload a CV later to apply for internships.
+                    Note: You must upload a CV to apply for internships.
                   </span>
                 </p>
                 <div className="space-y-4">
