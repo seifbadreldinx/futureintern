@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin, Upload } from 'lucide-react';
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
 
 export function Dashboard() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'saved' | 'profile' | 'recommended' | 'post-internship' | 'my-internships'>('overview');
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'saved' | 'profile' | 'recommended' | 'post-internship' | 'my-internships'>((searchParams.get('tab') as any) || 'overview');
   const [applications, setApplications] = useState<any[]>([]);
   const [recommendations, setRecommendations] = useState<any[]>([]); // New state
   const [savedInternships, setSavedInternships] = useState<any[]>([]); // Saved internships

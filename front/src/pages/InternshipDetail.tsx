@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Briefcase, ArrowLeft, Send } from 'lucide-react';
+import { MapPin, Calendar, Briefcase, ArrowLeft, Send, AlertCircle, X, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { isAuthenticated } from '../utils/auth';
@@ -10,6 +10,7 @@ export function InternshipDetail() {
   const [internship, setInternship] = useState<any | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [showCvModal, setShowCvModal] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -84,9 +85,7 @@ export function InternshipDetail() {
     }
 
     if (user && !user.resume_url) {
-      if (window.confirm("You must upload a CV to your profile before applying. Would you like to go to your dashboard to upload one now?")) {
-        navigate('/dashboard');
-      }
+      setShowCvModal(true);
       return;
     }
 
@@ -232,6 +231,45 @@ export function InternshipDetail() {
           </p>
         </div>
       </div>
+
+      {/* CV Requirement Modal */}
+      {showCvModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in fade-in zoom-in duration-200">
+            <button
+              onClick={() => setShowCvModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                <FileText className="w-8 h-8 text-amber-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">CV Upload Required</h3>
+              <p className="text-gray-600">
+                To apply for this internship, you need to upload your CV/Resume to your profile first.
+              </p>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowCvModal(false)}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => navigate('/dashboard?tab=profile')}
+                className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20"
+              >
+                Go to Upload
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
