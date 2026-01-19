@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { MapPin, Calendar, Briefcase, ArrowLeft, Send, AlertCircle, X, FileText } from 'lucide-react';
+import { MapPin, Calendar, Briefcase, ArrowLeft, Send, X, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { isAuthenticated } from '../utils/auth';

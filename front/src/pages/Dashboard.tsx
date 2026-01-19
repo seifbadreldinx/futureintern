@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin, Upload } from 'lucide-react';
+import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin } from 'lucide-react';
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
@@ -663,7 +663,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                   </p>
                   {user.resume_url && (
                     <a
-                      href={`${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/${user.resume_url}`}
+                      href={`${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}/${user.resume_url}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs text-blue-600 hover:text-blue-800 underline truncate block max-w-[200px]"
