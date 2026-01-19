@@ -26,7 +26,7 @@ class Config:
     JWT_CSRF_CHECK_FORM = False
     
     # CORS Configuration - Allow frontend domain
-    CORS_ORIGINS = os.environ.get('FRONTEND_URL', 'http://localhost:5173').split(',')
+    CORS_ORIGINS = os.environ.get('FRONTEND_URL', 'http://localhost:5173,http://127.0.0.1:5173').split(',')
 
     # Mail Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')

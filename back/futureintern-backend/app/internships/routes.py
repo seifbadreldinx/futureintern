@@ -179,15 +179,25 @@ def update_internship(id):
 def delete_internship(id):
     """Delete internship (Company owner only)"""
     try:
-        user_id = int(get_jwt_identity())  # Convert to int for comparison
+        user_identity = get_jwt_identity()
+        print(f"DEBUG: raw identity: {user_identity} (type: {type(user_identity)})")
+        
+        try:
+            user_id = int(str(user_identity)) # Force string then int conversion to be safe
+        except:
+            print(f"DEBUG: Could not convert identity to int: {user_identity}")
+            return jsonify({'error': 'Invalid authentication token format'}), 401
+            
         internship = Internship.query.get(id)
         
         if not internship:
             return jsonify({'error': 'Internship not found'}), 404
         
+        print(f"DEBUG: ownership check - User: {user_id} (type: {type(user_id)}), Owner: {internship.company_id} (type: {type(internship.company_id)})")
+        
         # Check ownership
         if internship.company_id != user_id:
-            return jsonify({'error': 'Not authorized to delete this internship'}), 403
+            return jsonify({'error': f'Not authorized. User {user_id} does not own internship {id} (owned by {internship.company_id})'}), 403
         
         db.session.delete(internship)
         db.session.commit()

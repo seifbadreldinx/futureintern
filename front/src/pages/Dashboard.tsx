@@ -219,7 +219,10 @@ export function Dashboard() {
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <button
-                              onClick={() => setActiveTab('post-internship' as any)}
+                              onClick={() => {
+                                setEditingInternship(null);
+                                setActiveTab('post-internship' as any);
+                              }}
                               className="flex items-center justify-center p-6 border-2 border-dashed border-blue-300 rounded-lg hover:bg-blue-50 transition-colors group"
                             >
                               <div className="text-center">
@@ -1033,6 +1036,8 @@ function MyInternshipsList({ onEdit }: { onEdit: (internship: any) => void }) {
 
 // Helper Component for Post Internship Form
 function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuccess: () => void }) {
+  console.log('PostInternshipForm render. Internship prop:', internship);
+
   const [formData, setFormData] = useState({
     title: internship?.title || '',
     description: internship?.description || '',
@@ -1045,6 +1050,7 @@ function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuc
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('PostInternshipForm useEffect. Internship:', internship);
     if (internship) {
       setFormData({
         title: internship.title || '',
@@ -1054,6 +1060,17 @@ function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuc
         duration: internship.duration || '',
         stipend: internship.stipend || '',
         major: internship.major || 'General'
+      });
+    } else {
+      // Create mode - reset form
+      setFormData({
+        title: '',
+        description: '',
+        requirements: '',
+        location: '',
+        duration: '',
+        stipend: '',
+        major: 'General'
       });
     }
   }, [internship]);
