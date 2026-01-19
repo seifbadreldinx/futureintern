@@ -264,8 +264,13 @@ def upload_logo():
         if user.profile_image:
             delete_logo(user.profile_image)
         
-        # Update user's profile image URL
-        user.profile_image = logo_path
+        # Construct full URL for the logo
+        # Get the base URL from request or environment
+        base_url = request.host_url.rstrip('/')
+        full_logo_url = f"{base_url}{logo_path}"
+        
+        # Update user's profile image URL with full URL
+        user.profile_image = full_logo_url
         db.session.commit()
         
         return jsonify({

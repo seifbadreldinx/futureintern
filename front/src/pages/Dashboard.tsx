@@ -746,11 +746,11 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                 {user?.profile_image && (
                   <div className="mt-2 w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <img
-                      src={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
+                      src={user.profile_image.startsWith('http') ? user.profile_image : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
                       alt="Company Logo"
                       className="w-full h-full object-contain p-1"
                       onError={(e) => {
-                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${user.company_name || user.name}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.company_name || user.name || 'C')}&background=eff6ff&color=2563eb&size=128`;
                       }}
                     />
                   </div>
