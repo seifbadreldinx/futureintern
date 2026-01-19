@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, current_app
+import os
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.auth import role_required, get_current_user_role
 from app.models.user import User
@@ -137,12 +138,36 @@ def upload_cv():
         
         # Update user's CV URL
         user.resume_url = cv_path
+        
+        # EXTRACT SKILLS FROM CV
+        try:
+            from app.utils.cv_parser import parse_cv
+            # Construct full path to file
+            full_path = os.path.join(current_app.root_path, '..', cv_path.lstrip('/'))
+            _, extracted_skills = parse_cv(full_path)
+            
+            if extracted_skills:
+                # Merge with existing skills
+                current_skills = set()
+                if user.skills:
+                    if isinstance(user.skills, list):
+                         current_skills = set(user.skills)
+                    elif isinstance(user.skills, str):
+                        current_skills = set([s.strip() for s in user.skills.split(',') if s.strip()])
+                
+                combined_skills = current_skills.union(set(extracted_skills))
+                # Save as comma-separated string
+                user.skills = ','.join(sorted(list(combined_skills)))
+        except Exception as e:
+            print(f"CV parsing failed: {str(e)}")
+            # Continue without fail
+            
         db.session.commit()
         
         return jsonify({
             'message': 'CV uploaded successfully',
-            'cv_url': cv_path,
-            'user': user.to_dict()
+            'resume_url': user.resume_url,
+            'skills': user.skills
         }), 200
         
     except Exception as e:

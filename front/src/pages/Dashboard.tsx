@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin } from 'lucide-react';
+import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin, CheckCircle, AlertCircle, X } from 'lucide-react';
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
@@ -546,6 +546,12 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
   });
   const [loading, setLoading] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     if (user) {
@@ -580,25 +586,55 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
 
     // Validate file type/size
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size must be less than 5MB");
+      showToast("File size must be less than 5MB", 'error');
       return;
     }
 
     try {
       setUploadingCv(true);
       const res = await api.users.uploadCV(file);
-      alert('CV uploaded successfully!');
-      if (onUpdate) onUpdate({ ...user, resume_url: res.resume_url });
+      showToast('CV uploaded successfully!', 'success');
+
+      // Update form data with new skills if found
+      if (res.skills) {
+        setFormData(prev => ({ ...prev, skills: res.skills }));
+      }
+
+      if (onUpdate) {
+        onUpdate({
+          ...user,
+          resume_url: res.resume_url,
+          skills: res.skills || user.skills
+        });
+      }
     } catch (err: any) {
-      alert(err.message || 'Failed to upload CV');
+      showToast(err.message || 'Failed to upload CV', 'error');
     } finally {
       setUploadingCv(false);
+      // Clear input
+      e.target.value = '';
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white rounded-lg shadow-lg p-6 relative">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Settings</h2>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`absolute top-4 right-4 flex items-center p-4 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-4 duration-300 ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+          }`}>
+          {toast.type === 'success' ? <CheckCircle className="w-5 h-5 mr-2" /> : <AlertCircle className="w-5 h-5 mr-2" />}
+          <span className="font-medium">{toast.message}</span>
+          <button
+            onClick={() => setToast(null)}
+            className={`ml-4 p-1 rounded-full hover:bg-black/5 ${toast.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
