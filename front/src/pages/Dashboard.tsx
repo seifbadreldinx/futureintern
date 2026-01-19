@@ -628,13 +628,17 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`absolute top-4 right-4 flex items-center p-4 rounded-lg shadow-lg z-50 animate-in fade-in slide-in-from-top-4 duration-300 ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'
+        <div className={`fixed top-24 right-6 flex items-center p-4 rounded-xl shadow-2xl z-[100] animate-in slide-in-from-right-8 duration-300 border backdrop-blur-sm ${toast.type === 'success'
+            ? 'bg-white/90 border-green-200 text-green-800'
+            : 'bg-white/90 border-red-200 text-red-800'
           }`}>
-          {toast.type === 'success' ? <CheckCircle className="w-5 h-5 mr-2" /> : <AlertCircle className="w-5 h-5 mr-2" />}
-          <span className="font-medium">{toast.message}</span>
+          <div className={`p-2 rounded-full mr-3 ${toast.type === 'success' ? 'bg-green-100' : 'bg-red-100'}`}>
+            {toast.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
+          </div>
+          <span className="font-semibold">{toast.message}</span>
           <button
             onClick={() => setToast(null)}
-            className={`ml-4 p-1 rounded-full hover:bg-black/5 ${toast.type === 'success' ? 'text-green-600' : 'text-red-600'}`}
+            className="ml-6 text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -725,8 +729,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                   <button
                     type="button"
                     className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${resumeUrl
-                        ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-                        : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
+                      ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
                       }`}
                     disabled={uploadingCv}
                   >
