@@ -38,13 +38,32 @@ def get_recommendations():
             if isinstance(student.skills, str):
                 student_skills = [s.strip() for s in student.skills.split(',') if s.strip()]
             else:
-                student_skills = student.skills
+                student_skills = student.skills if isinstance(student.skills, list) else []
+
+        # Parse interests and merge into skills
+        student_interests = []
+        if student.interests:
+            if isinstance(student.interests, str):
+                try:
+                    import json
+                    # Only parse if it looks like a list
+                    if student.interests.startswith('['):
+                        student_interests = json.loads(student.interests)
+                    else:
+                        student_interests = [s.strip() for s in student.interests.split(',') if s.strip()]
+                except:
+                     student_interests = [s.strip() for s in student.interests.split(',') if s.strip()]
+            elif isinstance(student.interests, list):
+                student_interests = student.interests
+
+        # Merge unique capabilities (skills + interests)
+        all_capabilities = list(set(student_skills + student_interests))
 
         student_data = {
             'id': student.id,
-            'skills': student_skills,
+            'skills': all_capabilities,
             'major': student.major or '',
-            'location': student.company_location or '', # Assuming location map is correct
+            'location': student.location or '', 
             'availability': 40
         }
 
