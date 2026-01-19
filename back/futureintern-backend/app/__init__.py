@@ -194,6 +194,14 @@ def create_app():
             db.session.rollback()
             return jsonify({'error': str(e)}), 500
 
+    # Serve uploaded files (e.g. CVs)
+    @app.route('/uploads/<path:filename>')
+    def serve_uploads(filename):
+        from flask import send_from_directory
+        import os
+        uploads_dir = os.path.join(app.root_path, '..', 'uploads')
+        return send_from_directory(uploads_dir, filename)
+
     # تسجيل كل الـ Blueprints مع الـ URL prefix الخاص بكل واحد
     app.register_blueprint(auth_bp, url_prefix="/api/auth")
     app.register_blueprint(users_bp, url_prefix="/api/users")
