@@ -30,7 +30,7 @@ def check_and_migrate_db():
 
 if __name__ == "__main__":
     # Run migration check on startup
-    check_and_migrate_db()
+    # check_and_migrate_db()
 
     # Get port from environment variable (for Railway/Heroku) or default to 5000
     port = int(os.environ.get('PORT', 5000))

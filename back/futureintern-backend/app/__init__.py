@@ -64,12 +64,14 @@ def create_app():
     db.init_app(app)
     
     # Create all database tables if they don't exist (for PostgreSQL production)
-    with app.app_context():
-        try:
-            db.create_all()
-            print("✅ Database tables verified/created successfully")
-        except Exception as e:
-            print(f"⚠️ Warning: Could not create tables: {e}")
+    # Create all database tables if they don't exist
+    # Commented out to prevent startup hang if DB is slow
+    # with app.app_context():
+    #     try:
+    #         db.create_all()
+    #         print("✅ Database tables verified/created successfully")
+    #     except Exception as e:
+    #         print(f"⚠️ Warning: Could not create tables: {e}")
     
     # تهيئة CORS (للسماح بطلبات من المتصفح)
     # Allow frontend origin from environment variable or default to wildcard for development
