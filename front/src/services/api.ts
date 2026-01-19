@@ -263,6 +263,11 @@ export const api = {
       });
     },
 
+    // Get all companies (public)
+    getAllCompanies: async () => {
+      return apiRequest<any>('/users/companies');
+    },
+
     // Delete CV
     deleteCV: async () => {
       return apiRequest<any>('/users/delete-cv', {

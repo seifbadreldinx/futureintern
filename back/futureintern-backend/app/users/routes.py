@@ -105,6 +105,33 @@ def all_users():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@users_bp.route("/companies", methods=["GET"])
+def get_all_companies():
+    """Get all companies (public endpoint)"""
+    try:
+        from app.models.intern import Internship
+        
+        # Get all users with role='company'
+        companies = User.query.filter_by(role='company').all()
+        
+        # For each company, count their internships
+        companies_data = []
+        for company in companies:
+            internship_count = Internship.query.filter_by(company_id=company.id).count()
+            company_dict = company.to_dict()
+            company_dict['internship_count'] = internship_count
+            companies_data.append(company_dict)
+        
+        # Sort by internship count (descending)
+        companies_data.sort(key=lambda x: x['internship_count'], reverse=True)
+        
+        return jsonify({
+            'companies': companies_data,
+            'total': len(companies_data)
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ========== Task 5.1: CV Upload & Storage ==========
 
 @users_bp.route("/upload-cv", methods=["POST"])
