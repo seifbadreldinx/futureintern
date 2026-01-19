@@ -320,7 +320,7 @@ def seed_database():
 
             new_intern = Internship(
                 title=str(title),
-                description=clean(desc) + (f"\n\nApply Link: {link}" if link else ""),
+                description=clean(desc),
                 requirements=clean(reqs),
                 location=clean(loc),
                 duration=clean(duration),
@@ -328,6 +328,7 @@ def seed_database():
                 company_id=company_owner.id,
                 major=major,
                 required_skills=json.dumps(found_skills),
+                application_link=link if link else None,  # Store external application link
                 application_deadline=datetime.utcnow() + timedelta(days=30),
                 start_date=datetime.utcnow() + timedelta(days=60),
                 is_active=True

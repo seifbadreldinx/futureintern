@@ -20,6 +20,9 @@ class Internship(db.Model):
     major = db.Column(db.String(100)) # e.g. "Computer Science"
     required_skills = db.Column(db.Text) # JSON string of skills e.g. ["Python", "React"]
     
+    # Application link
+    application_link = db.Column(db.String(500))  # External application form URL
+    
     # Foreign key to company
     company_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
@@ -52,7 +55,8 @@ class Internship(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'major': self.major,
-            'required_skills': self.required_skills
+            'required_skills': self.required_skills,
+            'application_link': self.application_link
         }
         
         if include_company:

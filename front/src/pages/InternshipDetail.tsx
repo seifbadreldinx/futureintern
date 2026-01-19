@@ -79,6 +79,13 @@ export function InternshipDetail() {
   };
 
   const handleApply = async () => {
+    // If internship has an external application link, open it
+    if (internship.application_link) {
+      window.open(internship.application_link, '_blank');
+      return;
+    }
+
+    // Otherwise, use the internal application system
     if (!isAuthenticated()) {
       // Redirect to login if not authenticated
       navigate('/login');
