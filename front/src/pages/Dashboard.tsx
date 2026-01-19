@@ -574,7 +574,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
     try {
       await api.users.updateProfile(formData);
       showToast('Profile updated successfully!', 'success');
-      if (onUpdate) onUpdate({ ...user, ...formData });
+      if (onUpdate) onUpdate({ ...user, ...formData, resume_url: resumeUrl });
     } catch (err) {
       showToast('Failed to update profile', 'error');
       console.error(err);
@@ -622,13 +622,39 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
     }
   };
 
+  const handleCvDelete = async () => {
+    if (!confirm('Are you sure you want to delete your CV? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setUploadingCv(true);
+      await api.users.deleteCV();
+      showToast('CV deleted successfully!', 'success');
+
+      // Update local UI immediately
+      setResumeUrl(null);
+
+      if (onUpdate) {
+        onUpdate({
+          ...user,
+          resume_url: null
+        });
+      }
+    } catch (err: any) {
+      showToast(err.message || 'Failed to delete CV', 'error');
+    } finally {
+      setUploadingCv(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 relative">
       <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Settings</h2>
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-24 right-6 flex items-center p-4 rounded-xl shadow-2xl z-[100] animate-in slide-in-from-right-8 duration-300 border backdrop-blur-sm ${toast.type === 'success'
+        <div className={`fixed top-24 left-1/2 -translate-x-1/2 flex items-center p-4 rounded-xl shadow-2xl z-[100] animate-in slide-in-from-top-4 duration-300 border backdrop-blur-sm ${toast.type === 'success'
             ? 'bg-white/90 border-green-200 text-green-800'
             : 'bg-white/90 border-red-200 text-red-800'
           }`}>
@@ -709,7 +735,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                   </p>
                   {resumeUrl && (
                     <a
-                      href={`${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}/${resumeUrl}`}
+                      href={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${resumeUrl}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs text-blue-600 hover:text-blue-800 underline truncate block max-w-[200px]"
@@ -718,24 +744,36 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                     </a>
                   )}
                 </div>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept=".pdf,.docx"
-                    onChange={handleCvUpload}
-                    disabled={uploadingCv}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <button
-                    type="button"
-                    className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${resumeUrl
-                      ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-                      : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
-                      }`}
-                    disabled={uploadingCv}
-                  >
-                    {uploadingCv ? 'Uploading...' : resumeUrl ? 'Replace' : 'Upload'}
-                  </button>
+                <div className="flex space-x-2">
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept=".pdf,.docx"
+                      onChange={handleCvUpload}
+                      disabled={uploadingCv}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <button
+                      type="button"
+                      className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${resumeUrl
+                        ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                        : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
+                        }`}
+                      disabled={uploadingCv}
+                    >
+                      {uploadingCv ? 'Uploading...' : resumeUrl ? 'Replace' : 'Upload'}
+                    </button>
+                  </div>
+                  {resumeUrl && (
+                    <button
+                      type="button"
+                      onClick={handleCvDelete}
+                      disabled={uploadingCv}
+                      className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

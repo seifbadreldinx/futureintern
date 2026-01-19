@@ -234,6 +234,13 @@ export const api = {
       return response.json();
     },
 
+    // Delete CV
+    deleteCV: async () => {
+      return apiRequest<any>('/users/delete-cv', {
+        method: 'DELETE',
+      });
+    },
+
     // Get saved internships
     getSavedInternships: async () => {
       return apiRequest<any>('/users/saved-internships');

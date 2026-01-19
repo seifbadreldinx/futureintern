@@ -174,6 +174,38 @@ def upload_cv():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@users_bp.route("/delete-cv", methods=["DELETE"])
+@jwt_required()
+@role_required('student')
+def delete_cv_route():
+    """Delete CV for student"""
+    try:
+        from app.utils.file_upload import delete_cv
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.resume_url:
+            return jsonify({'error': 'No CV to delete'}), 404
+        
+        # Delete the CV file
+        delete_cv(user.resume_url)
+        
+        # Clear the resume_url from database
+        user.resume_url = None
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'CV deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # ========== Admin APIs ==========
 
 @users_bp.route("/<int:user_id>/verify", methods=["POST"])
