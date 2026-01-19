@@ -547,6 +547,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
   const [loading, setLoading] = useState(false);
   const [uploadingCv, setUploadingCv] = useState(false);
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  // Local state for resume URL to ensure immediate UI update
+  const [resumeUrl, setResumeUrl] = useState(user?.resume_url);
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
@@ -562,6 +564,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
         location: user.location || '',
         skills: user.skills || ''
       });
+      setResumeUrl(user.resume_url);
     }
   }, [user]);
 
@@ -570,10 +573,10 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
     setLoading(true);
     try {
       await api.users.updateProfile(formData);
-      alert('Profile updated successfully!');
+      showToast('Profile updated successfully!', 'success');
       if (onUpdate) onUpdate({ ...user, ...formData });
     } catch (err) {
-      alert('Failed to update profile');
+      showToast('Failed to update profile', 'error');
       console.error(err);
     } finally {
       setLoading(false);
@@ -594,6 +597,9 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
       setUploadingCv(true);
       const res = await api.users.uploadCV(file);
       showToast('CV uploaded successfully!', 'success');
+
+      // Update local UI immediately
+      setResumeUrl(res.resume_url);
 
       // Update form data with new skills if found
       if (res.skills) {
@@ -690,16 +696,16 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Resume / CV</label>
               <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <div className={`p-3 rounded-full ${user.resume_url ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
+                <div className={`p-3 rounded-full ${resumeUrl ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-500'}`}>
                   <FileText className="w-6 h-6" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">
-                    {user.resume_url ? 'Resume Uploaded' : 'No Resume Uploaded'}
+                    {resumeUrl ? 'Resume Uploaded' : 'No Resume Uploaded'}
                   </p>
-                  {user.resume_url && (
+                  {resumeUrl && (
                     <a
-                      href={`${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}/${user.resume_url}`}
+                      href={`${(import.meta.env.VITE_API_BASE_URL || '').replace('/api', '')}/${resumeUrl}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-xs text-blue-600 hover:text-blue-800 underline truncate block max-w-[200px]"
@@ -718,13 +724,13 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                   />
                   <button
                     type="button"
-                    className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${user.resume_url
-                      ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-                      : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
+                    className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${resumeUrl
+                        ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                        : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
                       }`}
                     disabled={uploadingCv}
                   >
-                    {uploadingCv ? 'Uploading...' : user.resume_url ? 'Replace' : 'Upload'}
+                    {uploadingCv ? 'Uploading...' : resumeUrl ? 'Replace' : 'Upload'}
                   </button>
                 </div>
               </div>
