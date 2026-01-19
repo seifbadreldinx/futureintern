@@ -500,7 +500,7 @@ export function Dashboard() {
                                         <img
                                           src={internship.company.profile_image.startsWith('http')
                                             ? internship.company.profile_image
-                                            : `${(import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '')}${internship.company.profile_image}`}
+                                            : internship.company.profile_image}
                                           alt={companyName}
                                           className="w-full h-full object-contain p-2"
                                           onError={(e) => {
@@ -748,7 +748,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                 {user?.profile_image && (
                   <div className="mt-2 w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <img
-                      src={user.profile_image.startsWith('http') ? user.profile_image : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
+                      src={user.profile_image.startsWith('http') ? user.profile_image : user.profile_image}
                       alt="Company Logo"
                       className="w-full h-full object-contain p-1"
                       onError={(e) => {
