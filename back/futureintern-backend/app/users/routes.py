@@ -206,6 +206,82 @@ def delete_cv_route():
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+# ========== Logo Upload for Companies ==========
+
+@users_bp.route("/upload-logo", methods=["POST"])
+@jwt_required()
+@role_required('company')
+def upload_logo():
+    """Upload logo for company"""
+    try:
+        from app.utils.file_upload import save_logo, delete_logo
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if 'logo' not in request.files:
+            return jsonify({'error': 'No logo file provided'}), 400
+        
+        file = request.files['logo']
+        
+        # Save new logo
+        logo_path, error = save_logo(file, user_id)
+        
+        if error:
+            return jsonify({'error': error}), 400
+        
+        # Delete old logo if exists
+        if user.profile_image:
+            delete_logo(user.profile_image)
+        
+        # Update user's profile image URL
+        user.profile_image = logo_path
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Logo uploaded successfully',
+            'profile_image': user.profile_image
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@users_bp.route("/delete-logo", methods=["DELETE"])
+@jwt_required()
+@role_required('company')
+def delete_logo_route():
+    """Delete logo for company"""
+    try:
+        from app.utils.file_upload import delete_logo
+        
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.profile_image:
+            return jsonify({'error': 'No logo to delete'}), 404
+        
+        # Delete the logo file
+        delete_logo(user.profile_image)
+        
+        # Clear the profile_image from database
+        user.profile_image = None
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Logo deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 # ========== Admin APIs ==========
 
 @users_bp.route("/<int:user_id>/verify", methods=["POST"])

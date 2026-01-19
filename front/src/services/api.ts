@@ -234,6 +234,35 @@ export const api = {
       return response.json();
     },
 
+    // Upload Logo (for companies)
+    uploadLogo: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/users/upload-logo`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(error.error || error.message || 'Upload failed');
+      }
+
+      return response.json();
+    },
+
+    // Delete Logo (for companies)
+    deleteLogo: async () => {
+      return apiRequest<any>('/users/delete-logo', {
+        method: 'DELETE',
+      });
+    },
+
     // Delete CV
     deleteCV: async () => {
       return apiRequest<any>('/users/delete-cv', {

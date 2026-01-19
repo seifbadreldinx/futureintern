@@ -110,8 +110,20 @@ export function Dashboard() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
               <div className="flex items-center space-x-4 mb-6 pb-6 border-b border-gray-200">
-                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
+                  {user?.profile_image ? (
+                    <img
+                      src={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
+                      alt={user?.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.parentElement!.innerHTML = '<svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+                      }}
+                    />
+                  ) : (
+                    <User className="w-8 h-8 text-white" />
+                  )}
                 </div>
                 <div>
                   <p className="font-semibold text-gray-900">{user?.name || 'Loading...'}</p>
@@ -655,8 +667,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
       {/* Toast Notification */}
       {toast && (
         <div className={`fixed top-4 left-1/2 -translate-x-1/2 flex items-center p-4 rounded-xl shadow-2xl z-[9999] animate-in slide-in-from-top-4 duration-300 border backdrop-blur-sm ${toast.type === 'success'
-            ? 'bg-white/90 border-green-200 text-green-800'
-            : 'bg-white/90 border-red-200 text-red-800'
+          ? 'bg-white/90 border-green-200 text-green-800'
+          : 'bg-white/90 border-red-200 text-red-800'
           }`}>
           <div className={`p-2 rounded-full mr-3 ${toast.type === 'success' ? 'bg-green-100' : 'bg-red-100'}`}>
             {toast.type === 'success' ? <CheckCircle className="w-5 h-5 text-green-600" /> : <AlertCircle className="w-5 h-5 text-red-600" />}
@@ -710,6 +722,103 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
             onChange={e => setFormData({ ...formData, bio: e.target.value })}
           />
         </div>
+        {user?.role === 'company' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+            <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <div className={`p-3 rounded-full ${user?.profile_image ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'}`}>
+                <User className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  {user?.profile_image ? 'Logo Uploaded' : 'No Logo Uploaded'}
+                </p>
+                {user?.profile_image && (
+                  <div className="mt-2 w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
+                    <img
+                      src={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
+                      alt="Company Logo"
+                      className="w-full h-full object-contain p-1"
+                      onError={(e) => {
+                        e.currentTarget.src = `https://ui-avatars.com/api/?name=${user.company_name || user.name}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex space-x-2">
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.svg,.webp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      if (file.size > 2 * 1024 * 1024) {
+                        showToast("File size must be less than 2MB", 'error');
+                        return;
+                      }
+
+                      try {
+                        setUploadingCv(true);
+                        const res = await api.users.uploadLogo(file);
+                        showToast('Logo uploaded successfully!', 'success');
+                        if (onUpdate) {
+                          onUpdate({ ...user, profile_image: res.profile_image });
+                        }
+                      } catch (err: any) {
+                        showToast(err.message || 'Failed to upload logo', 'error');
+                      } finally {
+                        setUploadingCv(false);
+                        e.target.value = '';
+                      }
+                    }}
+                    disabled={uploadingCv}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    className={`px-4 py-2 text-sm font-medium rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${user?.profile_image
+                      ? 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                      : 'border-transparent text-white bg-blue-600 hover:bg-blue-700'
+                      }`}
+                    disabled={uploadingCv}
+                  >
+                    {uploadingCv ? 'Uploading...' : user?.profile_image ? 'Replace' : 'Upload'}
+                  </button>
+                </div>
+                {user?.profile_image && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!confirm('Are you sure you want to delete your logo? This action cannot be undone.')) {
+                        return;
+                      }
+
+                      try {
+                        setUploadingCv(true);
+                        await api.users.deleteLogo();
+                        showToast('Logo deleted successfully!', 'success');
+                        if (onUpdate) {
+                          onUpdate({ ...user, profile_image: null });
+                        }
+                      } catch (err: any) {
+                        showToast(err.message || 'Failed to delete logo', 'error');
+                      } finally {
+                        setUploadingCv(false);
+                      }
+                    }}
+                    disabled={uploadingCv}
+                    className="px-4 py-2 text-sm font-medium rounded-lg border border-red-300 text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
         {user?.role === 'student' && (
           <>
             <div>
