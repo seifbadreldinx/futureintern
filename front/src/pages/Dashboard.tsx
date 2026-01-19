@@ -500,7 +500,7 @@ export function Dashboard() {
                                         <img
                                           src={internship.company.profile_image.startsWith('http')
                                             ? internship.company.profile_image
-                                            : `${(import.meta.env.VITE_API_BASE_URL || '').replace(/\/api\/?$/, '')}${internship.company.profile_image}`}
+                                            : `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${internship.company.profile_image}`}
                                           alt={companyName}
                                           className="w-full h-full object-contain p-2"
                                           onError={(e) => {
