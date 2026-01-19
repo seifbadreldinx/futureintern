@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, Filter, X } from 'lucide-react';
 import { api } from '../services/api';
+import { SaveButton } from '../components/SaveButton';
 
 export function BrowseInternships() {
   const [searchParams] = useSearchParams();
@@ -197,47 +198,48 @@ export function BrowseInternships() {
             {filteredInternships.map((internship) => {
               const companyName = internship.company?.name || internship.company || internship.company_name || 'Company';
               return (
-                <Link
-                  key={internship.id}
-                  to={`/internship/${internship.id}`}
-                  className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 transition-all"
-                >
-                  <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
-                    {internship.company?.profile_image ? (
-                      <img
-                        src={internship.company.profile_image}
-                        alt={companyName}
-                        className="w-full h-full object-contain p-1"
-                        onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
-                        }}
-                      />
-                    ) : (
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
-                        alt={companyName}
-                        className="w-full h-full object-contain p-1"
-                      />
-                    )}
+                <div key={internship.id} className="relative bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg hover:border-blue-300 transition-all">
+                  <div className="absolute top-4 right-4 z-10">
+                    <SaveButton internshipId={internship.id} />
                   </div>
+                  <Link to={`/internship/${internship.id}`} className="block">
+                    <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+                      {internship.company?.profile_image ? (
+                        <img
+                          src={internship.company.profile_image}
+                          alt={companyName}
+                          className="w-full h-full object-contain p-1"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`;
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${companyName}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
+                          alt={companyName}
+                          className="w-full h-full object-contain p-1"
+                        />
+                      )}
+                    </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    {internship.title}
-                  </h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {internship.title}
+                    </h3>
 
-                  <div className="flex items-center text-gray-600 mb-3">
-                    <span className="font-medium">{companyName}</span>
-                  </div>
+                    <div className="flex items-center text-gray-600 mb-3">
+                      <span className="font-medium">{companyName}</span>
+                    </div>
 
-                  <div className="flex items-center text-gray-500 text-sm mb-4">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    {internship.location}
-                  </div>
+                    <div className="flex items-center text-gray-500 text-sm mb-4">
+                      <MapPin className="w-4 h-4 mr-1" />
+                      {internship.location}
+                    </div>
 
-                  <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type || '')}`}>
-                    {internship.type || 'N/A'}
-                  </span>
-                </Link>
+                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type || '')}`}>
+                      {internship.type || 'N/A'}
+                    </span>
+                  </Link>
+                </div>
               );
             })}
           </div>

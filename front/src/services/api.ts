@@ -231,6 +231,30 @@ export const api = {
 
       return response.json();
     },
+
+    // Get saved internships
+    getSavedInternships: async () => {
+      return apiRequest<any>('/users/saved-internships');
+    },
+
+    // Save an internship
+    saveInternship: async (internshipId: number) => {
+      return apiRequest<any>(`/users/saved-internships/${internshipId}`, {
+        method: 'POST',
+      });
+    },
+
+    // Unsave an internship
+    unsaveInternship: async (internshipId: number) => {
+      return apiRequest<any>(`/users/saved-internships/${internshipId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Check if internship is saved
+    checkIfSaved: async (internshipId: number) => {
+      return apiRequest<any>(`/users/saved-internships/${internshipId}/check`);
+    },
   },
 
   // ========== Internships ==========
