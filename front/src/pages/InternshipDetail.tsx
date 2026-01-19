@@ -149,10 +149,17 @@ export function InternshipDetail() {
           </div>
 
           <div className="border-t border-gray-200 pt-6">
-            <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
-              <Send className="w-5 h-5" />
-              Apply Now
-            </button>
+            {user?.role !== 'company' && (
+              <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+                <Send className="w-5 h-5" />
+                Apply Now
+              </button>
+            )}
+            {user?.role === 'company' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+                Companies cannot apply to internships. You can only post internships for students to apply to.
+              </div>
+            )}
           </div>
         </div>
 

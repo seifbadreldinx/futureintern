@@ -13,6 +13,7 @@ export function Dashboard() {
   const [savedInternships, setSavedInternships] = useState<any[]>([]); // Saved internships
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [editingInternship, setEditingInternship] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -162,16 +163,18 @@ export function Dashboard() {
                   <FileText className="w-5 h-5" />
                   <span>Applications</span>
                 </button>
-                <button
-                  onClick={() => setActiveTab('saved')}
-                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'saved'
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  <BookOpen className="w-5 h-5" />
-                  <span>Saved</span>
-                </button>
+                {user?.role !== 'company' && (
+                  <button
+                    onClick={() => setActiveTab('saved')}
+                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'saved'
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                  >
+                    <BookOpen className="w-5 h-5" />
+                    <span>Saved</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'profile'
@@ -249,15 +252,21 @@ export function Dashboard() {
 
                     {activeTab === ('post-internship' as any) && (
                       <div className="bg-white rounded-lg shadow-lg p-8">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-6">Post a New Internship</h2>
-                        <PostInternshipForm onSuccess={() => setActiveTab('my-internships' as any)} />
+                        <h2 className="text-2xl font-bold text-gray-900 mb-6">{editingInternship ? 'Edit Internship' : 'Post a New Internship'}</h2>
+                        <PostInternshipForm
+                          internship={editingInternship}
+                          onSuccess={() => {
+                            setEditingInternship(null);
+                            setActiveTab('my-internships' as any);
+                          }}
+                        />
                       </div>
                     )}
 
 
                     {activeTab === ('my-internships' as any) && (
-                      <MyInternshipsList onEdit={() => {
-                        // Switch to post internship tab for editing
+                      <MyInternshipsList onEdit={(internship) => {
+                        setEditingInternship(internship);
                         setActiveTab('post-internship' as any);
                       }} />
                     )}
@@ -1023,27 +1032,46 @@ function MyInternshipsList({ onEdit }: { onEdit: (internship: any) => void }) {
 }
 
 // Helper Component for Post Internship Form
-function PostInternshipForm({ onSuccess }: { onSuccess: () => void }) {
+function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuccess: () => void }) {
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    requirements: '',
-    location: '',
-    duration: '',
-    stipend: '',
-    major: 'General'
+    title: internship?.title || '',
+    description: internship?.description || '',
+    requirements: internship?.requirements || '',
+    location: internship?.location || '',
+    duration: internship?.duration || '',
+    stipend: internship?.stipend || '',
+    major: internship?.major || 'General'
   });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (internship) {
+      setFormData({
+        title: internship.title || '',
+        description: internship.description || '',
+        requirements: internship.requirements || '',
+        location: internship.location || '',
+        duration: internship.duration || '',
+        stipend: internship.stipend || '',
+        major: internship.major || 'General'
+      });
+    }
+  }, [internship]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.internships.create(formData);
-      alert('Internship posted successfully!');
+      if (internship?.id) {
+        await api.internships.update(internship.id, formData);
+        alert('Internship updated successfully!');
+      } else {
+        await api.internships.create(formData);
+        alert('Internship posted successfully!');
+      }
       if (onSuccess) onSuccess();
     } catch (err) {
-      alert('Failed to post internship');
+      alert(internship?.id ? 'Failed to update internship' : 'Failed to post internship');
       console.error(err);
     } finally {
       setLoading(false);

@@ -119,7 +119,7 @@ def create_internship():
 def update_internship(id):
     """Update internship (Company owner only)"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())  # Convert to int for comparison
         internship = Internship.query.get(id)
         
         if not internship:
@@ -179,7 +179,7 @@ def update_internship(id):
 def delete_internship(id):
     """Delete internship (Company owner only)"""
     try:
-        user_id = get_jwt_identity()
+        user_id = int(get_jwt_identity())  # Convert to int for comparison
         internship = Internship.query.get(id)
         
         if not internship:
