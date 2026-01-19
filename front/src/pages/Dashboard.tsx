@@ -654,7 +654,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-24 left-1/2 -translate-x-1/2 flex items-center p-4 rounded-xl shadow-2xl z-[100] animate-in slide-in-from-top-4 duration-300 border backdrop-blur-sm ${toast.type === 'success'
+        <div className={`fixed top-4 left-1/2 -translate-x-1/2 flex items-center p-4 rounded-xl shadow-2xl z-[9999] animate-in slide-in-from-top-4 duration-300 border backdrop-blur-sm ${toast.type === 'success'
             ? 'bg-white/90 border-green-200 text-green-800'
             : 'bg-white/90 border-red-200 text-red-800'
           }`}>
