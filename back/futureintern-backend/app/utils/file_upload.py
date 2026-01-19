@@ -2,7 +2,7 @@
 File upload utilities for CV storage
 """
 import os
-import magic  # python-magic for MIME type validation
+# import magic  # python-magic disabled to prevent Linux crash on Railway
 from werkzeug.utils import secure_filename
 from flask import current_app
 
@@ -33,24 +33,9 @@ def allowed_file(filename):
 
 def validate_file_mime_type(file, allowed_mime_types):
     """
-    Validate file MIME type using python-magic
-    This prevents users from uploading malicious files with fake extensions
+    Validate file MIME type - Disabled to avoid dependency issues on Railway
     """
-    try:
-        # Read first 2048 bytes for MIME detection
-        file.seek(0)
-        header = file.read(2048)
-        file.seek(0)
-        
-        # Detect MIME type
-        mime = magic.Magic(mime=True)
-        detected_mime = mime.from_buffer(header)
-        
-        return detected_mime in allowed_mime_types
-    except:
-        # If magic fails, fall back to extension check only
-        # In production, you might want to reject the file instead
-        return True
+    return True
 
 def validate_file_size(file, max_size=MAX_FILE_SIZE):
     """Check if file size is within limit"""
@@ -211,37 +196,6 @@ def save_logo(file, user_id):
     if not abs_filepath.startswith(abs_upload_folder):
         return None, "Invalid file path"
     
-    file.save(filepath)
-    
-    # Return relative path for storage in database
-    return f"/uploads/logos/{unique_filename}", None
-        str: Relative path to saved file or None if validation fails
-    """
-    if not file or file.filename == '':
-        return None, "No file selected"
-    
-    if not allowed_logo(file.filename):
-        return None, "Invalid file type. Only PNG, JPG, JPEG, SVG, and WEBP are allowed"
-    
-    # Check logo file size
-    file.seek(0, os.SEEK_END)
-    size = file.tell()
-    file.seek(0)
-    if size > MAX_LOGO_SIZE:
-        return None, f"File too large. Maximum size is {MAX_LOGO_SIZE / (1024*1024)}MB"
-    
-    # Create uploads directory if it doesn't exist
-    upload_folder = os.path.join(current_app.root_path, '..', 'uploads', 'logos')
-    os.makedirs(upload_folder, exist_ok=True)
-    
-    # Generate secure filename
-    filename = secure_filename(file.filename)
-    # Add user_id to filename to avoid conflicts
-    name, ext = os.path.splitext(filename)
-    unique_filename = f"logo_{user_id}_{name}{ext}"
-    
-    # Save file
-    filepath = os.path.join(upload_folder, unique_filename)
     file.save(filepath)
     
     # Return relative path for storage in database
