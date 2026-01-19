@@ -8,6 +8,7 @@ export function InternshipDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [internship, setInternship] = useState<any | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -19,6 +20,15 @@ export function InternshipDetail() {
         const data = res?.internship || res;
         if (data) {
           setInternship(data);
+
+          if (isAuthenticated()) {
+            try {
+              const userData = await api.auth.getCurrentUser();
+              setUser(userData.user || userData);
+            } catch (e) {
+              console.error("Failed to fetch user:", e);
+            }
+          }
         }
       } catch (err) {
         console.error('Failed to fetch internship from API', err);
@@ -70,6 +80,13 @@ export function InternshipDetail() {
     if (!isAuthenticated()) {
       // Redirect to login if not authenticated
       navigate('/login');
+      return;
+    }
+
+    if (user && !user.resume_url) {
+      if (window.confirm("You must upload a CV to your profile before applying. Would you like to go to your dashboard to upload one now?")) {
+        navigate('/dashboard');
+      }
       return;
     }
 
