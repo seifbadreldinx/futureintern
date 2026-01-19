@@ -42,7 +42,7 @@ class Config:
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     
     # Session security
-    SESSION_COOKIE_SECURE = True  # Only send cookies over HTTPS
+    SESSION_COOKIE_SECURE = False  # Only send cookies over HTTPS (False for localhost)
     SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
     SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
     
