@@ -203,19 +203,23 @@ export function BrowseInternships() {
                     <SaveButton internshipId={internship.id} />
                   </div>
                   <Link to={`/internship/${internship.id}`} className="block">
-                    <div className="w-14 h-14 bg-blue-50 rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
-                      <img
-                        src={internship.company?.profile_image && internship.company.profile_image.startsWith('http')
-                          ? internship.company.profile_image
-                          : internship.company?.profile_image
-                          ? `${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${internship.company.profile_image}`
-                          : `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128&bold=true`}
-                        alt={companyName}
-                        className="w-full h-full object-contain p-2"
-                        onError={(e) => {
-                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128&bold=true`;
-                        }}
-                      />
+                    <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+                      {internship.company?.profile_image ? (
+                        <img
+                          src={internship.company.profile_image}
+                          alt={companyName}
+                          className="w-full h-full object-contain p-2"
+                          onError={(e) => {
+                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128`;
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={`https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128`}
+                          alt={companyName}
+                          className="w-full h-full object-contain p-2"
+                        />
+                      )}
                     </div>
 
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
