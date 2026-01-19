@@ -41,8 +41,10 @@ const apiRequest = async <T>(
 
   // Perform request with robust error handling for network/CORS issues
   const url = `${API_BASE_URL}${endpoint}`;
+  let response;
+
   try {
-    const response = await fetch(url, {
+    response = await fetch(url, {
       ...options,
       headers: {
         Accept: 'application/json',
@@ -50,27 +52,6 @@ const apiRequest = async <T>(
       },
       mode: 'cors',
     });
-
-    // Handle non-JSON responses
-    const contentType = response.headers.get('content-type');
-    if (!contentType?.includes('application/json')) {
-      if (!response.ok) {
-        console.error('Request failed (non-JSON response)', { url, status: response.status });
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return {} as T;
-    }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      // Don't auto-logout here - let components handle 401 errors themselves
-      // Components can check the error and decide whether to logout or show an error message
-      console.error('API responded with error', { url, status: response.status, body: data });
-      throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
-    }
-
-    return data;
   } catch (err) {
     // Network errors (e.g., server down, CORS blocked) end up here
     console.error('Network or fetch error', { url, error: err });
@@ -78,6 +59,27 @@ const apiRequest = async <T>(
       err instanceof Error && err.message ? `NetworkError: ${err.message}` : 'NetworkError: Failed to fetch'
     );
   }
+
+  // Handle non-JSON responses
+  const contentType = response.headers.get('content-type');
+  if (!contentType?.includes('application/json')) {
+    if (!response.ok) {
+      console.error('Request failed (non-JSON response)', { url, status: response.status });
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return {} as T;
+  }
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    // Don't auto-logout here - let components handle 401 errors themselves
+    // Components can check the error and decide whether to logout or show an error message
+    console.error('API responded with error', { url, status: response.status, body: data });
+    throw new Error(data.error || data.message || `HTTP error! status: ${response.status}`);
+  }
+
+  return data;
 };
 
 // API Service Object
