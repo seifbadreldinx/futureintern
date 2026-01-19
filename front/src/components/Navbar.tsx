@@ -128,16 +128,16 @@ export function Navbar() {
 
         {/* Mobile Menu */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          className={`md:hidden overflow-y-auto transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
             }`}
         >
-          <div className="py-4 space-y-2 border-t border-gray-200 mt-2">
+          <div className="py-3 space-y-1.5 border-t border-gray-200 mt-2">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 to={link.to}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-3 rounded-lg text-base font-medium transition-all ${location.pathname === link.to
+                className={`block px-4 py-2.5 rounded-lg text-base font-medium transition-all ${location.pathname === link.to
                   ? 'text-gray-900 bg-gray-100'
                   : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
                   }`}
@@ -151,14 +151,14 @@ export function Navbar() {
                   <Link
                     to="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-50"
+                    className="flex items-center space-x-2 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
                     <User className="w-5 h-5" />
                     <span>Dashboard</span>
                   </Link>
                   <button
                     onClick={() => { doLogout(); setMobileMenuOpen(false); setIsAuth(false); }}
-                    className="block w-full text-left px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-50"
+                    className="block w-full text-left px-4 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50"
                   >
                     Log Out
                   </button>
@@ -168,21 +168,21 @@ export function Navbar() {
                   <Link
                     to="/register-company"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-center text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-all"
+                    className="block px-4 py-2.5 text-center text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-all"
                   >
                     For Companies
                   </Link>
                   <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-center text-gray-700 border-2 border-gray-700 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 font-medium transition-all"
+                    className="block px-4 py-2.5 text-center text-gray-700 border-2 border-gray-700 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 font-medium transition-all"
                   >
                     Log In
                   </Link>
                   <Link
                     to="/signup"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-center bg-gray-900 text-white rounded-lg font-medium transition-all hover:bg-gray-800"
+                    className="block px-4 py-2.5 text-center bg-gray-900 text-white rounded-lg font-medium transition-all hover:bg-gray-800"
                   >
                     Get Intern
                   </Link>
