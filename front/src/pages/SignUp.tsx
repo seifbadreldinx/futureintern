@@ -209,17 +209,8 @@ export function SignUp() {
   };
 
   const validateStep3 = (): boolean => {
-    const newErrors: StepErrors = {};
-
-    if (!formData.cv) {
-      newErrors.cv = 'Please upload your CV';
-    }
-
-    setErrors(newErrors);
-    if (newErrors.cv) {
-      setCvError(newErrors.cv);
-    }
-    return Object.keys(newErrors).length === 0;
+    // CV is now optional during registration
+    return true;
   };
 
   const handleNext = (e?: React.MouseEvent) => {
@@ -358,10 +349,10 @@ export function SignUp() {
                 <div className="flex flex-col items-center flex-1">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all duration-300 ${step < currentStep
-                        ? 'bg-gray-900 text-white'
-                        : step === currentStep
-                          ? 'bg-gray-900 text-white ring-4 ring-gray-900/20'
-                          : 'bg-gray-200 text-gray-500'
+                      ? 'bg-gray-900 text-white'
+                      : step === currentStep
+                        ? 'bg-gray-900 text-white ring-4 ring-gray-900/20'
+                        : 'bg-gray-200 text-gray-500'
                       }`}
                   >
                     {step < currentStep ? (
@@ -527,8 +518,8 @@ export function SignUp() {
                       type="button"
                       onClick={() => handleInterestToggle(interest)}
                       className={`px-4 py-2.5 rounded-lg border transition-all duration-200 text-sm font-medium ${formData.interests.includes(interest)
-                          ? 'bg-gray-900 text-white border-gray-900 shadow-md transform scale-105'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900 hover:bg-gray-50'
+                        ? 'bg-gray-900 text-white border-gray-900 shadow-md transform scale-105'
+                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-900 hover:bg-gray-50'
                         }`}
                     >
                       {interest}
@@ -622,10 +613,13 @@ export function SignUp() {
               <div>
                 <label htmlFor="cv" className="block text-sm font-semibold text-gray-700 mb-2">
                   <Upload className="inline w-4 h-4 mr-1" />
-                  Upload CV <span className="text-red-500">*</span>
+                  Upload CV <span className="text-gray-400 font-normal">(Optional)</span>
                 </label>
                 <p className="text-sm text-gray-600 mb-4">
                   Your CV helps our AI matching system connect you with relevant internship opportunities.
+                  <span className="block mt-1 text-amber-600 font-medium text-xs">
+                    Note: You must upload a CV later to apply for internships.
+                  </span>
                 </p>
                 <div className="space-y-2">
                   {!formData.cv ? (
@@ -635,7 +629,6 @@ export function SignUp() {
                         name="cv"
                         type="file"
                         accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        required
                         onChange={handleCvChange}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
