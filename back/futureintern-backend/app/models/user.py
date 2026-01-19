@@ -62,10 +62,9 @@ class User(db.Model):
                 'skills': self.skills,
                 'interests': self.interests,
                 'bio': self.bio,
-                'interests': self.interests,
-                'bio': self.bio,
                 'phone': self.phone,
-                'location': self.location
+                'location': self.location,
+                'resume_url': self.resume_url
             })
         elif self.role == 'company':
             user_dict.update({
