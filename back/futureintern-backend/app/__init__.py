@@ -75,7 +75,7 @@ def create_app():
     # Allow frontend origin from environment variable or default to wildcard for development
     cors_origins = app.config.get('CORS_ORIGINS', ['*'])
     CORS(app, resources={r"/api/*": {"origins": cors_origins}},
-         supports_credentials=True,
+         supports_credentials=False,
          allow_headers=["Content-Type", "Authorization"],
          expose_headers=["Content-Type", "Authorization"])
     
