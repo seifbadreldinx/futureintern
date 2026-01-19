@@ -401,26 +401,79 @@ export const api = {
 
   // ========== Admin ==========
   admin: {
-    // Get all users
-    getAllUsers: async () => {
-      return apiRequest<any>('/admin/users');
+    // Ping admin router
+    ping: async () => {
+      return apiRequest<any>('/admin/ping');
     },
 
-    // Get all internships
-    getAllInternships: async () => {
-      return apiRequest<any>('/admin/internships');
+    // Get statistics
+    getStats: async () => {
+      return apiRequest<any>('/admin/stats');
     },
 
-    // Get all applications
-    getAllApplications: async () => {
-      return apiRequest<any>('/admin/applications');
+    // User management
+    listUsers: async (skip: number = 0, limit: number = 100) => {
+      return apiRequest<any>(`/admin/users?skip=${skip}&limit=${limit}`);
     },
 
-    // Delete user
+    createUser: async (data: {
+      full_name: string;
+      email: string;
+      password: string;
+      role: string;
+      company_name?: string;
+      industry?: string;
+    }) => {
+      return apiRequest<any>('/admin/users', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+
     deleteUser: async (userId: number) => {
       return apiRequest<any>(`/admin/users/${userId}`, {
         method: 'DELETE',
       });
+    },
+
+    // Internship management
+    listInternships: async () => {
+      return apiRequest<any>('/admin/internships');
+    },
+
+    deleteInternship: async (internshipId: number) => {
+      return apiRequest<any>(`/admin/internships/${internshipId}`, {
+        method: 'DELETE',
+      });
+    },
+
+    // Application management
+    listApplications: async () => {
+      return apiRequest<any>('/admin/applications');
+    },
+
+    // Company management
+    listCompanies: async () => {
+      return apiRequest<any>('/admin/companies');
+    },
+
+    verifyCompany: async (companyId: number) => {
+      return apiRequest<any>(`/admin/companies/${companyId}/verify`, {
+        method: 'POST',
+      });
+    },
+
+    // Legacy endpoints (keeping for backwards compatibility)
+    getAllUsers: async () => {
+      return apiRequest<any>('/admin/users');
+    },
+
+    getAllInternships: async () => {
+      return apiRequest<any>('/admin/internships');
+    },
+
+    getAllApplications: async () => {
+      return apiRequest<any>('/admin/applications');
     },
   },
 
