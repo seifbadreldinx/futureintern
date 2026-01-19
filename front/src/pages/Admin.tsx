@@ -115,6 +115,15 @@ export function Admin() {
     const fetchAdminData = async () => {
       setIsLoading(true);
       try {
+        // Check if user is authorized (admin role)
+        const currentUser = await api.auth.getCurrentUser();
+        const userData = currentUser?.user || currentUser;
+        
+        if (userData?.role !== 'admin') {
+          navigate('/unauthorized');
+          return;
+        }
+
         const [stats, usersList, internsList, appsList] = await Promise.all([
           api.admin.getStats(),
           api.admin.listUsers(),
@@ -127,12 +136,14 @@ export function Admin() {
         setApplications(appsList);
       } catch (error) {
         console.error('Failed to fetch admin data:', error);
+        // If error is 401/403, redirect to unauthorized
+        navigate('/unauthorized');
       } finally {
         setIsLoading(false);
       }
     };
     fetchAdminData();
-  }, []);
+  }, [navigate]);
 
   const stats: StatCard[] = [
     {

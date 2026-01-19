@@ -11,6 +11,7 @@ import { BrowseInternships } from './pages/BrowseInternships';
 import { InternshipDetail } from './pages/InternshipDetail';
 import { Dashboard } from './pages/Dashboard';
 import { Admin } from './pages/Admin';
+import { Unauthorized } from './pages/Unauthorized';
 import { CompanyRegister } from './pages/CompanyRegister';
 import { Companies } from './pages/Companies';
 import { About } from './pages/About';
@@ -44,6 +45,7 @@ function AppContent() {
           <Route path="/internship/:id" element={<InternshipDetail />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="/companies" element={<Companies />} />
           <Route path="/register-company" element={<CompanyRegister />} />
           <Route path="/about" element={<About />} />
