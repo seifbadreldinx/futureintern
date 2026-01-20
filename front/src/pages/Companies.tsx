@@ -94,30 +94,33 @@ export function Companies() {
                 className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 relative shadow-sm">
                     {company.profile_image ? (
                       <img
                         src={(() => {
                           const logoUrl = company.profile_image;
+                          // Handle different URL formats
                           if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                            const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                            if (pathMatch) {
-                              return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}/uploads/logos/${pathMatch[1]}`;
-                            }
                             return logoUrl;
+                          } else if (logoUrl.startsWith('/uploads/')) {
+                            return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
                           }
-                          return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
+                          return logoUrl;
                         })()}
-                        alt={company.company_name || company.name}
-                        onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(company.company_name || company.name || 'C')}&background=eff6ff&color=2563eb&size=256`}
-                        className="w-full h-full object-contain p-2"
+                        alt={`${company.company_name || company.name} logo`}
+                        onError={(e) => {
+                          // Fallback to avatar with company initials
+                          const currentTarget = e.currentTarget;
+                          currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(company.company_name || company.name || 'C')}&background=random&bold=true&size=256`;
+                        }}
+                        className="w-full h-full object-cover"
                       />
                     ) : (
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(company.company_name || company.name || 'Company')}&background=eff6ff&color=2563eb&size=256`}
-                        alt="Company Logo"
-                        className="w-full h-full object-contain p-2"
-                      />
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
+                        <span className="text-2xl font-bold text-blue-600">
+                          {(company.company_name || company.name || 'C').charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
