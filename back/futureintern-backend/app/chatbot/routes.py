@@ -1,9 +1,30 @@
 """
 Chatbot API - Task 5.3
-Simple FAQ chatbot for answering common questions
+Enhanced FAQ chatbot with NLTK Natural Language Processing
+Uses NLTK for text preprocessing: tokenization, stemming, stopword removal
 """
 from flask import Blueprint, jsonify, request
 from datetime import datetime
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
+import re
+
+# Download required NLTK data (run once)
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', quiet=True)
+
+try:
+    nltk.data.find('corpora/stopwords')
+except LookupError:
+    nltk.download('stopwords', quiet=True)
+
+# Initialize NLTK components
+stemmer = PorterStemmer()
+stop_words = set(stopwords.words('english'))
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
@@ -47,17 +68,97 @@ FAQ_DATABASE = {
     }
 }
 
+def preprocess_text_with_nltk(text):
+    """
+    Enhanced NLP text preprocessing using NLTK
+    
+    Steps:
+    1. Tokenization - Split text into words
+    2. Lowercasing - Convert to lowercase
+    3. Remove stopwords - Remove common words (the, is, at, etc.)
+    4. Stemming - Reduce words to root form (running -> run)
+    
+    Returns: List of processed tokens
+    """
+    # Convert to lowercase
+    text = text.lower()
+    
+    # Remove special characters but keep letters and numbers
+    text = re.sub(r'[^a-z0-9\s]', '', text)
+    
+    # Tokenize using NLTK
+    tokens = word_tokenize(text)
+    
+    # Remove stopwords and apply stemming
+    processed_tokens = [
+        stemmer.stem(token) 
+        for token in tokens 
+        if token not in stop_words and len(token) > 2
+    ]
+    
+    return processed_tokens
+
+def calculate_keyword_similarity(user_tokens, keyword_tokens):
+    """
+    Calculate similarity score between user message and FAQ keywords
+    Uses token overlap and stemming for fuzzy matching
+    """
+    if not user_tokens or not keyword_tokens:
+        return 0.0
+    
+    # Count matching tokens
+    matches = sum(1 for token in user_tokens if token in keyword_tokens)
+    
+    # Calculate similarity score (Jaccard similarity)
+    total_unique = len(set(user_tokens) | set(keyword_tokens))
+    similarity = matches / total_unique if total_unique > 0 else 0.0
+    
+    return similarity
+
 def find_best_match(message):
-    """Find the best matching FAQ based on keywords"""
-    message_lower = message.lower()
+    """
+    Find the best matching FAQ using NLTK-enhanced text processing
+     using NLTK-enhanced matching
+        answer, category, confidence = find_best_match(user_message)
+        
+        if answer:
+            return jsonify({
+                'response': answer,
+                'category': category,
+                'confidence': round(confidence * 100, 1),  # Convert to percentage
+                'nlp_used': True
+    # Preprocess user message with NLTK
+    user_tokens = preprocess_text_with_nltk(message)
+    
+    best_match = None
+    best_category = None
+    best_score = 0.0
     
     # Check each FAQ category
     for category, faq in FAQ_DATABASE.items():
+        # Preprocess all keywords for this category
+        category_tokens = []
         for keyword in faq['keywords']:
-            if keyword in message_lower:
-                return faq['answer'], category
+            keyword_tokens = preprocess_text_with_nltk(keyword)
+            category_tokens.extend(keyword_tokens)
+        
+        # Remove duplicates
+        category_tokens = list(set(category_tokens))
+        
+        # Calculate similarity score
+        similarity = calculate_keyword_similarity(user_tokens, category_tokens)
+        
+        # Update best match if this score is higher
+        if similarity > best_score:
+            best_score = similarity
+            best_match = faq['answer']
+            best_category = category
     
-    return None, None
+    # Return match only if similarity is above threshold (20%)
+    if best_score >= 0.2:
+        return best_match, best_category, best_score
+    
+    return None, None, 0.0
 
 @chatbot_bp.route("/")
 def index():
