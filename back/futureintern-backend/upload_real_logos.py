@@ -21,6 +21,10 @@ logo_mapping = {
     "skillinfytech.jpg": "SkillInfyTech",
     "xefort.jpg": "XEFORT SOLUTIONS",
     "geidea.jpg": "Geidea",
+    "pwc.jpg": "PwC",
+    "paymob.jpg": "Paymob",
+    "cultiv_bureau.jpg": "Cultiv Bureau",
+    "breadfast.jpg": "Breadfast",
 }
 
 print("=" * 60)
