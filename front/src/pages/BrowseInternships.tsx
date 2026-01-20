@@ -208,19 +208,21 @@ export function BrowseInternships() {
                         <img
                           src={(() => {
                             const logoUrl = internship.company.profile_image;
+                            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+
                             // If it's already a full external URL (e.g., from ui-avatars or external CDN), use it
                             if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
                               // Check if it's a localhost or old Railway URL that needs to be converted
                               const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
                               if (pathMatch) {
                                 // Extract the relative path and construct new URL
-                                return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}/uploads/logos/${pathMatch[1]}`;
+                                return `${apiBase}/uploads/logos/${pathMatch[1]}`;
                               }
                               // Otherwise use the URL as-is (external CDN)
                               return logoUrl;
                             }
                             // It's a relative path, prepend API URL
-                            return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
+                            return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
                           })()}
                           alt={companyName}
                           className="w-full h-full object-contain p-2"
