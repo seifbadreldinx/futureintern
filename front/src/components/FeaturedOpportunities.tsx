@@ -93,7 +93,17 @@ export function FeaturedOpportunities() {
               <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
                 {internship.company?.profile_image ? (
                   <img
-                    src={internship.company.profile_image}
+                    src={(() => {
+                      const logoUrl = internship.company.profile_image;
+                      // Handle different URL formats
+                      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                        return logoUrl;
+                      } else if (logoUrl.startsWith('/uploads/')) {
+                        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+                        return `${apiBase}${logoUrl}`;
+                      }
+                      return logoUrl;
+                    })()}
                     alt={internship.company?.name}
                     onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
                     className="w-full h-full object-contain p-1"

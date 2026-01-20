@@ -103,7 +103,10 @@ export function Companies() {
                           if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
                             return logoUrl;
                           } else if (logoUrl.startsWith('/uploads/')) {
-                            return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
+                            // Use the configured API URL but strip '/api' since uploads are served from root
+                            // Also corrected the fallback URL to match the actual production backend
+                            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+                            return `${apiBase}${logoUrl}`;
                           }
                           return logoUrl;
                         })()}
