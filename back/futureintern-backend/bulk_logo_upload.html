@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk Logo Upload - Admin Tool</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .step {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 4px;
+        }
+        .company-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 15px 0;
+            background: white;
+            border-radius: 4px;
+        }
+        .company-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #f1f5f9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .upload-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 15px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+        input[type="file"] {
+            flex: 1;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            width: 200px;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .add-btn {
+            background: #10b981;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Bulk Logo Upload Tool</h1>
+        <p>Upload logos for multiple companies at once (Production)</p>
+
+        <div class="step">
+            <h3>Step 1: Load Company List</h3>
+            <p>First, load the list of companies from the production database:</p>
+            <button onclick="loadCompanies()">Load Companies</button>
+            <div id="companyList" class="company-list" style="display:none;"></div>
+        </div>
+
+        <div class="step">
+            <h3>Step 2: Select Logos and Map to Companies</h3>
+            <div id="uploadForms">
+                <div class="upload-row">
+                    <input type="file" accept="image/*" class="logo-file">
+                    <input type="text" placeholder="Company Name or ID" class="company-identifier">
+                    <span style="font-size: 12px; color: #64748b;">Use company name (e.g., "Vodafone") or ID (e.g., "4")</span>
+                </div>
+            </div>
+            <button class="add-btn" onclick="addUploadRow()">+ Add Another Logo</button>
+        </div>
+
+        <div class="step">
+            <h3>Step 3: Upload</h3>
+            <button onclick="uploadLogos()">Upload All Logos</button>
+            <div id="loading">
+                <p>⏳ Uploading logos...</p>
+            </div>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://futureintern-backend-production.up.railway.app';
+
+        async function loadCompanies() {
+            try {
+                const response = await fetch(`${API_URL}/api/admin/list-companies-for-upload`);
+                const data = await response.json();
+                
+                const listDiv = document.getElementById('companyList');
+                listDiv.style.display = 'block';
+                listDiv.innerHTML = `
+                    <h4>Found ${data.total} companies:</h4>
+                    ${data.companies.map(c => `
+                        <div class="company-item">
+                            <strong>ID: ${c.id}</strong> - ${c.name} 
+                            ${c.has_logo ? '✅ Has Logo' : '❌ No Logo'}
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                alert('Error loading companies: ' + error.message);
+            }
+        }
+
+        function addUploadRow() {
+            const container = document.getElementById('uploadForms');
+            const row = document.createElement('div');
+            row.className = 'upload-row';
+            row.innerHTML = `
+                <input type="file" accept="image/*" class="logo-file">
+                <input type="text" placeholder="Company Name or ID" class="company-identifier">
+                <span style="font-size: 12px; color: #64748b;">Company name or ID</span>
+            `;
+            container.appendChild(row);
+        }
+
+        async function uploadLogos() {
+            const formData = new FormData();
+            const files = document.querySelectorAll('.logo-file');
+            const identifiers = document.querySelectorAll('.company-identifier');
+            
+            let fileCount = 0;
+            files.forEach((fileInput, index) => {
+                if (fileInput.files[0] && identifiers[index].value) {
+                    fileCount++;
+                    formData.append(`logo_${fileCount}`, fileInput.files[0]);
+                    
+                    // Check if identifier is numeric (ID) or text (name)
+                    const identifier = identifiers[index].value.trim();
+                    if (!isNaN(identifier)) {
+                        formData.append(`company_id_${fileCount}`, identifier);
+                    } else {
+                        formData.append(`company_name_${fileCount}`, identifier);
+                    }
+                }
+            });
+
+            if (fileCount === 0) {
+                alert('Please select at least one logo and enter a company identifier!');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').innerHTML = '';
+
+            try {
+                const response = await fetch(`${API_URL}/api/admin/bulk-upload-logos-ADMIN`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                let resultsHTML = `
+                    <div class="results ${data.success.length > 0 ? 'success' : 'error'}">
+                        <h4>Upload Results:</h4>
+                        <p><strong>Total:</strong> ${data.total}</p>
+                        <p><strong>Successful:</strong> ${data.success.length}</p>
+                        <p><strong>Errors:</strong> ${data.errors.length}</p>
+                        
+                        ${data.success.map(s => `
+                            <div>✅ ${s.logo} → ${s.company_name} (${s.logo_path})</div>
+                        `).join('')}
+                        
+                        ${data.errors.map(e => `
+                            <div>❌ ${e.logo} → ${e.error}</div>
+                        `).join('')}
+                    </div>
+                `;
+                
+                document.getElementById('results').innerHTML = resultsHTML;
+            } catch (error) {
+                document.getElementById('results').innerHTML = `
+                    <div class="results error">
+                        <h4>Upload Failed</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

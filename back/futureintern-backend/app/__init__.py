@@ -51,6 +51,7 @@ from app.matching.routes import matching_bp
 from app.admin.routes import admin_bp
 from app.chatbot.routes import chatbot_bp
 from app.migration_endpoint import migration_bp  # TEMPORARY - Delete after migration
+from app.bulk_upload import bulk_upload_bp  # TEMPORARY - For bulk logo upload
 
 # Error handlers (global)
 from app.error_handlers import register_error_handlers
@@ -242,5 +243,6 @@ def create_app():
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
     app.register_blueprint(migration_bp, url_prefix="/api/migration")  # TEMPORARY
+    app.register_blueprint(bulk_upload_bp, url_prefix="/api/admin")  # TEMPORARY
 
     return app
