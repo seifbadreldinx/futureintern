@@ -25,6 +25,7 @@ logo_mapping = {
     "paymobcompany_logo.jpg": "Paymob",
     "cultiv_bureau_logo.jpg": "Cultiv Bureau",
     "Breadfast.jpg": "Breadfast",
+    "codetech.jpg": "CODTECH IT SOLUTIONS",
 }
 
 print("=" * 60)
