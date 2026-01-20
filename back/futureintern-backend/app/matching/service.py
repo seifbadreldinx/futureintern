@@ -234,13 +234,13 @@ class MatchingService:
             internship_text_parts.append(internship['description'])
         if internship.get('requirements'):
             internship_text_parts.append(internship['requirements'])
-        logger.info(f"✓ Text Similarity: {text_sim_score:.2f} x {self.WEIGHTS['text_similarity']} = {details['text_similarity']}%")
         internship_text_parts.extend(intern_req_skills)
         internship_full_text = ' '.join(str(p) for p in internship_text_parts)
         
         # Calculate text similarity
         text_sim_score = self.calculate_text_similarity(student_profile_text, internship_full_text)
         details['text_similarity'] = round(text_sim_score * self.WEIGHTS['text_similarity'] * 100, 1)
+        logger.info(f"✓ Text Similarity: {text_sim_score:.2f} x {self.WEIGHTS['text_similarity']} = {details['text_similarity']}%")
         
         # ==========================================
         # 3️⃣ Major Matching (20%)
