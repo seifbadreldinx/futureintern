@@ -130,9 +130,17 @@ export function InternshipDetail() {
               <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
                 {internship.company?.profile_image ? (
                   <img
-                    src={internship.company.profile_image.startsWith('http')
-                      ? internship.company.profile_image
-                      : `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${internship.company.profile_image}`}
+                    src={(() => {
+                      const logoUrl = internship.company.profile_image;
+                      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                        const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
+                        if (pathMatch) {
+                          return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}/uploads/logos/${pathMatch[1]}`;
+                        }
+                        return logoUrl;
+                      }
+                      return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
+                    })()}
                     alt={internship.company?.name}
                     onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=256`}
                     className="w-full h-full object-contain p-2"

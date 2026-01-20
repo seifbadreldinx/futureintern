@@ -97,9 +97,17 @@ export function Companies() {
                   <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
                     {company.profile_image ? (
                       <img
-                        src={company.profile_image.startsWith('http')
-                          ? company.profile_image
-                          : `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${company.profile_image}`}
+                        src={(() => {
+                          const logoUrl = company.profile_image;
+                          if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                            const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
+                            if (pathMatch) {
+                              return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}/uploads/logos/${pathMatch[1]}`;
+                            }
+                            return logoUrl;
+                          }
+                          return `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${logoUrl}`;
+                        })()}
                         alt={company.company_name || company.name}
                         onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(company.company_name || company.name || 'C')}&background=eff6ff&color=2563eb&size=256`}
                         className="w-full h-full object-contain p-2"
