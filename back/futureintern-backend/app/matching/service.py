@@ -248,9 +248,9 @@ class MatchingService:
         major_score = self.fuzzy_match_major(
             student.get('major', ''),
             internship.get('major', '')
-        logger.info(f"✓ Major: '{student.get('major', 'N/A')}' vs '{internship.get('major', 'N/A')}' = {major_score:.2f} x {self.WEIGHTS['major']} = {details['major']}%")
         )
         details['major'] = round(major_score * self.WEIGHTS['major'] * 100, 1)
+        logger.info(f"✓ Major: '{student.get('major', 'N/A')}' vs '{internship.get('major', 'N/A')}' = {major_score:.2f} x {self.WEIGHTS['major']} = {details['major']}%")
         
         # ==========================================
         # 4️⃣ Location Matching (10%)
