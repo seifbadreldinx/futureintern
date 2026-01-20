@@ -159,7 +159,8 @@ def list_companies():
             'id': c.id,
             'name': c.company_name or c.name,
             'email': c.email,
-            'has_logo': bool(c.profile_image)
+            'has_logo': bool(c.profile_image),
+            'profile_image': c.profile_image
         } for c in companies]
         
         return jsonify({

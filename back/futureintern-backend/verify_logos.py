@@ -23,8 +23,8 @@ try:
         
         for company in companies:
             name = company['name']
-            has_logo = company['has_logo']
-            logo_path = company.get('profile_image', 'None')
+            has_logo = company.get('has_logo', False)
+            logo_path = company.get('profile_image', None)
             
             if has_logo:
                 with_logos.append((name, logo_path))
