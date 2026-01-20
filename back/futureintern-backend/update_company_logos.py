@@ -24,7 +24,7 @@ def update_company_logos():
             'Unicharm': '/uploads/logos/unicharm.jpg',
             'Tips Hindawi': '/uploads/logos/tips_hindawi.png',
             'Cultiv Bureau': '/uploads/logos/cultiv_bureau.png',
-            'Geidea': '/uploads/logos/geidea.png',
+            'Geidea': '/uploads/logos/geidea.jpg',
             'SkillInfyTech': '/uploads/logos/skillinfytech.jpg',
             'SkilInfyTech': '/uploads/logos/skillinfytech.jpg',
             'XEFORT SOLUTIONS': '/uploads/logos/xefort.jpg',
