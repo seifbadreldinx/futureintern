@@ -114,7 +114,21 @@ export function Dashboard() {
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
                   {user?.profile_image ? (
                     <img
-                      src={`${(import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '')}${user.profile_image}`}
+                      src={(() => {
+                        const logoUrl = user.profile_image;
+                        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+
+                        // If it's already a full external URL
+                        if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                          const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
+                          if (pathMatch) {
+                            return `${apiBase}/uploads/logos/${pathMatch[1]}`;
+                          }
+                          return logoUrl;
+                        }
+                        // Handle relative paths
+                        return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+                      })()}
                       alt={user?.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -498,9 +512,19 @@ export function Dashboard() {
                                     <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
                                       {internship.company?.profile_image ? (
                                         <img
-                                          src={internship.company.profile_image.startsWith('http')
-                                            ? internship.company.profile_image
-                                            : internship.company.profile_image}
+                                          src={(() => {
+                                            const logoUrl = internship.company.profile_image;
+                                            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+
+                                            if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                                              const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
+                                              if (pathMatch) {
+                                                return `${apiBase}/uploads/logos/${pathMatch[1]}`;
+                                              }
+                                              return logoUrl;
+                                            }
+                                            return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+                                          })()}
                                           alt={companyName}
                                           className="w-full h-full object-contain p-2"
                                           onError={(e) => {
@@ -748,7 +772,19 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                 {user?.profile_image && (
                   <div className="mt-2 w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <img
-                      src={user.profile_image.startsWith('http') ? user.profile_image : user.profile_image}
+                      src={(() => {
+                        const logoUrl = user.profile_image;
+                        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
+
+                        if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+                          const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
+                          if (pathMatch) {
+                            return `${apiBase}/uploads/logos/${pathMatch[1]}`;
+                          }
+                          return logoUrl;
+                        }
+                        return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
+                      })()}
                       alt="Company Logo"
                       className="w-full h-full object-contain p-1"
                       onError={(e) => {
