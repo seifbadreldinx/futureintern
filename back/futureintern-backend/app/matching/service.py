@@ -269,10 +269,10 @@ class MatchingService:
         else:
             # Fuzzy match for location
             fuzzy_loc_score = fuzz.ratio(student_location, intern_location)
-        logger.info(f"✓ Location: '{student.get('location', 'N/A')}' vs '{internship.get('location', 'N/A')}' = {location_score:.2f} x {self.WEIGHTS['location']} = {details['location']}%")
             location_score = fuzzy_loc_score / 100.0 if fuzzy_loc_score >= 60 else 0.3
         
         details['location'] = round(location_score * self.WEIGHTS['location'] * 100, 1)
+        logger.info(f"✓ Location: '{student.get('location', 'N/A')}' vs '{internship.get('location', 'N/A')}' = {location_score:.2f} x {self.WEIGHTS['location']} = {details['location']}%")
         
         # ==========================================
         # 5️⃣ Availability Matching (10%)
