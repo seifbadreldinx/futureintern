@@ -132,7 +132,7 @@ export function InternshipDetail() {
                   <img
                     src={internship.company.profile_image.startsWith('http')
                       ? internship.company.profile_image
-                      : internship.company.profile_image}
+                      : `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${internship.company.profile_image}`}
                     alt={internship.company?.name}
                     onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=256`}
                     className="w-full h-full object-contain p-2"

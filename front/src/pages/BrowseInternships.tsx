@@ -208,7 +208,7 @@ export function BrowseInternships() {
                         <img
                           src={internship.company.profile_image.startsWith('http')
                             ? internship.company.profile_image
-                            : internship.company.profile_image}
+                            : `${import.meta.env.VITE_API_URL || 'https://futureintern-backend-production.up.railway.app'}${internship.company.profile_image}`}
                           alt={companyName}
                           className="w-full h-full object-contain p-2"
                           onError={(e) => {
