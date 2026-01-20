@@ -283,6 +283,10 @@ class MatchingService:
         
         if student_availability >= intern_availability:
             availability_score = 1.0
+        else:
+            availability_score = student_availability / intern_availability if intern_availability > 0 else 0.5
+        
+        details['availability'] = round(availability_score * self.WEIGHTS['availability'] * 100, 1)
         logger.info(f"✓ Availability: {student_availability}hrs vs {intern_availability}hrs = {availability_score:.2f} x {self.WEIGHTS['availability']} = {details['availability']}%")
         
         # ==========================================
@@ -294,11 +298,7 @@ class MatchingService:
         logger.info(f"\n{'='*60}")
         logger.info(f"TOTAL SCORE: {details['total_score']}%")
         logger.info(f"Breakdown: Skills={details['skills']}% + Text={details['text_similarity']}% + Major={details['major']}% + Location={details['location']}% + Availability={details['availability']}%")
-        logger.info(f"{'='*60}\n"
-        # 6️⃣ Total Score
-        # ==========================================
-        total_score = sum(details.values())
-        details['total_score'] = round(total_score, 1)
+        logger.info(f"{'='*60}\n")
         
         return details
     
