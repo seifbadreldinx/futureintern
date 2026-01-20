@@ -209,12 +209,12 @@ class MatchingService:
             except:
                 intern_req_skills = [s.strip() for s in intern_skills_raw.split(',') if s.strip()]
         else:
-        logger.info(f"✓ Skills Score: {skills_score:.2f} x {self.WEIGHTS['skills']} = {details['skills']}%")
             intern_req_skills = intern_skills_raw if isinstance(intern_skills_raw, list) else []
         
         # Calculate fuzzy skills match
         skills_score = self.fuzzy_match_skills(student_skills, intern_req_skills)
         details['skills'] = round(skills_score * self.WEIGHTS['skills'] * 100, 1)
+        logger.info(f"✓ Skills Score: {skills_score:.2f} x {self.WEIGHTS['skills']} = {details['skills']}%")
         
         # ==========================================
         # 2️⃣ Text Similarity (25%)
