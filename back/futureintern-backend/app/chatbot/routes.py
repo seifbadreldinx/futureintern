@@ -75,16 +75,16 @@ def preprocess_text_with_nltk(text):
     
     Returns: List of processed tokens
     """
-    # Convert to lowercase
+    
     text = text.lower()
     
-    # Remove special characters but keep letters and numbers
+    
     text = re.sub(r'[^a-z0-9\s]', '', text)
     
-    # Tokenize using NLTK
+    
     tokens = word_tokenize(text)
     
-    # Remove stopwords and apply stemming
+    
     processed_tokens = [
         stemmer.stem(token) 
         for token in tokens 
