@@ -1,8 +1,3 @@
-"""
-Chatbot API - Task 5.3
-Enhanced FAQ chatbot with NLTK Natural Language Processing
-Uses NLTK for text preprocessing: tokenization, stemming, stopword removal
-"""
 from flask import Blueprint, jsonify, request
 from datetime import datetime
 import nltk
