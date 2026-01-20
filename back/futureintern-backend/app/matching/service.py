@@ -3,10 +3,14 @@
 
 from typing import List, Dict
 import re
+import logging
 from fuzzywuzzy import fuzz
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+
+# Setup logging
+logger = logging.getLogger(__name__)
 
 class MatchingService:
     
@@ -186,10 +190,15 @@ class MatchingService:
         """
         details = {}
         
+        logger.info(f"\n{'='*60}")
+        logger.info(f"MATCHING DEBUG: Student vs Internship '{internship.get('title', 'Unknown')}'")
+        logger.info(f"{'='*60}")
+        
         # ==========================================
         # 1️⃣ Skills Matching (35%)
         # ==========================================
         student_skills = student.get('skills', [])
+        logger.info(f"Student Skills: {student_skills}")
         
         # Parse internship required skills
         intern_skills_raw = internship.get('required_skills', '[]')
@@ -200,6 +209,7 @@ class MatchingService:
             except:
                 intern_req_skills = [s.strip() for s in intern_skills_raw.split(',') if s.strip()]
         else:
+        logger.info(f"✓ Skills Score: {skills_score:.2f} x {self.WEIGHTS['skills']} = {details['skills']}%")
             intern_req_skills = intern_skills_raw if isinstance(intern_skills_raw, list) else []
         
         # Calculate fuzzy skills match
@@ -224,6 +234,7 @@ class MatchingService:
             internship_text_parts.append(internship['description'])
         if internship.get('requirements'):
             internship_text_parts.append(internship['requirements'])
+        logger.info(f"✓ Text Similarity: {text_sim_score:.2f} x {self.WEIGHTS['text_similarity']} = {details['text_similarity']}%")
         internship_text_parts.extend(intern_req_skills)
         internship_full_text = ' '.join(str(p) for p in internship_text_parts)
         
@@ -237,6 +248,7 @@ class MatchingService:
         major_score = self.fuzzy_match_major(
             student.get('major', ''),
             internship.get('major', '')
+        logger.info(f"✓ Major: '{student.get('major', 'N/A')}' vs '{internship.get('major', 'N/A')}' = {major_score:.2f} x {self.WEIGHTS['major']} = {details['major']}%")
         )
         details['major'] = round(major_score * self.WEIGHTS['major'] * 100, 1)
         
@@ -257,6 +269,7 @@ class MatchingService:
         else:
             # Fuzzy match for location
             fuzzy_loc_score = fuzz.ratio(student_location, intern_location)
+        logger.info(f"✓ Location: '{student.get('location', 'N/A')}' vs '{internship.get('location', 'N/A')}' = {location_score:.2f} x {self.WEIGHTS['location']} = {details['location']}%")
             location_score = fuzzy_loc_score / 100.0 if fuzzy_loc_score >= 60 else 0.3
         
         details['location'] = round(location_score * self.WEIGHTS['location'] * 100, 1)
@@ -270,12 +283,18 @@ class MatchingService:
         
         if student_availability >= intern_availability:
             availability_score = 1.0
-        else:
-            availability_score = student_availability / intern_availability if intern_availability > 0 else 0.5
-        
-        details['availability'] = round(availability_score * self.WEIGHTS['availability'] * 100, 1)
+        logger.info(f"✓ Availability: {student_availability}hrs vs {intern_availability}hrs = {availability_score:.2f} x {self.WEIGHTS['availability']} = {details['availability']}%")
         
         # ==========================================
+        # 6️⃣ Total Score
+        # ==========================================
+        total_score = sum(details.values())
+        details['total_score'] = round(total_score, 1)
+        
+        logger.info(f"\n{'='*60}")
+        logger.info(f"TOTAL SCORE: {details['total_score']}%")
+        logger.info(f"Breakdown: Skills={details['skills']}% + Text={details['text_similarity']}% + Major={details['major']}% + Location={details['location']}% + Availability={details['availability']}%")
+        logger.info(f"{'='*60}\n"
         # 6️⃣ Total Score
         # ==========================================
         total_score = sum(details.values())
