@@ -118,15 +118,13 @@ def calculate_keyword_similarity(user_tokens, keyword_tokens):
 def find_best_match(message):
     """
     Find the best matching FAQ using NLTK-enhanced text processing
-     using NLTK-enhanced matching
-        answer, category, confidence = find_best_match(user_message)
-        
-        if answer:
-            return jsonify({
-                'response': answer,
-                'category': category,
-                'confidence': round(confidence * 100, 1),  # Convert to percentage
-                'nlp_used': True
+    
+    Uses:
+    - NLTK tokenization
+    - Stopword removal
+    - Porter Stemmer for word normalization
+    - Similarity scoring for fuzzy matching
+    """
     # Preprocess user message with NLTK
     user_tokens = preprocess_text_with_nltk(message)
     
@@ -198,13 +196,15 @@ def chat():
         if not user_message:
             return jsonify({'error': 'Message cannot be empty'}), 400
         
-        # Find best matching answer
-        answer, category = find_best_match(user_message)
+        # Find best matching answer using NLTK-enhanced matching
+        answer, category, confidence = find_best_match(user_message)
         
         if answer:
             return jsonify({
                 'response': answer,
                 'category': category,
+                'confidence': round(confidence * 100, 1),  # Convert to percentage
+                'nlp_used': True,
                 'timestamp': datetime.utcnow().isoformat()
             }), 200
         else:
