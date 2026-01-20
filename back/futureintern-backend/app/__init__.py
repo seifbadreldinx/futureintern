@@ -50,8 +50,21 @@ from app.applications.routes import applications_bp
 from app.matching.routes import matching_bp
 from app.admin.routes import admin_bp
 from app.chatbot.routes import chatbot_bp
-from app.migration_endpoint import migration_bp  # TEMPORARY - Delete after migration
-from app.bulk_upload import bulk_upload_bp  # TEMPORARY - For bulk logo upload
+
+# TEMPORARY - Optional imports (won't break app if they fail)
+try:
+    from app.migration_endpoint import migration_bp
+    MIGRATION_BP_AVAILABLE = True
+except ImportError:
+    MIGRATION_BP_AVAILABLE = False
+    print("Warning: migration_endpoint not available")
+
+try:
+    from app.bulk_upload import bulk_upload_bp
+    BULK_UPLOAD_BP_AVAILABLE = True
+except ImportError:
+    BULK_UPLOAD_BP_AVAILABLE = False
+    print("Warning: bulk_upload not available")
 
 # Error handlers (global)
 from app.error_handlers import register_error_handlers
@@ -242,7 +255,11 @@ def create_app():
     app.register_blueprint(matching_bp, url_prefix="/api")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
-    app.register_blueprint(migration_bp, url_prefix="/api/migration")  # TEMPORARY
-    app.register_blueprint(bulk_upload_bp, url_prefix="/api/admin")  # TEMPORARY
+    
+    # TEMPORARY - Register optional blueprints if available
+    if MIGRATION_BP_AVAILABLE:
+        app.register_blueprint(migration_bp, url_prefix="/api/migration")
+    if BULK_UPLOAD_BP_AVAILABLE:
+        app.register_blueprint(bulk_upload_bp, url_prefix="/api/admin")
 
     return app
