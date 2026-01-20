@@ -20,6 +20,8 @@ def bulk_upload_logos():
     - Form fields: company_id_1, company_id_2, company_id_3 (matching the logo numbers)
     
     OR send company_name_1, company_name_2 instead of IDs
+    
+    OR for single upload: logo (file) + company_name (form field)
     """
     try:
         results = {
@@ -32,7 +34,48 @@ def bulk_upload_logos():
         uploaded_files = request.files
         form_data = request.form
         
-        # Process each logo
+        # Check for single logo upload (logo + company_name)
+        if 'logo' in uploaded_files and 'company_name' in form_data:
+            logo_file = uploaded_files['logo']
+            company_name = form_data['company_name']
+            
+            # Find the company
+            company = User.query.filter_by(company_name=company_name, role='company').first()
+            if not company:
+                company = User.query.filter_by(name=company_name, role='company').first()
+            
+            if not company:
+                return jsonify({
+                    'success': [],
+                    'errors': [{'error': f'Company not found: {company_name}'}],
+                    'total': 1
+                }), 404
+            
+            # Save the logo
+            logo_path, error = save_logo(logo_file, company.id)
+            
+            if error:
+                return jsonify({
+                    'success': [],
+                    'errors': [{'company': company_name, 'error': error}],
+                    'total': 1
+                }), 400
+            else:
+                # Update company profile
+                company.profile_image = logo_path
+                db.session.commit()
+                
+                return jsonify({
+                    'success': [{
+                        'company_id': company.id,
+                        'company_name': company.company_name or company.name,
+                        'logo_path': logo_path
+                    }],
+                    'errors': [],
+                    'total': 1
+                }), 200
+        
+        # Process bulk upload (logo_1, logo_2, etc.)
         logo_index = 1
         while f'logo_{logo_index}' in uploaded_files:
             logo_file = uploaded_files[f'logo_{logo_index}']
