@@ -66,6 +66,19 @@ def get_recommendations():
             'location': student.location or '', 
             'availability': 40
         }
+        
+        # DEBUG: Log student data
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"DEBUG - Student Data for Matching:")
+        logger.info(f"  ID: {student.id}")
+        logger.info(f"  Raw Skills from DB: {student.skills}")
+        logger.info(f"  Parsed Skills: {student_skills}")
+        logger.info(f"  Raw Interests from DB: {student.interests}")
+        logger.info(f"  Parsed Interests: {student_interests}")
+        logger.info(f"  Combined Capabilities: {all_capabilities}")
+        logger.info(f"  Major: {student.major}")
+        logger.info(f"  Location: {student.location}")
 
         # 4️⃣ Prepare internships data
         internships_data = []
