@@ -9,24 +9,26 @@ def update_company_logos():
     app = create_app()
     
     with app.app_context():
-        # Map of company names to their logo URLs (you can use external URLs or local paths)
+        # Map of company names to their logo URLs - Real company logos
         company_logos = {
-            'WeIntern': '/uploads/logos/weintern.png',
-            'Uniparticle': '/uploads/logos/uniparticle.png',
+            'WeIntern': '/uploads/logos/weintern.jpg',
+            'Uniparticle': '/uploads/logos/uniparticle.jpg',
             'Milkup': '/uploads/logos/milkup.png',
             'Intcore': '/uploads/logos/intcore.png',
             'e&': '/uploads/logos/eand.png',
             'Robotesta': '/uploads/logos/robotesta.png',
             'Paymob': '/uploads/logos/paymob.png',
             'Fawry': '/uploads/logos/fawry.png',
-            'Vodafone': '/uploads/logos/vodafone.png',
+            'Vodafone': '/uploads/logos/vodafone.jpg',
             'PwC': '/uploads/logos/pwc.png',
-            'Unicharm': '/uploads/logos/unicharm.png',
+            'Unicharm': '/uploads/logos/unicharm.jpg',
             'Tips Hindawi': '/uploads/logos/tips_hindawi.png',
             'Cultiv Bureau': '/uploads/logos/cultiv_bureau.png',
             'Geidea': '/uploads/logos/geidea.png',
-            'SkilInfyTech': '/uploads/logos/skilinfytech.png',
-            'Xefort Solutions': '/uploads/logos/xefort_solutions.png',
+            'SkillInfyTech': '/uploads/logos/skillinfytech.jpg',
+            'SkilInfyTech': '/uploads/logos/skillinfytech.jpg',
+            'XEFORT SOLUTIONS': '/uploads/logos/xefort.jpg',
+            'Xefort Solutions': '/uploads/logos/xefort.jpg',
             'Breadfast': '/uploads/logos/breadfast.png',
             'CODTECH IT SOLUTIONS': '/uploads/logos/codtech_it_solutions.png',
         }
