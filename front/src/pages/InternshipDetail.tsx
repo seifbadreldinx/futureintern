@@ -80,19 +80,19 @@ export function InternshipDetail() {
   };
 
   const handleApply = async () => {
+    // ── Auth gate: must be logged in to apply ──
+    if (!isAuthenticated()) {
+      navigate(`/login?redirect=/internship/${id}`);
+      return;
+    }
+
     // If internship has an external application link, open it
     if (internship.application_link) {
       window.open(internship.application_link, '_blank');
       return;
     }
 
-    // Otherwise, use the internal application system
-    if (!isAuthenticated()) {
-      // Redirect to login if not authenticated
-      navigate('/login');
-      return;
-    }
-
+    // CV required for internal applications
     if (user && !user.resume_url) {
       setShowCvModal(true);
       return;
@@ -100,7 +100,6 @@ export function InternshipDetail() {
 
     try {
       await api.applications.create(internship.id);
-      // Provide immediate feedback — in a real app show a toast instead
       alert('Application submitted successfully.');
       navigate('/dashboard');
     } catch (err) {
@@ -157,7 +156,16 @@ export function InternshipDetail() {
           </div>
 
           <div className="border-t border-gray-200 pt-6">
-            {user?.role !== 'company' && (
+            {!user && (
+              <button
+                onClick={handleApply}
+                className="w-full sm:w-auto px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-medium flex items-center justify-center gap-2"
+              >
+                <Send className="w-5 h-5" />
+                Login to Apply
+              </button>
+            )}
+            {user && user.role !== 'company' && (
               <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
                 <Send className="w-5 h-5" />
                 Apply Now

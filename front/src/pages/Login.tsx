@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, User, FileText, BookOpen } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -9,6 +9,10 @@ export function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Pick up ?redirect=/internship/5 so user lands back where they came from
+  const redirectTo = new URLSearchParams(location.search).get('redirect') || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,8 +22,7 @@ export function Login() {
     try {
       const response = await api.auth.login(email, password);
       console.log('Login successful:', response.user);
-      // Navigate to dashboard on success
-      navigate('/dashboard');
+      navigate(redirectTo);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setError(errorMessage);
