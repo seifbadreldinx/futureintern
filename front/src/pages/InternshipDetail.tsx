@@ -35,6 +35,12 @@ export function InternshipDetail() {
       return;
     }
 
+    // Only students can use the internal application system
+    if (user && user.role !== 'student') {
+      alert(`Only students can apply for internships. Your current role is ${user.role}.`);
+      return;
+    }
+
     try {
       await api.applications.create(internship.id);
       alert('Application submitted successfully.');
@@ -48,7 +54,7 @@ export function InternshipDetail() {
 
   // Auto-trigger apply if user just returned from login with ?autoApply=true
   useEffect(() => {
-    if (autoApply && !loading && user && internship) {
+    if (autoApply && !loading && user && internship && user.role === 'student') {
       handleApply();
     }
   }, [autoApply, loading, user, internship, handleApply]);
@@ -174,7 +180,7 @@ export function InternshipDetail() {
                 Login to Apply
               </button>
             )}
-            {user && user.role !== 'company' && (
+            {user && user.role === 'student' && (
               <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
                 <Send className="w-5 h-5" />
                 Apply Now
@@ -183,6 +189,11 @@ export function InternshipDetail() {
             {user?.role === 'company' && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
                 Companies cannot apply to internships. You can only post internships for students to apply to.
+              </div>
+            )}
+            {user?.role === 'admin' && (
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-sm text-purple-700">
+                You are logged in as an <strong>Admin</strong>. Admins cannot apply for internships, but you can manage them from the admin panel.
               </div>
             )}
           </div>
