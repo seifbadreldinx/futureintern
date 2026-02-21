@@ -19,8 +19,18 @@ const saveAuthToken = (token: string): void => {
 // Helper function to remove auth token
 const removeAuthToken = (): void => {
   localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   // Dispatch event so components update immediately on logout
   try { window.dispatchEvent(new Event('storage')); } catch (e) { /* no-op */ }
+};
+
+// Refresh token helpers
+const saveRefreshToken = (token: string): void => {
+  localStorage.setItem('refresh_token', token);
+};
+
+const getRefreshToken = (): string | null => {
+  return localStorage.getItem('refresh_token');
 };
 
 // Generic API request function
@@ -144,6 +154,9 @@ export const api = {
       if (data.access_token) {
         saveAuthToken(data.access_token);
       }
+      if ((data as any).refresh_token) {
+        saveRefreshToken((data as any).refresh_token);
+      }
       return data;
     },
 
@@ -164,14 +177,26 @@ export const api = {
       }
     },
 
-    // Refresh token
+    // Refresh token (rotation: sends refresh token, receives new access + refresh pair)
     refreshToken: async () => {
-      const data = await apiRequest<{ access_token: string }>('/auth/refresh', {
+      const refresh = getRefreshToken();
+      if (!refresh) throw new Error('No refresh token available');
+
+      const url = `${API_BASE_URL}/auth/refresh`;
+      const response = await fetch(url, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${refresh}`,
+        },
+        mode: 'cors',
       });
-      if (data.access_token) {
-        saveAuthToken(data.access_token);
-      }
+
+      if (!response.ok) throw new Error(`Refresh failed: ${response.status}`);
+
+      const data = await response.json() as { access_token: string; refresh_token: string };
+      if (data.access_token) saveAuthToken(data.access_token);
+      if (data.refresh_token) saveRefreshToken(data.refresh_token);
       return data;
     },
 

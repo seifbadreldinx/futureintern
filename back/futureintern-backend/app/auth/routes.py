@@ -3,7 +3,7 @@ import requests as http_requests
 from flask import Blueprint, request, jsonify, current_app, url_for
 from app.models import db
 from app.models.user import User
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from datetime import timedelta
 from itsdangerous import URLSafeTimedSerializer
 from app.utils.validators import validate_email, validate_password, sanitize_string
@@ -330,25 +330,44 @@ def login():
 @auth_bp.route("/refresh", methods=["POST"])
 @jwt_required(refresh=True)
 def refresh():
-    """تجديد Access Token باستخدام Refresh Token"""
+    """Refresh token rotation — blacklist old refresh token, issue new pair"""
     try:
+        from app.models.token_blacklist import TokenBlacklist
+
         current_user_id = int(get_jwt_identity())
         user = db.session.get(User, current_user_id)
-        
+
         if not user:
             return jsonify({'error': 'User not found'}), 404
-        
-        # Create new access token
+
+        # Blacklist the current refresh token so it cannot be reused
+        jwt_data = get_jwt()
+        old_jti = jwt_data.get('jti')
+        if old_jti:
+            entry = TokenBlacklist(
+                jti=old_jti,
+                token_type='refresh',
+                user_id=current_user_id,
+            )
+            db.session.add(entry)
+
+        # Issue a fresh access + refresh token pair
         access_token = create_access_token(
             identity=str(user.id),
             additional_claims={'role': user.role, 'email': user.email}
         )
-        
+        refresh_token = create_refresh_token(identity=str(user.id))
+
+        db.session.commit()
+        log_audit('token_refresh', resource='user', resource_id=user.id, user_id=user.id)
+
         return jsonify({
-            'access_token': access_token
+            'access_token': access_token,
+            'refresh_token': refresh_token,
         }), 200
-        
+
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route("/me", methods=["GET"])
