@@ -1,6 +1,6 @@
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { MapPin, Calendar, Briefcase, ArrowLeft, Send, X, FileText } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../services/api';
 import { resolveLogoUrl } from '../utils/logoUrl';
@@ -9,10 +9,12 @@ import { isAuthenticated } from '../utils/auth';
 export function InternshipDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [internship, setInternship] = useState<any | null>(null);
   const [user, setUser] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [showCvModal, setShowCvModal] = useState(false);
+  const autoApply = new URLSearchParams(location.search).get('autoApply') === 'true';
 
   useEffect(() => {
     (async () => {
@@ -79,15 +81,15 @@ export function InternshipDetail() {
     }
   };
 
-  const handleApply = async () => {
+  const handleApply = useCallback(async () => {
     // ── Auth gate: must be logged in to apply ──
     if (!isAuthenticated()) {
-      navigate(`/login?redirect=/internship/${id}`);
+      navigate(`/login?redirect=/internship/${id}?autoApply=true`);
       return;
     }
 
     // If internship has an external application link, open it
-    if (internship.application_link) {
+    if (internship?.application_link) {
       window.open(internship.application_link, '_blank');
       return;
     }
@@ -107,7 +109,14 @@ export function InternshipDetail() {
       const message = err instanceof Error ? err.message : 'Unable to apply at this time.';
       alert(`Failed to apply: ${message}`);
     }
-  };
+  }, [internship, user, id, navigate]);
+
+  // Auto-trigger apply if user just returned from login with ?autoApply=true
+  useEffect(() => {
+    if (autoApply && !loading && user && internship) {
+      handleApply();
+    }
+  }, [autoApply, loading, user, internship, handleApply]);
 
   return (
     <div className="min-h-screen bg-gray-50">
