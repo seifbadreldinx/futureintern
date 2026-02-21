@@ -7,6 +7,19 @@ from app.models import db
 
 users_bp = Blueprint("users", __name__)
 
+@users_bp.route("/me", methods=["GET"])
+@jwt_required()
+def get_me():
+    """Get current logged-in user — alias used by frontend dashboard"""
+    try:
+        user_id = int(get_jwt_identity())
+        user = db.session.get(User, user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        return jsonify({'user': user.to_dict()}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @users_bp.route("/")
 def index():
     return jsonify({"message": "Users API"})
