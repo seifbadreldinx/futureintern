@@ -190,7 +190,9 @@ def register_student():
         
         db.session.add(user)
         db.session.commit()
-        
+
+        log_audit('register_student', resource='user', resource_id=user.id, user_id=user.id)
+
         return jsonify({
             'message': 'Student registered successfully',
             'user': user.to_dict()
@@ -241,7 +243,9 @@ def register_company():
         
         db.session.add(user)
         db.session.commit()
-        
+
+        log_audit('register_company', resource='user', resource_id=user.id, user_id=user.id)
+
         return jsonify({
             'message': 'Company registered successfully',
             'user': user.to_dict()
@@ -284,47 +288,168 @@ def login():
         description: Invalid credentials
     """
     try:
+        from datetime import datetime as dt
         data = request.get_json()
-        
+
         # Sanitize inputs
         email = sanitize_string(data.get('email', ''), max_length=120)
         password = data.get('password', '')
-        
+
         # Validation
         if not email or not password:
             return jsonify({'error': 'Email and password are required'}), 400
-        
+
         if not validate_email(email):
             return jsonify({'error': 'Invalid email format'}), 400
-        
+
         # Find user
         user = User.query.filter_by(email=email).first()
-        
-        # Check credentials
+
+        # ── Account lockout check ──
+        if user and user.locked_until and user.locked_until > dt.utcnow():
+            remaining = int((user.locked_until - dt.utcnow()).total_seconds() // 60) + 1
+            log_audit('login_locked', resource='user', resource_id=user.id,
+                      details={'email': email}, user_id=user.id)
+            return jsonify({
+                'error': f'Account locked due to too many failed attempts. Try again in {remaining} minute(s).'
+            }), 429
+
+        # ── Credential check ──
         if not user or not user.check_password(password):
+            if user:
+                user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+                if user.failed_login_attempts >= 5:
+                    user.locked_until = dt.utcnow() + timedelta(minutes=15)
+                    user.failed_login_attempts = 0
+                    db.session.commit()
+                    log_audit('login_failed', resource='user', resource_id=user.id,
+                              details={'email': email, 'reason': 'account_locked'}, user_id=user.id)
+                    return jsonify({'error': 'Too many failed attempts. Account locked for 15 minutes.'}), 429
+                db.session.commit()
             log_audit('login_failed', resource='user', details={'email': email})
             return jsonify({'error': 'Invalid email or password'}), 401
-        
-        # Create JWT tokens with role (identity must be string for JWT 4.7.1)
+
+        # ── Successful login: reset lockout counters ──
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.session.commit()
+
+        # ── 2FA check ──
+        if user.two_factor_enabled:
+            from app.models.two_factor import TwoFactorCode
+            from flask_mail import Message
+            from app import mail
+            code_entry = TwoFactorCode.generate(user.id)
+            try:
+                msg = Message('Your FutureIntern Login Code', recipients=[user.email])
+                msg.body = (
+                    f'Hello {user.name},\n\n'
+                    f'Your login verification code is: {code_entry.code}\n\n'
+                    f'This code expires in 10 minutes. Do not share it with anyone.\n\n'
+                    f'FutureIntern Team'
+                )
+                mail.send(msg)
+            except Exception:
+                pass  # Fail silently — code is still in DB
+            log_audit('2fa_code_sent', resource='user', resource_id=user.id, user_id=user.id)
+            return jsonify({
+                'requires_2fa': True,
+                'user_id': user.id,
+                'message': 'Verification code sent to your email.'
+            }), 200
+
+        # ── Issue JWT tokens ──
         access_token = create_access_token(
             identity=str(user.id),
             additional_claims={'role': user.role, 'email': user.email}
         )
-        
-        refresh_token = create_refresh_token(
-            identity=str(user.id)
-        )
+        refresh_token = create_refresh_token(identity=str(user.id))
 
         log_audit('login_success', resource='user', resource_id=user.id, user_id=user.id)
-        
+
         return jsonify({
             'message': 'Login successful',
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.to_dict()
         }), 200
-        
+
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/verify-2fa', methods=['POST'])
+@rate_limit_auth
+def verify_2fa():
+    """Verify the 2FA email code and issue JWT tokens."""
+    try:
+        from app.models.two_factor import TwoFactorCode
+        data = request.get_json() or {}
+        user_id = data.get('user_id')
+        code_str = str(data.get('code', '')).strip()
+
+        if not user_id or not code_str:
+            return jsonify({'error': 'user_id and code are required'}), 400
+
+        user = db.session.get(User, int(user_id))
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        entry = TwoFactorCode.query.filter_by(
+            user_id=user.id, used=False
+        ).order_by(TwoFactorCode.created_at.desc()).first()
+
+        if not entry or not entry.is_valid(code_str):
+            log_audit('2fa_failed', resource='user', resource_id=user.id, user_id=user.id)
+            return jsonify({'error': 'Invalid or expired verification code'}), 401
+
+        entry.mark_used()
+
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={'role': user.role, 'email': user.email}
+        )
+        refresh_token = create_refresh_token(identity=str(user.id))
+
+        log_audit('2fa_success', resource='user', resource_id=user.id, user_id=user.id)
+
+        return jsonify({
+            'message': 'Login successful',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'user': user.to_dict()
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route('/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    """Blacklist the current access token so it cannot be reused after logout."""
+    try:
+        from app.models.token_blacklist import TokenBlacklist
+        jwt_data = get_jwt()
+        jti = jwt_data.get('jti')
+        user_id = get_jwt_identity()
+
+        if jti:
+            entry = TokenBlacklist(
+                jti=jti,
+                token_type='access',
+                user_id=int(user_id) if user_id else None,
+            )
+            db.session.add(entry)
+            db.session.commit()
+
+        log_audit('logout', resource='user', resource_id=int(user_id) if user_id else None,
+                  user_id=int(user_id) if user_id else None)
+
+        return jsonify({'message': 'Logged out successfully'}), 200
+
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route("/refresh", methods=["POST"])
