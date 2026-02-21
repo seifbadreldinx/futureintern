@@ -106,17 +106,24 @@ def init_database():
         else:
             print("ℹ️ Internships already exist in the database; skipping sample create")
 
-        # Optional: Create a test admin user
-        # Uncomment if you want a default admin user
-        # admin = User(
-        #     name="Admin",
-        #     email="admin@futureintern.com",
-        #     role="admin"
-        # )
-        # admin.set_password("admin123")
-        # db.session.add(admin)
-        # db.session.commit()
-        # print("✅ Default admin user created (admin@futureintern.com / admin123)")
+        # Default admin user
+        admin_email = "admin@futureintern.com"
+        admin = User.query.filter_by(email=admin_email).first()
+        if not admin:
+            admin = User(
+                name="Admin",
+                email=admin_email,
+                role="admin"
+            )
+            admin.set_password("admin123")
+            db.session.add(admin)
+            db.session.commit()
+            print(f"✅ Default admin user created ({admin_email} / admin123)")
+        else:
+            # Ensure it has the admin role
+            admin.role = "admin"
+            db.session.commit()
+            print(f"ℹ️ Admin user already exists: {admin_email}")
 
 if __name__ == "__main__":
     init_database()
