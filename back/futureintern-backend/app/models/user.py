@@ -9,9 +9,13 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password_hash = db.Column(db.String(255), nullable=True)  # nullable for OAuth users
     role = db.Column(db.String(20), nullable=False)  # student, company, admin
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Google OAuth fields
+    google_id = db.Column(db.String(255), unique=True, nullable=True)
+    auth_provider = db.Column(db.String(20), default='local')  # 'local' or 'google'
     
     # Student fields (Task 3.1)
     university = db.Column(db.String(100))
@@ -30,6 +34,11 @@ class User(db.Model):
     company_website = db.Column(db.String(200))
     company_location = db.Column(db.String(200))
     is_verified = db.Column(db.Boolean, default=False)  # Verification flag
+
+    # Security fields
+    failed_login_attempts = db.Column(db.Integer, default=0)
+    locked_until = db.Column(db.DateTime, nullable=True)      # null = not locked
+    two_factor_enabled = db.Column(db.Boolean, default=False)  # 2FA toggle
     
     # Relationships
     saved_internships_rel = db.relationship('Internship', secondary=saved_internships, 
@@ -42,6 +51,8 @@ class User(db.Model):
     
     def check_password(self, password):
         """Verify password"""
+        if not self.password_hash:
+            return False  # OAuth user with no local password
         return check_password_hash(self.password_hash, password)
     
     def to_dict(self):
@@ -52,6 +63,7 @@ class User(db.Model):
             'email': self.email,
             'role': self.role,
             'profile_image': self.profile_image,
+            'auth_provider': self.auth_provider,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
         

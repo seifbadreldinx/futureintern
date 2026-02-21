@@ -5,9 +5,8 @@ import secrets
 class Config:
     # SQLite database (no server needed) - Easy setup, no MySQL required
     basedir = os.path.abspath(os.path.dirname(__file__))
-    # Database Configuration: Use PostgreSQL in production, SQLite locally
-    # Database Configuration: Use PostgreSQL in production (Railway) default
-    database_url = os.environ.get('DATABASE_URL', 'postgresql://postgres:jWBlsSUDUMmrpBTxysBALgkRbwjzAWwg@centerbeam.proxy.rlwy.net:47744/railway')
+    # Database Configuration: reads from environment variable ONLY (never hardcode credentials!)
+    database_url = os.environ.get('DATABASE_URL', f'sqlite:///{os.path.join(basedir, "futureintern.db")}')
     if database_url and database_url.startswith("postgres://"):
         database_url = database_url.replace("postgres://", "postgresql://", 1)
 
@@ -43,7 +42,7 @@ class Config:
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     
     # Session security
-    SESSION_COOKIE_SECURE = False  # Only send cookies over HTTPS (False for localhost)
+    SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ['true', '1']  # True in production (HTTPS), False for localhost
     SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access to session cookie
     SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
     
@@ -53,3 +52,6 @@ class Config:
     # Password policy
     MIN_PASSWORD_LENGTH = 8
     REQUIRE_PASSWORD_COMPLEXITY = True  # Require letters, numbers, special chars
+    
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')

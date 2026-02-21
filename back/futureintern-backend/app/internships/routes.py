@@ -225,3 +225,55 @@ def get_my_internships():
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@internships_bp.route("/<int:id>/apply-redirect", methods=["GET"])
+@jwt_required()
+def get_apply_redirect(id):
+    """
+    Returns the official company application URL for an internship.
+    The frontend should redirect the student to this URL to apply through
+    the company's own portal (stored in internship.application_link from CSV data).
+    """
+    try:
+        internship = db.session.get(Internship, id)
+
+        if not internship:
+            return jsonify({'error': 'Internship not found'}), 404
+
+        if not internship.is_active:
+            return jsonify({'error': 'This internship is no longer accepting applications'}), 410
+
+        if not internship.application_link:
+            return jsonify({'error': 'No external application link available for this internship'}), 404
+
+        return jsonify({
+            'internship_id': id,
+            'title': internship.title,
+            'application_url': internship.application_link,
+            'company': internship.company.company_name if internship.company else None,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@internships_bp.route("/expired", methods=["GET"])
+@jwt_required()
+def get_expired_internships():
+    """List expired (past deadline) internships - for admin/company awareness."""
+    from datetime import date
+    try:
+        today = date.today()
+        expired = Internship.query.filter(
+            Internship.application_deadline < today
+        ).order_by(Internship.application_deadline.desc()).all()
+
+        return jsonify({
+            'total': len(expired),
+            'internships': [i.to_dict() for i in expired]
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

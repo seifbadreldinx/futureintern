@@ -9,6 +9,14 @@ from flask_mail import Mail
 # Initialize extensions
 mail = Mail()
 
+# Import AuditLog model so SQLAlchemy knows about it when creating tables
+from app.models.audit_log import AuditLog  # noqa: F401
+# Import CV models so SQLAlchemy creates the tables
+from app.models.cv import CV, CVSection  # noqa: F401
+# Import security models so SQLAlchemy creates the tables
+from app.models.token_blacklist import TokenBlacklist  # noqa: F401
+from app.models.two_factor import TwoFactorCode  # noqa: F401
+
 def add_security_headers(response):
     """Add security headers to all responses"""
     # Prevent clickjacking
@@ -50,6 +58,8 @@ from app.applications.routes import applications_bp
 from app.matching.routes import matching_bp
 from app.admin.routes import admin_bp
 from app.chatbot.routes import chatbot_bp
+from app.cv.routes import cv_bp
+from app.auth.security_routes import security_bp
 
 # TEMPORARY - Optional imports (won't break app if they fail)
 try:
@@ -102,6 +112,16 @@ def create_app():
     # Initialize Mail
     mail.init_app(app)
     
+    # Register JWT token blacklist checker
+    @jwt.token_in_blocklist_loader
+    def check_if_token_revoked(jwt_header, jwt_payload):
+        jti = jwt_payload.get('jti')
+        if not jti:
+            return False
+        return db.session.query(
+            TokenBlacklist.query.filter_by(jti=jti).exists()
+        ).scalar()
+
     # JWT Error Handlers
     @jwt.unauthorized_loader
     def unauthorized_callback(callback):
@@ -121,6 +141,10 @@ def create_app():
     
     # Register security headers middleware
     app.after_request(add_security_headers)
+
+    # Setup structured request logger
+    from app.utils.logger import setup_request_logger
+    setup_request_logger(app)
 
     # Swagger for API documentation (optional)
     if SWAGGER_AVAILABLE:
@@ -164,13 +188,25 @@ def create_app():
             }
         })
 
-    # Development helper: Seed dev data via HTTP so you can populate the DB from the browser or curl
+    # Development helper: Seed dev data - PROTECTED (requires secret token, disabled in production)
     @app.route('/api/debug/seed', methods=['POST'])
     def dev_seed():
         """Create sample company, student, and internship if missing (development use only).
         Optional query param `count` controls how many sample internships to create (default 1).
         Example: POST /api/debug/seed?count=5
+        PROTECTED: Disabled in production. Requires X-Seed-Token header matching SEED_SECRET env var.
         """
+        import os
+        # Block entirely in production
+        if os.environ.get('FLASK_ENV') == 'production' or os.environ.get('RAILWAY_ENVIRONMENT'):
+            return jsonify({'error': 'This endpoint is disabled in production'}), 403
+
+        # Require a secret token passed as header
+        seed_secret = os.environ.get('SEED_SECRET', 'dev-seed-secret-change-me')
+        provided_token = request.headers.get('X-Seed-Token', '')
+        if provided_token != seed_secret:
+            return jsonify({'error': 'Unauthorized: invalid seed token'}), 403
+
         try:
             from app.models.user import User
             from app.models.intern import Internship
@@ -255,6 +291,8 @@ def create_app():
     app.register_blueprint(matching_bp, url_prefix="/api")
     app.register_blueprint(admin_bp, url_prefix="/api/admin")
     app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
+    app.register_blueprint(cv_bp, url_prefix="/api/cv")
+    app.register_blueprint(security_bp, url_prefix="/api/auth")
     
     # TEMPORARY - Register optional blueprints if available
     if MIGRATION_BP_AVAILABLE:

@@ -1,3 +1,5 @@
+import os
+import requests as http_requests
 from flask import Blueprint, request, jsonify, current_app, url_for
 from app.models import db
 from app.models.user import User
@@ -6,6 +8,7 @@ from datetime import timedelta
 from itsdangerous import URLSafeTimedSerializer
 from app.utils.validators import validate_email, validate_password, sanitize_string
 from app.utils.rate_limiter import rate_limit_auth
+from app.utils.logger import log_audit
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -92,6 +95,7 @@ def reset_password():
             
         user.set_password(password)
         db.session.commit()
+        log_audit('password_reset', resource='user', resource_id=user.id, user_id=user.id)
         
         return jsonify({'message': 'Password reset successful'}), 200
         
@@ -298,6 +302,7 @@ def login():
         
         # Check credentials
         if not user or not user.check_password(password):
+            log_audit('login_failed', resource='user', details={'email': email})
             return jsonify({'error': 'Invalid email or password'}), 401
         
         # Create JWT tokens with role (identity must be string for JWT 4.7.1)
@@ -309,6 +314,8 @@ def login():
         refresh_token = create_refresh_token(
             identity=str(user.id)
         )
+
+        log_audit('login_success', resource='user', resource_id=user.id, user_id=user.id)
         
         return jsonify({
             'message': 'Login successful',
@@ -326,7 +333,7 @@ def refresh():
     """تجديد Access Token باستخدام Refresh Token"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -350,7 +357,7 @@ def get_current_user():
     """الحصول على معلومات المستخدم الحالي"""
     try:
         current_user_id = int(get_jwt_identity())
-        user = User.query.get(current_user_id)
+        user = db.session.get(User, current_user_id)
         
         if not user:
             return jsonify({'error': 'User not found'}), 404
@@ -359,5 +366,80 @@ def get_current_user():
             'user': user.to_dict()
         }), 200
         
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ────────────────────────────────────────────────────────
+# Google OAuth Login / Register
+# ────────────────────────────────────────────────────────
+@auth_bp.route("/google", methods=["POST"])
+def google_auth():
+    """
+    Authenticate with Google. Frontend sends the Google credential (ID token).
+    We verify it with Google and either login or create a new user.
+    """
+    try:
+        data = request.get_json()
+        google_token = data.get('credential')
+
+        if not google_token:
+            return jsonify({'error': 'Google credential is required'}), 400
+
+        # Verify the token with Google
+        google_response = http_requests.get(
+            f'https://oauth2.googleapis.com/tokeninfo?id_token={google_token}'
+        )
+
+        if google_response.status_code != 200:
+            return jsonify({'error': 'Invalid Google token'}), 401
+
+        google_data = google_response.json()
+        google_id = google_data.get('sub')
+        email = google_data.get('email')
+        name = google_data.get('name', email.split('@')[0])
+
+        if not google_id or not email:
+            return jsonify({'error': 'Could not retrieve Google account info'}), 400
+
+        # Check if user exists by google_id or email
+        user = User.query.filter_by(google_id=google_id).first()
+        if not user:
+            user = User.query.filter_by(email=email).first()
+
+        if user:
+            # Existing user — link Google account if not already linked
+            if not user.google_id:
+                user.google_id = google_id
+                user.auth_provider = 'google'
+                db.session.commit()
+        else:
+            # New user — create account automatically
+            user = User(
+                name=name,
+                email=email,
+                role='student',
+                google_id=google_id,
+                auth_provider='google'
+            )
+            db.session.add(user)
+            db.session.commit()
+
+        # Issue JWT tokens
+        access_token = create_access_token(
+            identity=str(user.id),
+            additional_claims={'role': user.role, 'email': user.email}
+        )
+        refresh_token = create_refresh_token(identity=str(user.id))
+
+        log_audit('google_login', resource='user', resource_id=user.id, user_id=user.id)
+
+        return jsonify({
+            'message': 'Google login successful',
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'user': user.to_dict()
+        }), 200
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500

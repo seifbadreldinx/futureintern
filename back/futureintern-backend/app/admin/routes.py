@@ -408,7 +408,7 @@ def list_all_companies():
 def verify_company(company_id):
     """Verify a company - Admin only"""
     try:
-        company = User.query.get(company_id)
+        company = db.session.get(User, company_id)
         if not company:
             return jsonify({'error': 'Company not found'}), 404
         
@@ -420,6 +420,136 @@ def verify_company(company_id):
         
         return jsonify({'message': 'Company verified'}), 200
         
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+# ========== Task 1 New Endpoints ==========
+
+@admin_bp.route("/analytics", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def get_analytics():
+    """
+    Advanced analytics for Admin Dashboard:
+    - Total users / internships / applications
+    - Applications per internship with acceptance rate
+    - Overall acceptance rate
+    """
+    try:
+        from sqlalchemy import case
+
+        # Per-internship stats
+        per_internship = db.session.query(
+            Internship.id,
+            Internship.title,
+            User.company_name,
+            func.count(Application.id).label('total_applications'),
+            func.sum(case((Application.status == 'accepted', 1), else_=0)).label('accepted'),
+            func.sum(case((Application.status == 'rejected', 1), else_=0)).label('rejected'),
+            func.sum(case((Application.status == 'pending', 1), else_=0)).label('pending'),
+        ).outerjoin(Application, Internship.id == Application.internship_id)\
+         .join(User, Internship.company_id == User.id)\
+         .group_by(Internship.id, Internship.title, User.company_name)\
+         .order_by(func.count(Application.id).desc())\
+         .limit(20).all()
+
+        internship_stats = []
+        for row in per_internship:
+            total = row.total_applications or 0
+            accepted = row.accepted or 0
+            rate = round((accepted / total * 100), 1) if total > 0 else 0.0
+            internship_stats.append({
+                'internship_id': row.id,
+                'title': row.title,
+                'company': row.company_name,
+                'total_applications': total,
+                'accepted': accepted,
+                'rejected': row.rejected or 0,
+                'pending': row.pending or 0,
+                'acceptance_rate_pct': rate,
+            })
+
+        # Overall acceptance rate
+        total_apps = Application.query.count()
+        total_accepted = Application.query.filter_by(status='accepted').count()
+        overall_rate = round((total_accepted / total_apps * 100), 1) if total_apps > 0 else 0.0
+
+        return jsonify({
+            'overview': {
+                'total_users': User.query.count(),
+                'total_students': User.query.filter_by(role='student').count(),
+                'total_companies': User.query.filter_by(role='company').count(),
+                'total_internships': Internship.query.count(),
+                'active_internships': Internship.query.filter_by(is_active=True).count(),
+                'total_applications': total_apps,
+                'overall_acceptance_rate_pct': overall_rate,
+            },
+            'per_internship': internship_stats,
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/audit-logs", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def get_audit_logs():
+    """View audit trail - Admin only"""
+    try:
+        from app.models.audit_log import AuditLog
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 50, type=int)
+        action_filter = request.args.get('action')  # optional filter
+
+        query = AuditLog.query.order_by(AuditLog.created_at.desc())
+        if action_filter:
+            query = query.filter(AuditLog.action == action_filter)
+
+        pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+        return jsonify({
+            'total': pagination.total,
+            'page': page,
+            'per_page': per_page,
+            'logs': [log.to_dict() for log in pagination.items],
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/internships/expire", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def deactivate_expired_internships():
+    """
+    Auto-deactivate internships whose application_deadline has passed.
+    Call this via a scheduled job or manually from the admin dashboard.
+    """
+    try:
+        from datetime import date
+        today = date.today()
+
+        expired = Internship.query.filter(
+            Internship.is_active == True,
+            Internship.application_deadline < today
+        ).all()
+
+        count = len(expired)
+        for internship in expired:
+            internship.is_active = False
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Deactivated {count} expired internship(s)',
+            'deactivated_count': count,
+            'deactivated_ids': [i.id for i in expired],
+        }), 200
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
