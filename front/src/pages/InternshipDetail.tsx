@@ -16,71 +16,6 @@ export function InternshipDetail() {
   const [showCvModal, setShowCvModal] = useState(false);
   const autoApply = new URLSearchParams(location.search).get('autoApply') === 'true';
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
-      const intId = Number(id);
-      try {
-        const res = await api.internships.getById(intId);
-        const data = res?.internship || res;
-        if (data) {
-          setInternship(data);
-
-          if (isAuthenticated()) {
-            try {
-              const userData = await api.auth.getCurrentUser();
-              setUser(userData.user || userData);
-            } catch (e) {
-              console.error("Failed to fetch user:", e);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Failed to fetch internship from API', err);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [id]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading internship...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!internship) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Internship not found</h2>
-          <p className="text-gray-600 mb-6">The internship you are looking for does not exist or has been removed.</p>
-          <Link to="/browse" className="text-blue-600 hover:text-blue-700 font-medium">
-            Browse all internships
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const getBadgeColor = (type: string) => {
-    switch (type) {
-      case 'Full-time':
-        return 'bg-blue-100 text-blue-700';
-      case 'Part-time':
-        return 'bg-green-100 text-green-700';
-      case 'Remote':
-        return 'bg-purple-100 text-purple-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
   const handleApply = useCallback(async () => {
     // ── Auth gate: must be logged in to apply ──
     if (!isAuthenticated()) {
@@ -109,7 +44,7 @@ export function InternshipDetail() {
       const message = err instanceof Error ? err.message : 'Unable to apply at this time.';
       alert(`Failed to apply: ${message}`);
     }
-  }, [internship, user, id, navigate]);
+  }, [internship, user, id, navigate, isAuthenticated]);
 
   // Auto-trigger apply if user just returned from login with ?autoApply=true
   useEffect(() => {
@@ -117,6 +52,71 @@ export function InternshipDetail() {
       handleApply();
     }
   }, [autoApply, loading, user, internship, handleApply]);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const intId = Number(id);
+      try {
+        const res = await api.internships.getById(intId);
+        const data = res?.internship || res;
+        if (data) {
+          setInternship(data);
+
+          if (isAuthenticated()) {
+            try {
+              const userData = await api.auth.getCurrentUser();
+              setUser(userData.user || userData);
+            } catch (e) {
+              console.error("Failed to fetch user:", e);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch internship from API', err);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [id, isAuthenticated]);
+
+  const getBadgeColor = (type: string) => {
+    switch (type) {
+      case 'Full-time':
+        return 'bg-blue-100 text-blue-700';
+      case 'Part-time':
+        return 'bg-green-100 text-green-700';
+      case 'Remote':
+        return 'bg-purple-100 text-purple-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading internship...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!internship) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Internship not found</h2>
+          <p className="text-gray-600 mb-6">The internship you are looking for does not exist or has been removed.</p>
+          <Link to="/browse" className="text-blue-600 hover:text-blue-700 font-medium">
+            Browse all internships
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
