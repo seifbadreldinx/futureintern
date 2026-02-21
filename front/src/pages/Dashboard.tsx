@@ -4,6 +4,7 @@ import { Briefcase, BookOpen, FileText, Settings, LogOut, User, MapPin, CheckCir
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
 import { logout } from '../utils/auth';
+import { resolveLogoUrl } from '../utils/logoUrl';
 
 export function Dashboard() {
   const [searchParams] = useSearchParams();
@@ -114,21 +115,7 @@ export function Dashboard() {
                 <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center overflow-hidden">
                   {user?.profile_image ? (
                     <img
-                      src={(() => {
-                        const logoUrl = user.profile_image;
-                        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
-
-                        // If it's already a full external URL
-                        if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                          const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                          if (pathMatch) {
-                            return `${apiBase}/uploads/logos/${pathMatch[1]}`;
-                          }
-                          return logoUrl;
-                        }
-                        // Handle relative paths
-                        return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
-                      })()}
+                      src={resolveLogoUrl(user.profile_image)}
                       alt={user?.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
@@ -512,19 +499,7 @@ export function Dashboard() {
                                     <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
                                       {internship.company?.profile_image ? (
                                         <img
-                                          src={(() => {
-                                            const logoUrl = internship.company.profile_image;
-                                            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
-
-                                            if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                                              const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                                              if (pathMatch) {
-                                                return `${apiBase}/uploads/logos/${pathMatch[1]}`;
-                                              }
-                                              return logoUrl;
-                                            }
-                                            return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
-                                          })()}
+                                          src={resolveLogoUrl(internship.company.profile_image)}
                                           alt={companyName}
                                           className="w-full h-full object-contain p-2"
                                           onError={(e) => {
@@ -772,19 +747,7 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
                 {user?.profile_image && (
                   <div className="mt-2 w-20 h-20 border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <img
-                      src={(() => {
-                        const logoUrl = user.profile_image;
-                        const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
-
-                        if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                          const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                          if (pathMatch) {
-                            return `${apiBase}/uploads/logos/${pathMatch[1]}`;
-                          }
-                          return logoUrl;
-                        }
-                        return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
-                      })()}
+                      src={resolveLogoUrl(user.profile_image)}
                       alt="Company Logo"
                       className="w-full h-full object-contain p-1"
                       onError={(e) => {

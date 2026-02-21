@@ -3,6 +3,7 @@ import { MapPin, Calendar, Briefcase, ArrowLeft, Send, X, FileText } from 'lucid
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../services/api';
+import { resolveLogoUrl } from '../utils/logoUrl';
 import { isAuthenticated } from '../utils/auth';
 
 export function InternshipDetail() {
@@ -130,22 +131,7 @@ export function InternshipDetail() {
               <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
                 {internship.company?.profile_image ? (
                   <img
-                    src={(() => {
-                      const logoUrl = internship.company.profile_image;
-                      const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
-
-                      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                        const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                        if (pathMatch) {
-                          // Fix potentially malformed URLs from previous implementation
-                          return `${apiBase}/uploads/logos/${pathMatch[1]}`;
-                        }
-                        return logoUrl;
-                      }
-
-                      // Handle relative paths
-                      return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
-                    })()}
+                    src={resolveLogoUrl(internship.company.profile_image)}
                     alt={internship.company?.name}
                     onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=256`}
                     className="w-full h-full object-contain p-2"

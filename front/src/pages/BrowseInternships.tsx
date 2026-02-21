@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { MapPin, Search, Filter, X } from 'lucide-react';
 import { api } from '../services/api';
 import { SaveButton } from '../components/SaveButton';
+import { resolveLogoUrl } from '../utils/logoUrl';
 
 export function BrowseInternships() {
   const [searchParams] = useSearchParams();
@@ -206,24 +207,7 @@ export function BrowseInternships() {
                     <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
                       {internship.company?.profile_image ? (
                         <img
-                          src={(() => {
-                            const logoUrl = internship.company.profile_image;
-                            const apiBase = (import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api').replace(/\/api\/?$/, '');
-
-                            // If it's already a full external URL (e.g., from ui-avatars or external CDN), use it
-                            if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
-                              // Check if it's a localhost or old Railway URL that needs to be converted
-                              const pathMatch = logoUrl.match(/\/uploads\/logos\/(.+)$/);
-                              if (pathMatch) {
-                                // Extract the relative path and construct new URL
-                                return `${apiBase}/uploads/logos/${pathMatch[1]}`;
-                              }
-                              // Otherwise use the URL as-is (external CDN)
-                              return logoUrl;
-                            }
-                            // It's a relative path, prepend API URL
-                            return `${apiBase}${logoUrl.startsWith('/') ? '' : '/'}${logoUrl}`;
-                          })()}
+                          src={resolveLogoUrl(internship.company.profile_image)}
                           alt={companyName}
                           className="w-full h-full object-contain p-2"
                           onError={(e) => {
