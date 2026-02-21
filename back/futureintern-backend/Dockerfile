@@ -16,11 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the backend application
 COPY . .
 
-# Initialize database
-RUN python init_db.py
+# Remove any stale local SQLite DB (DB will be initialized at runtime)
+RUN rm -f futureintern.db
 
 # Expose port
 EXPOSE 5000
 
-# Start the application with gunicorn
-CMD gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} run:app
+# Initialize DB then start the application
+CMD python init_db.py && gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} run:app
