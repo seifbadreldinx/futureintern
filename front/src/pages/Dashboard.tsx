@@ -698,6 +698,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
           <input
+            id="name"
+            name="name"
             type="text"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
             value={formData.name}
@@ -707,6 +709,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
           <input
+            id="email"
+            name="email"
             type="email"
             disabled
             className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
@@ -716,6 +720,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
           <input
+            id="location"
+            name="location"
             type="text"
             placeholder="City, State"
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -835,6 +841,8 @@ function ProfileSettings({ user, onUpdate }: { user: any, onUpdate: (user: any) 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Skills (Comma separated)</label>
               <input
+                id="skills"
+                name="skills"
                 type="text"
                 placeholder="Python, React, Design..."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -1101,7 +1109,7 @@ function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuc
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Internship Title</label>
-          <input required type="text" className="w-full border rounded-lg p-2"
+          <input id="title" name="title" required type="text" className="w-full border rounded-lg p-2"
             value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} />
         </div>
         <div>
@@ -1118,17 +1126,17 @@ function PostInternshipForm({ internship, onSuccess }: { internship?: any, onSuc
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-          <input required type="text" className="w-full border rounded-lg p-2" placeholder="e.g. Cairo (Remote)"
+          <input id="location" name="location" required type="text" className="w-full border rounded-lg p-2" placeholder="e.g. Cairo (Remote)"
             value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
-          <input type="text" className="w-full border rounded-lg p-2" placeholder="e.g. 3 Months"
+          <input id="duration" name="duration" type="text" className="w-full border rounded-lg p-2" placeholder="e.g. 3 Months"
             value={formData.duration} onChange={e => setFormData({ ...formData, duration: e.target.value })} />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Stipend (Optional)</label>
-          <input type="text" className="w-full border rounded-lg p-2" placeholder="e.g. 3000 EGP"
+          <input id="stipend" name="stipend" type="text" className="w-full border rounded-lg p-2" placeholder="e.g. 3000 EGP"
             value={formData.stipend} onChange={e => setFormData({ ...formData, stipend: e.target.value })} />
         </div>
       </div>
