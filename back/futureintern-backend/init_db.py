@@ -8,6 +8,33 @@ from app.models.user import User
 from app.models.intern import Internship
 from datetime import datetime
 
+def run_migrations(engine):
+    """Add any missing columns to existing tables."""
+    import sqlalchemy as sa
+    with engine.connect() as conn:
+        # Get existing columns in users table
+        result = conn.execute(sa.text("PRAGMA table_info(users)"))
+        existing_columns = {row[1] for row in result.fetchall()}
+
+        # Map of column_name -> ALTER TABLE statement
+        migrations = {
+            'google_id':             "ALTER TABLE users ADD COLUMN google_id TEXT",
+            'auth_provider':         "ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local'",
+            'location':              "ALTER TABLE users ADD COLUMN location TEXT",
+            'two_factor_enabled':    "ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT 0",
+            'failed_login_attempts': "ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0",
+            'locked_until':          "ALTER TABLE users ADD COLUMN locked_until DATETIME",
+            'is_verified':           "ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0",
+        }
+
+        for col, sql in migrations.items():
+            if col not in existing_columns:
+                print(f"🔧 Migration: adding column '{col}' to users table...")
+                conn.execute(sa.text(sql))
+                conn.commit()
+                print(f"✅ Column '{col}' added.")
+
+
 def init_database():
     app = create_app()
     
@@ -17,6 +44,10 @@ def init_database():
         db.create_all()
         print("✅ Database tables created successfully!")
         print(f"Database file location: {app.config['SQLALCHEMY_DATABASE_URI']}")
+
+        # Run migrations to add any missing columns
+        run_migrations(db.engine)
+
 
         # ---- DEV SEEDS: create sample company, student, and internship if missing ----
         # Create sample company user
