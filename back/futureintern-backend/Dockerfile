@@ -23,4 +23,4 @@ RUN rm -f futureintern.db
 EXPOSE 5000
 
 # Initialize DB then start the application
-CMD python init_db.py && gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} run:app
+CMD ["bash", "start.sh"]

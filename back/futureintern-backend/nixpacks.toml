@@ -5,4 +5,4 @@ nixPkgs = ["python311"]
 cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "python init_db.py && gunicorn -w 4 -b 0.0.0.0:$PORT run:app"
+cmd = "bash start.sh"
