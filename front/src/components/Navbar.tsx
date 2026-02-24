@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Menu, X, User } from 'lucide-react';
+import { GraduationCap, Menu, X, User, Shield } from 'lucide-react';
 import { isAuthenticated, logout as doLogout } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 export function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useAuth();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
   const isHome = location.pathname === '/';
   const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated());
+  const isAdmin = user?.role === 'admin';
+  const dashboardPath = isAdmin ? '/admin' : '/dashboard';
+  const dashboardLabel = isAdmin ? 'Admin Panel' : 'Dashboard';
 
   useEffect(() => {
     const onStorage = () => setIsAuth(isAuthenticated());
@@ -75,11 +80,11 @@ export function Navbar() {
             {isAuth ? (
               <>
                 <Link
-                  to="/dashboard"
+                  to={dashboardPath}
                   className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
                 >
-                  <User className="w-5 h-5" />
-                  <span className="font-medium">Dashboard</span>
+                  {isAdmin ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                  <span className="font-medium">{dashboardLabel}</span>
                 </Link>
                 <button
                   onClick={() => { doLogout(); setIsAuth(false); }}
@@ -149,12 +154,12 @@ export function Navbar() {
               {isAuth ? (
                 <>
                   <Link
-                    to="/dashboard"
+                    to={dashboardPath}
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center space-x-2 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
-                    <User className="w-5 h-5" />
-                    <span>Dashboard</span>
+                    {isAdmin ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                    <span>{dashboardLabel}</span>
                   </Link>
                   <button
                     onClick={() => { doLogout(); setMobileMenuOpen(false); setIsAuth(false); }}
