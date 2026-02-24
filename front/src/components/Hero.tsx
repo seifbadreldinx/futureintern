@@ -86,6 +86,8 @@ export function Hero() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
+                id="hero-search"
+                name="hero_search"
                 type="text"
                 placeholder="Keyword or Title"
                 value={searchQuery}
@@ -97,6 +99,8 @@ export function Hero() {
             <div className="flex-1 relative">
               <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
+                id="hero-location"
+                name="hero_location"
                 type="text"
                 placeholder="Location"
                 value={location}
