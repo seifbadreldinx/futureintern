@@ -73,7 +73,7 @@ export function Admin() {
       await api.applications.updateStatus(id, status);
       // Refresh applications list
       const appsList = await api.admin.listApplications();
-      setApplications(appsList);
+      setApplications(Array.isArray(appsList) ? appsList : appsList?.applications || []);
     } catch (error) {
       console.error('Failed to update application status:', error);
     }
@@ -86,7 +86,7 @@ export function Admin() {
       await api.admin.createUser(newUserForm);
       // Refresh user list
       const usersList = await api.admin.listUsers();
-      setUsers(usersList);
+      setUsers(Array.isArray(usersList) ? usersList : usersList?.users || []);
       setShowAddUserModal(false);
       setNewUserForm({
         full_name: '',
@@ -174,8 +174,8 @@ export function Admin() {
         ]);
 
         setStatsData(stats);
-        setInternships(internsList);
-        setApplications(appsList);
+        setInternships(Array.isArray(internsList) ? internsList : internsList?.internships || []);
+        setApplications(Array.isArray(appsList) ? appsList : appsList?.applications || []);
 
         // Fetch logs and sec stats separately to not block main data
         api.admin.listAuditLogs()
@@ -200,7 +200,7 @@ export function Admin() {
       setIsFetchingUsers(true);
       try {
         const usersList = await api.admin.listUsers(userSearchQuery, userSearchType);
-        setUsers(usersList);
+        setUsers(Array.isArray(usersList) ? usersList : usersList?.users || []);
       } catch (error) {
         console.error('Failed to fetch users:', error);
       } finally {

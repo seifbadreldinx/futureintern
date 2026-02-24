@@ -275,7 +275,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                           <div className="space-y-2">
                             <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Why we recommend this:</p>
                             <div className="flex flex-wrap gap-2">
-                              {rec.matching_reasons.map((reason: string, i: number) => (
+                              {(rec.matching_reasons || []).map((reason: string, i: number) => (
                                 <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold border border-blue-100 dark:border-blue-900/30">
                                   {reason}
                                 </span>
