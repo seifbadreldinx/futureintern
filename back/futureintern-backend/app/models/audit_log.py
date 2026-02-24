@@ -36,10 +36,14 @@ class AuditLog(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'admin_id': self.user_id,          # alias for frontend compatibility
             'action': self.action,
             'resource': self.resource,
             'resource_id': self.resource_id,
+            'target_type': self.resource,       # alias for frontend
+            'target_id': self.resource_id,      # alias for frontend
             'details': self.details,
             'ip_address': self.ip_address,
             'created_at': self.created_at.isoformat() if self.created_at else None,
+            'timestamp': self.created_at.isoformat() if self.created_at else None,  # alias
         }

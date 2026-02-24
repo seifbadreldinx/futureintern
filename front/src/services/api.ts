@@ -215,6 +215,36 @@ export const api = {
         body: JSON.stringify({ token, password }),
       });
     },
+
+    // Update profile (alias for users.updateProfile, used by Dashboard)
+    updateProfile: async (data: any) => {
+      return apiRequest<any>('/users/profile', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // Upload profile image (uses the logo upload endpoint which stores to profile_image)
+    uploadProfileImage: async (file: File) => {
+      const formData = new FormData();
+      formData.append('logo', file);
+
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/users/upload-logo`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+        throw new Error(error.error || error.message || 'Upload failed');
+      }
+
+      return response.json();
+    },
   },
 
   // ========== Users ==========
@@ -371,6 +401,24 @@ export const api = {
     getMyInternships: async () => {
       return apiRequest<any>('/internships/my');
     },
+
+    // Alias used by Dashboard component
+    listMy: async () => {
+      const res = await apiRequest<any>('/internships/my');
+      return res.internships || res;
+    },
+
+    // List saved internships (alias for users.getSavedInternships)
+    listSaved: async () => {
+      const res = await apiRequest<any>('/users/saved-internships');
+      return res.saved_internships || res.internships || res;
+    },
+
+    // List AI recommendations
+    listRecommendations: async () => {
+      const res = await apiRequest<any>('/recommendations');
+      return res.recommendations || res;
+    },
   },
 
   // ========== Applications ==========
@@ -414,6 +462,18 @@ export const api = {
         method: 'DELETE',
       });
     },
+
+    // Alias: get student's own applications (used by Dashboard)
+    myApplications: async () => {
+      const res = await apiRequest<any>('/applications/my');
+      return res.applications || res;
+    },
+
+    // Get all applications for company's internships
+    listCompany: async () => {
+      const res = await apiRequest<any>('/applications/company');
+      return res.applications || res;
+    },
   },
 
   // ========== Recommendations ==========
@@ -437,8 +497,12 @@ export const api = {
     },
 
     // User management
-    listUsers: async (skip: number = 0, limit: number = 100) => {
-      return apiRequest<any>(`/admin/users?skip=${skip}&limit=${limit}`);
+    listUsers: async (search: string = '', searchType: string = 'all') => {
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (searchType && searchType !== 'all') params.append('search_type', searchType);
+      const query = params.toString();
+      return apiRequest<any>(`/admin/users${query ? '?' + query : ''}`);
     },
 
     createUser: async (data: {
@@ -470,6 +534,23 @@ export const api = {
       return apiRequest<any>(`/admin/internships/${internshipId}`, {
         method: 'DELETE',
       });
+    },
+
+    updateInternship: async (internshipId: number, data: any) => {
+      return apiRequest<any>(`/admin/internships/${internshipId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    // Audit & Security
+    listAuditLogs: async () => {
+      const res = await apiRequest<any>('/admin/audit-logs');
+      return res.logs || [];
+    },
+
+    getSecurityStats: async () => {
+      return apiRequest<any>('/admin/security-stats');
     },
 
     // Application management

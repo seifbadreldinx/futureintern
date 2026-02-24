@@ -148,8 +148,19 @@ def update_application_status(application_id):
             return jsonify({'error': 'You do not have permission to update this application'}), 403
         
         # Update status
+        old_status = application.status
         application.status = new_status
         db.session.commit()
+
+        # Audit trail for status change
+        try:
+            from app.utils.logger import log_audit
+            log_audit('application_status_change', resource='application',
+                      resource_id=application_id,
+                      details={'old_status': old_status, 'new_status': new_status},
+                      user_id=company_id)
+        except Exception:
+            pass
         
         return jsonify({
             'message': 'Application status updated successfully',
@@ -193,6 +204,33 @@ def withdraw_application(application_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+@applications_bp.route("/company", methods=["GET"])
+@jwt_required()
+@role_required('company')
+def get_company_applications():
+    """Get all applications for all internships owned by the current company"""
+    try:
+        company_id = get_current_user_id()
+        # Get all internships belonging to this company
+        company_internships = Internship.query.filter_by(company_id=company_id).all()
+        internship_ids = [i.id for i in company_internships]
+
+        if not internship_ids:
+            return jsonify({'applications': [], 'total': 0}), 200
+
+        applications = Application.query.filter(
+            Application.internship_id.in_(internship_ids)
+        ).all()
+
+        return jsonify({
+            'applications': [app.to_dict(include_details=True) for app in applications],
+            'total': len(applications)
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 @applications_bp.route("/<int:application_id>", methods=["GET"])
 @jwt_required()

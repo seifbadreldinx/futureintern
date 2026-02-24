@@ -23,6 +23,7 @@ import { Press } from './pages/Press';
 import { FAQ } from './pages/FAQ';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
+import { AuthProvider } from './context/AuthContext';
 import { useEffect } from 'react';
 
 function AppContent() {
@@ -68,9 +69,11 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
-        <AppContent />
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col">
+          <AppContent />
+        </div>
+      </AuthProvider>
     </Router>
   );
 }

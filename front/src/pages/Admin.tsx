@@ -20,9 +20,14 @@ import {
   Download,
   Plus,
   X,
+  Shield,
+  History,
+  Lock,
+  ShieldCheck,
+  Terminal,
 } from 'lucide-react';
 
-type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications';
+type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications' | 'logs_security';
 
 interface StatCard {
   title: string;
@@ -35,12 +40,18 @@ interface StatCard {
 
 export function Admin() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [userSearchQuery, setUserSearchQuery] = useState('');
+  const [userSearchType, setUserSearchType] = useState('all'); // 'all', 'name', 'id'
+  const [internshipSearchQuery, setInternshipSearchQuery] = useState('');
+  const [applicationSearchQuery, setApplicationSearchQuery] = useState('');
   const [statsData, setStatsData] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [internships, setInternships] = useState<any[]>([]);
   const [applications, setApplications] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [securityStats, setSecurityStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const navigate = useNavigate();
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
@@ -53,6 +64,9 @@ export function Admin() {
     company_name: '',
     industry: ''
   });
+  const [showEditInternshipModal, setShowEditInternshipModal] = useState(false);
+  const [editingInternship, setEditingInternship] = useState<any>(null);
+  const [editInternshipForm, setEditInternshipForm] = useState<any>({});
 
   const handleUpdateApplicationStatus = async (id: number, status: string) => {
     try {
@@ -111,39 +125,95 @@ export function Admin() {
     }
   };
 
+  const handleEditInternship = (internship: any) => {
+    setEditingInternship(internship);
+    setEditInternshipForm({
+      title: internship.title,
+      description: internship.description,
+      location: internship.location,
+      type: internship.type,
+      duration: internship.duration,
+      salary_range: internship.salary_range || '',
+      deadline: internship.deadline ? new Date(internship.deadline).toISOString().split('T')[0] : '',
+      status: internship.status || 'active',
+      is_open: internship.is_open ?? true,
+      skills_required: internship.skills_required || [],
+      responsibilities: internship.responsibilities || [],
+      requirements: internship.requirements || [],
+      benefits: internship.benefits || [],
+      interests_matched: internship.interests_matched || []
+    });
+    setShowEditInternshipModal(true);
+  };
+
+  const handleUpdateInternship = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const updated = await api.admin.updateInternship(editingInternship.id, editInternshipForm);
+      setInternships(internships.map(i => i.id === updated.id ? updated : i));
+      setShowEditInternshipModal(false);
+      alert('Internship updated successfully!');
+    } catch (error: any) {
+      console.error('Failed to update internship:', error);
+      alert(error.message || 'Failed to update internship');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAdminData = async () => {
+    const fetchBaseData = async () => {
       setIsLoading(true);
       try {
-        // Check if user is authorized (admin role)
-        const currentUser = await api.auth.getCurrentUser();
-        const userData = currentUser?.user || currentUser;
-        
-        if (userData?.role !== 'admin') {
-          navigate('/unauthorized');
-          return;
-        }
-
-        const [stats, usersList, internsList, appsList] = await Promise.all([
-          api.admin.getStats(),
-          api.admin.listUsers(),
-          api.admin.listInternships(),
-          api.admin.listApplications(),
+        // Fetch stats, interns, apps
+        const [stats, internsList, appsList] = await Promise.all([
+          api.admin.getStats().catch(err => { console.error('Stats error:', err); return null; }),
+          api.admin.listInternships().catch(err => { console.error('Internships error:', err); return []; }),
+          api.admin.listApplications().catch(err => { console.error('Applications error:', err); return []; }),
         ]);
+
         setStatsData(stats);
-        setUsers(usersList);
         setInternships(internsList);
         setApplications(appsList);
+
+        // Fetch logs and sec stats separately to not block main data
+        api.admin.listAuditLogs()
+          .then(setAuditLogs)
+          .catch(err => console.error('Audit logs error:', err));
+
+        api.admin.getSecurityStats()
+          .then(setSecurityStats)
+          .catch(err => console.error('Security stats error:', err));
+
       } catch (error) {
-        console.error('Failed to fetch admin data:', error);
-        // If error is 401/403, redirect to unauthorized
-        navigate('/unauthorized');
+        console.error('Failed to fetch base admin data:', error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchAdminData();
-  }, [navigate]);
+    fetchBaseData();
+  }, []);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setIsFetchingUsers(true);
+      try {
+        const usersList = await api.admin.listUsers(userSearchQuery, userSearchType);
+        setUsers(usersList);
+      } catch (error) {
+        console.error('Failed to fetch users:', error);
+      } finally {
+        setIsFetchingUsers(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      fetchUsers();
+    }, 300); // Simple debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [userSearchQuery, userSearchType]);
 
   const stats: StatCard[] = [
     {
@@ -197,6 +267,7 @@ export function Admin() {
     { id: 'users' as AdminSection, label: 'Users', icon: Users },
     { id: 'internships' as AdminSection, label: 'Internships', icon: Briefcase },
     { id: 'applications' as AdminSection, label: 'Applications', icon: FileText },
+    { id: 'logs_security' as AdminSection, label: 'Logs & Security', icon: Shield },
   ];
 
 
@@ -233,42 +304,7 @@ export function Admin() {
               ))}
             </div>
 
-            {/* Charts and Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Activity Chart Placeholder */}
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Growth</h3>
-                <div className="h-64 flex items-center justify-center bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-transparent dark:border-slate-800">
-                  <div className="text-center">
-                    <Activity className="w-12 h-12 text-gray-400 dark:text-slate-600 mx-auto mb-2" />
-                    <p className="text-gray-500 dark:text-slate-400">Chart visualization would go here</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Activity */}
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
-                <div className="space-y-4">
-                  {[
-                    { action: 'New user registered', user: 'John Doe', time: '2 minutes ago' },
-                    { action: 'New internship posted', user: 'TechCorp', time: '15 minutes ago' },
-                    { action: 'Application submitted', user: 'Jane Smith', time: '1 hour ago' },
-                    { action: 'Company verified', user: 'DesignHub', time: '2 hours ago' },
-                  ].map((activity, index) => (
-                    <div key={index} className="flex items-start gap-3 pb-4 border-b border-gray-100 dark:border-slate-800 last:border-0">
-                      <div className="w-8 h-8 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Activity className="w-4 h-4 text-gray-600 dark:text-slate-400" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-slate-200">{activity.action}</p>
-                        <p className="text-xs text-gray-500 dark:text-slate-500">{activity.user} • {activity.time}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            {/* Dashboard data grid */}
 
             {/* Recent Tables */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -327,23 +363,57 @@ export function Admin() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
-              <div className="flex gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
+              <div className="flex flex-1 max-w-2xl gap-3">
+                <div className="relative flex-1 group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {isFetchingUsers ? (
+                      <div className="w-4 h-4 border-2 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+                    ) : (
+                      <Search className="w-5 h-5 text-gray-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
+                    )}
+                  </div>
                   <input
                     type="text"
-                    placeholder="Search users..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors"
+                    placeholder={`Search users by ${userSearchType === 'all' ? 'name, email, or ID' : userSearchType}...`}
+                    value={userSearchQuery}
+                    onChange={(e) => setUserSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                   />
+                  {userSearchQuery && (
+                    <button
+                      onClick={() => setUserSearchQuery('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
+
+                <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700">
+                  {[
+                    { id: 'all', label: 'All' },
+                    { id: 'name', label: 'Name' },
+                    { id: 'id', label: 'ID' },
+                  ].map((type) => (
+                    <button
+                      key={type.id}
+                      onClick={() => setUserSearchType(type.id)}
+                      className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${userSearchType === type.id
+                        ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                        }`}
+                    >
+                      {type.label}
+                    </button>
+                  ))}
+                </div>
+
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-blue-600 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors shadow-lg"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
-                  Add User
+                  <span className="hidden md:inline">Add User</span>
                 </button>
               </div>
             </div>
@@ -420,8 +490,8 @@ export function Admin() {
                   <input
                     type="text"
                     placeholder="Search internships..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={internshipSearchQuery}
+                    onChange={(e) => setInternshipSearchQuery(e.target.value)}
                     className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors"
                   />
                 </div>
@@ -458,6 +528,12 @@ export function Admin() {
                       View
                     </button>
                     <button
+                      onClick={() => handleEditInternship(internship)}
+                      className="flex-1 px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors flex items-center justify-center">
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit
+                    </button>
+                    <button
                       onClick={() => handleDeleteInternship(internship.id)}
                       className="flex-1 px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors flex items-center justify-center"
                     >
@@ -482,8 +558,8 @@ export function Admin() {
                   <input
                     type="text"
                     placeholder="Search applications..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    value={applicationSearchQuery}
+                    onChange={(e) => setApplicationSearchQuery(e.target.value)}
                     className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-colors"
                   />
                 </div>
@@ -540,6 +616,115 @@ export function Admin() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'logs_security':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Logs & Security Monitoring</h2>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full border border-green-100 dark:border-green-900/30">
+                <ShieldCheck className="w-4 h-4" />
+                <span className="text-sm font-bold">System Secure</span>
+              </div>
+            </div>
+
+            {/* Security Top Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: 'Active Sessions', value: securityStats?.active_sessions || 0, icon: <Users className="w-6 h-6" />, color: 'bg-blue-500' },
+                { title: 'Login Failures (24h)', value: securityStats?.login_failures_24h || 0, icon: <Lock className="w-6 h-6" />, color: 'bg-red-500' },
+                { title: 'System Health', value: securityStats?.system_health || 'N/A', icon: <Activity className="w-6 h-6" />, color: 'bg-green-500' },
+                { title: 'System Uptime', value: securityStats?.system_uptime || '99.9%', icon: <TrendingUp className="w-6 h-6" />, color: 'bg-indigo-500' },
+              ].map((item, idx) => (
+                <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                  <div className="flex items-center gap-4">
+                    <div className={`${item.color} p-3 rounded-lg text-white`}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.title}</p>
+                      <p className="text-xl font-bold text-gray-900 dark:text-white">{item.value}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Audit Logs Table */}
+              <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <History className="w-5 h-5 text-gray-400" />
+                    System Audit Logs
+                  </h3>
+                  <button className="text-sm text-blue-600 hover:underline">Refresh</button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                      <tr>
+                        <th className="px-6 py-3">Admin ID</th>
+                        <th className="px-6 py-3">Action</th>
+                        <th className="px-6 py-3">Target</th>
+                        <th className="px-6 py-3">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                      {auditLogs.length > 0 ? (
+                        auditLogs.map((log: any) => (
+                          <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/30 transition-colors">
+                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-slate-400">#{log.admin_id}</td>
+                            <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-slate-200">{log.action}</td>
+                            <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-500">{log.target_type}:{log.target_id}</td>
+                            <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-500">{new Date(log.timestamp).toLocaleString()}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} className="px-6 py-10 text-center text-gray-500">No audit logs found.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Security Insights */}
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                    <Terminal className="w-5 h-5 text-gray-400" />
+                    Top Admin Actions
+                  </h3>
+                  <div className="space-y-4">
+                    {securityStats?.top_admin_actions?.map((action: any, i: number) => (
+                      <div key={i} className="flex justify-between items-center">
+                        <div>
+                          <p className="text-sm font-bold text-gray-900 dark:text-slate-200">{action.admin}</p>
+                          <p className="text-xs text-gray-500">{action.action}</p>
+                        </div>
+                        <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-1 rounded text-xs font-bold">
+                          {action.count} ops
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-xl p-6 text-white border border-slate-800">
+                  <h4 className="font-bold mb-2 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-blue-400" />
+                    Security Tip
+                  </h4>
+                  <p className="text-sm text-blue-100/80">
+                    Always review audit logs after high-privilege operations. Ensure Super Admin roles are limited to essential personnel only.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -743,6 +928,161 @@ export function Admin() {
                     <>
                       <Plus className="w-4 h-4" />
                       Create User
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Internship Modal */}
+      {showEditInternshipModal && editingInternship && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Edit className="w-5 h-5 text-blue-600" />
+                Edit Internship
+              </h3>
+              <button
+                onClick={() => setShowEditInternshipModal(false)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateInternship} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={editInternshipForm.title}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, title: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Type</label>
+                  <select
+                    value={editInternshipForm.type}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, type: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="Full-time">Full-time</option>
+                    <option value="Part-time">Part-time</option>
+                    <option value="Remote">Remote</option>
+                    <option value="Hybrid">Hybrid</option>
+                    <option value="Contract">Contract</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Description</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={editInternshipForm.description}
+                  onChange={(e) => setEditInternshipForm({ ...editInternshipForm, description: e.target.value })}
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Location</label>
+                  <input
+                    type="text"
+                    required
+                    value={editInternshipForm.location}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, location: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Duration</label>
+                  <input
+                    type="text"
+                    required
+                    value={editInternshipForm.duration}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, duration: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Salary Range</label>
+                  <input
+                    type="text"
+                    value={editInternshipForm.salary_range}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, salary_range: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Deadline</label>
+                  <input
+                    type="date"
+                    required
+                    value={editInternshipForm.deadline}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, deadline: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Status</label>
+                  <select
+                    value={editInternshipForm.status}
+                    onChange={(e) => setEditInternshipForm({ ...editInternshipForm, status: e.target.value })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                </div>
+                <div className="flex items-center pt-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editInternshipForm.is_open}
+                      onChange={(e) => setEditInternshipForm({ ...editInternshipForm, is_open: e.target.checked })}
+                      className="w-4 h-4 text-blue-600 bg-gray-50 dark:bg-slate-800 border-gray-300 dark:border-slate-700 rounded focus:ring-blue-500"
+                    />
+                    <span className="text-sm font-semibold text-gray-700 dark:text-slate-300">Is Open</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowEditInternshipModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      Save Changes
                     </>
                   )}
                 </button>
