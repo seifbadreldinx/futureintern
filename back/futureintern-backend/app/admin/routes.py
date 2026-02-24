@@ -492,7 +492,10 @@ def get_security_stats():
             'login_failures_24h': login_failures_24h,
             'system_health': 'Healthy',
             'system_uptime': '99.9%',
-                'top_admin_actions': top_admin_actions,
+            'top_admin_actions': top_admin_actions
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @admin_bp.route("/applications", methods=["GET"])
 @jwt_required()
