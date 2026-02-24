@@ -517,10 +517,10 @@ export function SignUp() {
           {currentStep === 2 && (
             <div className={`space-y-5 ${stepDirection === 'forward' ? 'step-enter-right' : 'step-enter-left'}`}>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                <p className="block text-sm font-semibold text-gray-700 mb-3">
                   <Heart className="inline w-4 h-4 mr-1" />
                   Interests (Select all that apply)
-                </label>
+                </p>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {INTEREST_OPTIONS.map((interest) => (
                     <button

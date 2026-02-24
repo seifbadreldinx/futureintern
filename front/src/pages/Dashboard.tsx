@@ -428,50 +428,51 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Full Name</label>
-                  <input name="full_name" type="text" defaultValue={user.name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                  <label htmlFor="full_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Full Name</label>
+                  <input id="full_name" name="full_name" type="text" defaultValue={user.name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">University Name</label>
-                  <input name="university_name" type="text" defaultValue={user.university_name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                  <label htmlFor="university_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">University Name</label>
+                  <input id="university_name" name="university_name" type="text" defaultValue={user.university_name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Academic Major</label>
-                  <input name="major" type="text" defaultValue={user.major} placeholder="e.g. Computer Science" className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                  <label htmlFor="major" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Academic Major</label>
+                  <input id="major" name="major" type="text" defaultValue={user.major} placeholder="e.g. Computer Science" className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Phone Number</label>
+                  <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Phone Number</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input name="phone_number" type="tel" defaultValue={user.phone_number} placeholder="+1234567890" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="phone_number" name="phone_number" type="tel" defaultValue={user.phone_number} placeholder="+1234567890" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Graduation Date</label>
+                  <label htmlFor="graduation_date" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Graduation Date</label>
                   <div className="relative">
                     <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input name="graduation_date" type="date" defaultValue={user.graduation_date ? new Date(user.graduation_date).toISOString().split('T')[0] : ''} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="graduation_date" name="graduation_date" type="date" defaultValue={user.graduation_date ? new Date(user.graduation_date).toISOString().split('T')[0] : ''} className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Top 3 Interests</label>
+                  <label htmlFor="interests" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Top 3 Interests</label>
                   <div className="relative">
                     <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input name="interests" type="text" defaultValue={user.interests?.join(', ')} placeholder="AI, UI/UX, Backend (Select exactly 3)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="interests" name="interests" type="text" defaultValue={user.interests?.join(', ')} placeholder="AI, UI/UX, Backend (Select exactly 3)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                   <p className="text-[10px] text-gray-500 mt-1 italic">Note: Separate with commas. Exactly 3 required for matching.</p>
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium text-blue-600 dark:text-blue-400">Professional Bio</label>
+                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium text-blue-600 dark:text-blue-400">Professional Bio</label>
                 <textarea
+                  id="bio"
                   name="bio"
                   rows={4}
                   defaultValue={user.bio}
@@ -482,17 +483,17 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Technical Skills</label>
+                  <label htmlFor="skills" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Technical Skills</label>
                   <div className="relative">
                     <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input name="skills" type="text" defaultValue={user.skills?.join(', ')} placeholder="React, Python, SQL (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="skills" name="skills" type="text" defaultValue={user.skills?.join(', ')} placeholder="React, Python, SQL (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Preferred Locations</label>
+                  <label htmlFor="preferred_locations" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Preferred Locations</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input name="preferred_locations" type="text" defaultValue={user.preferred_locations?.join(', ')} placeholder="Egypt, Remote (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="preferred_locations" name="preferred_locations" type="text" defaultValue={user.preferred_locations?.join(', ')} placeholder="Egypt, Remote (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
               </div>
@@ -994,8 +995,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Company Name</label>
-                <input name="company_name" type="text" defaultValue={user.companyName || user.name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Company Name</label>
+                <input id="company_name" name="company_name" type="text" defaultValue={user.companyName || user.name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
               </div>
               <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md font-medium">
                 Save Changes

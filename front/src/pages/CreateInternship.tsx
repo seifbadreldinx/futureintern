@@ -48,58 +48,58 @@ export function CreateInternship({ isDashboardTab, onCancel }: CreateInternshipP
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Title *</label>
-          <input name="title" type="text" required placeholder="e.g. Frontend Developer Intern"
+          <label htmlFor="ci-title" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Title *</label>
+          <input id="ci-title" name="title" type="text" required placeholder="e.g. Frontend Developer Intern"
             className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Description *</label>
-          <textarea name="description" rows={4} required placeholder="Describe the internship responsibilities..."
+          <label htmlFor="ci-description" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Description *</label>
+          <textarea id="ci-description" name="description" rows={4} required placeholder="Describe the internship responsibilities..."
             className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none" />
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Requirements</label>
-          <textarea name="requirements" rows={3} placeholder="List the requirements..."
+          <label htmlFor="ci-requirements" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Requirements</label>
+          <textarea id="ci-requirements" name="requirements" rows={3} placeholder="List the requirements..."
             className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 resize-none" />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Location</label>
-            <input name="location" type="text" placeholder="Cairo, Remote, etc."
+            <label htmlFor="ci-location" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Location</label>
+            <input id="ci-location" name="location" type="text" placeholder="Cairo, Remote, etc."
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Duration</label>
-            <input name="duration" type="text" placeholder="3 months"
-              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Stipend</label>
-            <input name="stipend" type="text" placeholder="5000 EGP/month"
-              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Required Major</label>
-            <input name="major" type="text" placeholder="Computer Science"
+            <label htmlFor="ci-duration" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Duration</label>
+            <input id="ci-duration" name="duration" type="text" placeholder="3 months"
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Application Deadline</label>
-            <input name="application_deadline" type="date"
+            <label htmlFor="ci-stipend" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Stipend</label>
+            <input id="ci-stipend" name="stipend" type="text" placeholder="5000 EGP/month"
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
           <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Start Date</label>
-            <input name="start_date" type="date"
+            <label htmlFor="ci-major" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Required Major</label>
+            <input id="ci-major" name="major" type="text" placeholder="Computer Science"
+              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="ci-deadline" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Application Deadline</label>
+            <input id="ci-deadline" name="application_deadline" type="date"
+              className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+          </div>
+          <div>
+            <label htmlFor="ci-start-date" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Start Date</label>
+            <input id="ci-start-date" name="start_date" type="date"
               className="w-full px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
           </div>
         </div>
