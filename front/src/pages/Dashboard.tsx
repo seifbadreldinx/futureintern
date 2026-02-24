@@ -397,7 +397,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   </div>
                   <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
                     <Camera className="w-4 h-4" />
-                    <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
+                    <input type="file" id="profile_image_upload" name="profile_image_upload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (e.target.files?.[0]) {
                         try {
                           await api.auth.uploadProfileImage(e.target.files[0]);
