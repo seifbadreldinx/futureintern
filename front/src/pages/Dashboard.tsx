@@ -51,11 +51,13 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [applications, setApplications] = useState<any[]>([]);
   const [savedInternships, setSavedInternships] = useState<any[]>([]);
   const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
+  const [recommendError, setRecommendError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
+      setRecommendError(null);
       try {
         const [apps, saved, recommended] = await Promise.all([
           api.applications.myApplications(),
@@ -64,8 +66,12 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         ]);
         setApplications(apps);
         setSavedInternships(saved);
-        setRecommendedInternships(recommended);
-      } catch (err) {
+        setRecommendedInternships(recommended || []);
+      } catch (err: any) {
+        setRecommendedInternships([]);
+        setRecommendError(
+          err?.message || 'Could not load recommendations. Please try again later.'
+        );
         console.error('Error fetching student dashboard data:', err);
       } finally {
         setIsLoading(false);
@@ -226,14 +232,19 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                 </div>
               </div>
 
-              {recommendedInternships.length === 0 ? (
+              {recommendError ? (
+                <div className="text-center py-12">
+                  <Sparkles className="w-16 h-16 text-gray-300 dark:text-slate-700 mx-auto mb-4" />
+                  <p className="text-red-600 dark:text-red-400">{recommendError}</p>
+                </div>
+              ) : recommendedInternships.length === 0 ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-16 h-16 text-gray-300 dark:text-slate-700 mx-auto mb-4" />
                   <p className="text-gray-600 dark:text-slate-400">No specific recommendations yet. Try updating your profile or uploading a CV!</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
-                  {recommendedInternships.map((rec: any) => (
+                  {(recommendedInternships || []).map((rec: any) => (
                     <div key={rec.internship.id} className="group border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 rounded-xl p-6 hover:shadow-xl hover:border-blue-500/30 transition-all duration-300">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex-1">
