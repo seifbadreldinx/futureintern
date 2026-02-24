@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, User, FileText, BookOpen } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -8,7 +8,6 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
   const location = useLocation();
 
   // Pick up ?redirect=/internship/5 so user lands back where they came from
@@ -22,11 +21,13 @@ export function Login() {
     try {
       const response = await api.auth.login(email, password);
       console.log('Login successful:', response.user);
-      // Route admins directly to /admin panel, others to dashboard (or redirect target)
+      // Force full page reload so AuthProvider re-fetches user with new token.
+      // React Router's navigate() doesn't remount the app, so AuthContext
+      // would still see user=null from before login.
       if (response.user?.role === 'admin') {
-        navigate('/admin');
+        window.location.href = '/admin';
       } else {
-        navigate(redirectTo);
+        window.location.href = redirectTo;
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
