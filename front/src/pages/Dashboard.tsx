@@ -1,15 +1,22 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { CreateInternship } from './CreateInternship';
 import { api } from '../services/api';
-import { useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export function Dashboard() {
   const { user, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+
+  // Redirect admin users to the dedicated Admin Panel
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin', { replace: true });
+    }
+  }, [user, navigate]);
 
   if (!user) {
     return (
@@ -22,12 +29,21 @@ export function Dashboard() {
     );
   }
 
+  // Admin users are redirected above; show loading while redirect happens
+  if (user.role === 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {user.role === 'company' ? 'Company Dashboard' : user.role === 'admin' ? 'Admin Dashboard' : 'Dashboard'}
+            {user.role === 'company' ? 'Company Dashboard' : 'Dashboard'}
           </h1>
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600 dark:text-slate-400">Welcome, {user.name}</span>
@@ -36,15 +52,7 @@ export function Dashboard() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {user.role === 'admin' ? (
-          <div className="text-center py-20">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Admin Account</h2>
-            <p className="text-gray-600 dark:text-slate-400 mb-6">You are logged in as an administrator. Use the Admin Panel to manage the platform.</p>
-            <Link to="/admin" className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg font-medium">
-              Go to Admin Panel
-            </Link>
-          </div>
-        ) : user.role === 'company' ? (
+        {user.role === 'company' ? (
           <CompanyDashboard activeTab={activeTab} setActiveTab={setActiveTab} user={user} logout={logout} />
         ) : (
           <StudentDashboard activeTab={activeTab} setActiveTab={setActiveTab} user={user} logout={logout} />
