@@ -96,9 +96,9 @@ export function Chatbot() {
     try {
       // Import and call the chatbot service
       const { getChatbotResponse } = await import('../services/chatbotService');
-      
+
       const response = await getChatbotResponse(messageText, conversationHistory);
-      
+
       // Detect if response contains Arabic
       const responseIsArabic = containsArabic(response);
       if (responseIsArabic) {
@@ -118,7 +118,7 @@ export function Chatbot() {
       console.error('Chatbot error:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: preferredLanguage === 'ar' 
+        text: preferredLanguage === 'ar'
           ? "عذراً، لم أتمكن من الحصول على إجابة. يرجى المحاولة مرة أخرى أو الاتصال بالدعم."
           : "Sorry, I couldn't get an answer. Please try again or contact support.",
         sender: 'bot',
@@ -191,11 +191,10 @@ export function Chatbot() {
                   className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                      message.sender === 'user'
+                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${message.sender === 'user'
                         ? 'bg-gray-900 text-white rounded-br-sm'
                         : 'bg-white text-gray-800 rounded-bl-sm shadow-sm border border-gray-200'
-                    }`}
+                      }`}
                     dir={isArabic ? 'rtl' : 'ltr'}
                   >
                     <p className={`text-sm whitespace-pre-wrap break-words ${isArabic ? 'text-right' : 'text-left'}`}>
@@ -223,26 +222,25 @@ export function Chatbot() {
             )}
 
             {/* Quick Replies (show after every bot response) */}
-            {messages.length > 0 && 
-             !isTyping && 
-             messages[messages.length - 1]?.sender === 'bot' && (
-              <div className="space-y-2 mt-2" dir={preferredLanguage === 'ar' ? 'rtl' : 'ltr'}>
-                <p className={`text-xs text-gray-500 mb-2 ${preferredLanguage === 'ar' ? 'text-right' : 'text-left'}`}>
-                  {preferredLanguage === 'ar' ? 'أسئلة سريعة:' : 'Quick questions:'}
-                </p>
-                {(preferredLanguage === 'ar' ? QUICK_REPLIES_ARABIC : QUICK_REPLIES).map((reply, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleQuickReply(reply)}
-                    className={`w-full px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-sm shadow-sm ${
-                      preferredLanguage === 'ar' ? 'text-right' : 'text-left'
-                    }`}
-                  >
-                    {reply}
-                  </button>
-                ))}
-              </div>
-            )}
+            {messages.length > 0 &&
+              !isTyping &&
+              messages[messages.length - 1]?.sender === 'bot' && (
+                <div className="space-y-2 mt-2" dir={preferredLanguage === 'ar' ? 'rtl' : 'ltr'}>
+                  <p className={`text-xs text-gray-500 mb-2 ${preferredLanguage === 'ar' ? 'text-right' : 'text-left'}`}>
+                    {preferredLanguage === 'ar' ? 'أسئلة سريعة:' : 'Quick questions:'}
+                  </p>
+                  {(preferredLanguage === 'ar' ? QUICK_REPLIES_ARABIC : QUICK_REPLIES).map((reply, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuickReply(reply)}
+                      className={`w-full px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-sm shadow-sm ${preferredLanguage === 'ar' ? 'text-right' : 'text-left'
+                        }`}
+                    >
+                      {reply}
+                    </button>
+                  ))}
+                </div>
+              )}
 
             <div ref={messagesEndRef} />
           </div>
@@ -252,6 +250,8 @@ export function Chatbot() {
             <div className="flex space-x-2">
               <input
                 ref={inputRef}
+                id="chatbot-message"
+                name="chatbot_message"
                 type="text"
                 value={inputValue}
                 onChange={(e) => {

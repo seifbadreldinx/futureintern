@@ -142,6 +142,8 @@ export function GetHelp() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
+                id="faq-search"
+                name="faq_search"
                 type="text"
                 placeholder="Search for questions..."
                 value={searchQuery}
@@ -155,11 +157,10 @@ export function GetHelp() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    selectedCategory === category
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${selectedCategory === category
                       ? 'bg-gray-900 text-white shadow-md'
                       : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {category}
                 </button>
