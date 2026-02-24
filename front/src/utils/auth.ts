@@ -8,8 +8,10 @@ export const isAuthenticated = (): boolean => {
 
 export const logout = (): void => {
   removeAuthToken();
-  // Optionally clear other user data
-  window.location.href = '/login';
+  // Clear any cached user data from sessionStorage/localStorage
+  sessionStorage.clear();
+  // Replace current history entry so back button can't return to authenticated pages
+  window.location.replace('/login');
 };
 
 export const requireAuth = (): boolean => {

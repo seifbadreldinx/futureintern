@@ -14,6 +14,17 @@ export function ProtectedRoute({ children, role }: ProtectedRouteProps) {
     const [user, setUser] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
+    // Back/forward button protection: re-check auth on popstate
+    useEffect(() => {
+        const handlePopState = () => {
+            if (!isAuthenticated()) {
+                window.location.replace('/login');
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
     useEffect(() => {
         if (authenticated && role) {
             api.auth.getCurrentUser()

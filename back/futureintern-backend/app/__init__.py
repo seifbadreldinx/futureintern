@@ -39,6 +39,13 @@ def add_security_headers(response):
     
     # Permissions policy
     response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+
+    # Prevent browser from caching authenticated pages (back-button protection)
+    # After logout the browser must re-fetch from the server instead of
+    # showing a cached copy of the authenticated page.
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
     
     return response
 

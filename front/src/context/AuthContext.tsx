@@ -35,8 +35,8 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
-  logout: () => {},
-  refreshUserData: async () => {},
+  logout: () => { },
+  refreshUserData: async () => { },
 });
 
 export function useAuth() {
@@ -80,7 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     removeAuthToken();
     setUser(null);
-    window.location.href = '/login';
+    sessionStorage.clear();
+    // Replace history entry so back button can't return to authenticated pages
+    window.location.replace('/login');
   }, []);
 
   const refreshUserData = useCallback(async () => {
