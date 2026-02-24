@@ -22,7 +22,12 @@ export function Login() {
     try {
       const response = await api.auth.login(email, password);
       console.log('Login successful:', response.user);
-      navigate(redirectTo);
+      // Route admins directly to /admin panel, others to dashboard (or redirect target)
+      if (response.user?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate(redirectTo);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
       setError(errorMessage);
