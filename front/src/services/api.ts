@@ -405,19 +405,22 @@ export const api = {
     // Alias used by Dashboard component
     listMy: async () => {
       const res = await apiRequest<any>('/internships/my');
-      return res.internships || res;
+      const result = res.internships || res;
+      return Array.isArray(result) ? result : [];
     },
 
     // List saved internships (alias for users.getSavedInternships)
     listSaved: async () => {
       const res = await apiRequest<any>('/users/saved-internships');
-      return res.saved_internships || res.internships || res;
+      const result = res.saved_internships || res.internships || res;
+      return Array.isArray(result) ? result : [];
     },
 
     // List AI recommendations
     listRecommendations: async () => {
       const res = await apiRequest<any>('/recommendations');
-      return res.recommendations || res;
+      const result = res.recommendations || res;
+      return Array.isArray(result) ? result : [];
     },
   },
 
@@ -466,13 +469,15 @@ export const api = {
     // Alias: get student's own applications (used by Dashboard)
     myApplications: async () => {
       const res = await apiRequest<any>('/applications/my');
-      return res.applications || res;
+      const result = res.applications || res;
+      return Array.isArray(result) ? result : [];
     },
 
     // Get all applications for company's internships
     listCompany: async () => {
       const res = await apiRequest<any>('/applications/company');
-      return res.applications || res;
+      const result = res.applications || res;
+      return Array.isArray(result) ? result : [];
     },
   },
 

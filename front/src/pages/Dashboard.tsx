@@ -64,9 +64,9 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
           api.internships.listSaved(),
           api.internships.listRecommendations(),
         ]);
-        setApplications(apps);
-        setSavedInternships(saved);
-        setRecommendedInternships(recommended || []);
+        setApplications(Array.isArray(apps) ? apps : []);
+        setSavedInternships(Array.isArray(saved) ? saved : []);
+        setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
       } catch (err: any) {
         setRecommendedInternships([]);
         setRecommendError(
@@ -555,8 +555,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
           api.internships.listMy(),
           api.applications.listCompany(),
         ]);
-        setPostedInternships(internships);
-        setApplications(apps);
+        setPostedInternships(Array.isArray(internships) ? internships : []);
+        setApplications(Array.isArray(apps) ? apps : []);
       } catch (err) {
         console.error('Error fetching company dashboard data:', err);
       } finally {
