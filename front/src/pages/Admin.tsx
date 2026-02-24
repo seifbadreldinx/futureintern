@@ -373,6 +373,8 @@ export function Admin() {
                     )}
                   </div>
                   <input
+                    id="admin-user-search"
+                    name="admin_user_search"
                     type="text"
                     placeholder={`Search users by ${userSearchType === 'all' ? 'name, email, or ID' : userSearchType}...`}
                     value={userSearchQuery}
@@ -488,6 +490,8 @@ export function Admin() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
                   <input
+                    id="admin-internship-search"
+                    name="admin_internship_search"
                     type="text"
                     placeholder="Search internships..."
                     value={internshipSearchQuery}
@@ -556,6 +560,8 @@ export function Admin() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
                   <input
+                    id="admin-application-search"
+                    name="admin_application_search"
                     type="text"
                     placeholder="Search applications..."
                     value={applicationSearchQuery}
