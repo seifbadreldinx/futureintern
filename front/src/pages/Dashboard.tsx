@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award } from 'lucide-react';
+import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { CreateInternship } from './CreateInternship';
 import { api } from '../services/api';
@@ -68,6 +68,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [savedInternships, setSavedInternships] = useState<any[]>([]);
   const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
   const [recommendError, setRecommendError] = useState<string | null>(null);
+  const [pointsBalance, setPointsBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -75,14 +76,16 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
       setIsLoading(true);
       setRecommendError(null);
       try {
-        const [apps, saved, recommended] = await Promise.all([
+        const [apps, saved, recommended, balRes] = await Promise.all([
           api.applications.myApplications(),
           api.internships.listSaved(),
           api.internships.listRecommendations(),
+          api.points.getBalance().catch(() => ({ balance: 0 })),
         ]);
         setApplications(Array.isArray(apps) ? apps : []);
         setSavedInternships(Array.isArray(saved) ? saved : []);
         setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
+        setPointsBalance(balRes.balance ?? 0);
       } catch (err: any) {
         setRecommendedInternships([]);
         setRecommendError(
@@ -158,6 +161,16 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
           </nav>
 
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
+            <Link to="/points" className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-900/30 dark:hover:to-orange-900/30 transition-all group">
+              <div className="flex items-center space-x-3">
+                <Coins className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <span className="font-medium text-amber-700 dark:text-amber-400">Points</span>
+              </div>
+              <span className="font-bold text-amber-700 dark:text-amber-400">{pointsBalance}</span>
+            </Link>
+          </div>
+
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800">
             <button
               onClick={logout}
               className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 group"
@@ -172,7 +185,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
       <div className="lg:col-span-3">
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-blue-500/30 transition-all">
                 <div className="flex items-center justify-between">
                   <div>
@@ -208,6 +221,17 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   </div>
                 </div>
               </div>
+              <Link to="/points" className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-amber-500/30 transition-all block">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Points Balance</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{pointsBalance}</p>
+                  </div>
+                  <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-xl">
+                    <Coins className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                  </div>
+                </div>
+              </Link>
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">

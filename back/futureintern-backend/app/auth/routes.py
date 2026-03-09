@@ -178,18 +178,22 @@ def register_student():
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Create new student with 20 starting points
+        # Create new student with signup bonus
         user = User(
             name=name,
             email=email,
             role='student',
             university=university,
             major=major,
-            points=20
+            points=0
         )
         user.set_password(data['password'])  # Hash password
         
         db.session.add(user)
+        db.session.flush()  # get user.id before recording transaction
+
+        from app.utils.points import grant_signup_bonus
+        grant_signup_bonus(user, bonus=50)
         db.session.commit()
 
         log_audit('register_student', resource='user', resource_id=user.id, user_id=user.id)
@@ -559,16 +563,20 @@ def google_auth():
                 user.auth_provider = 'google'
                 db.session.commit()
         else:
-            # New user — create account automatically with 20 starting points
+            # New user — create account automatically with signup bonus
             user = User(
                 name=name,
                 email=email,
                 role='student',
                 google_id=google_id,
                 auth_provider='google',
-                points=20
+                points=0
             )
             db.session.add(user)
+            db.session.flush()
+
+            from app.utils.points import grant_signup_bonus
+            grant_signup_bonus(user, bonus=50)
             db.session.commit()
 
         # Issue JWT tokens

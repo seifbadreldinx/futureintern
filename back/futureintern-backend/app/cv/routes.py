@@ -185,16 +185,17 @@ def export_pdf():
     cv = _get_cv_or_404(user)
     if not cv:
         return jsonify({'error': 'No CV found. Please create your CV first.'}), 404
-        
-    # Check Freemium Points Balance
-    if user.points < 15:
+
+    # Check & charge points (first-time-free supported via ServicePricing)
+    from app.utils.points import check_and_charge
+    success, msg, cost = check_and_charge(user, 'cv_export')
+    if not success:
         return jsonify({
             'error': 'Insufficient points',
-            'message': 'You need at least 15 points to export your CV to a premium PDF. Please interact more with the platform or complete your profile to earn points!'
-        }), 402 # Payment Required
-        
-    # Deduct Points
-    user.points -= 15
+            'message': msg,
+            'points_required': cost,
+            'current_balance': user.points or 0,
+        }), 402  # Payment Required
     db.session.commit()
 
     try:

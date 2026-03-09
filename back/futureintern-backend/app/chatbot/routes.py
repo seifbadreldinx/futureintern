@@ -210,15 +210,14 @@ def chat():
             pass
             
         if user and user.role == 'student':
-            if user.points < 1:
+            from app.utils.points import check_and_charge
+            success, msg, cost = check_and_charge(user, 'chatbot')
+            if not success:
                 return jsonify({
-                    'response': 'You do not have enough points. Please interact more with the platform or complete your profile to earn points! (Cost: 1 Point)',
+                    'response': msg,
                     'category': 'error',
                     'timestamp': datetime.utcnow().isoformat()
                 }), 402  # Payment Required
-            
-            # Deduct point
-            user.points -= 1
             db.session.commit()
             
         # 1. Try OpenAI if API Key is configured

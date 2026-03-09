@@ -23,6 +23,7 @@ import { Press } from './pages/Press';
 import { FAQ } from './pages/FAQ';
 import { PrivacyPolicy } from './pages/PrivacyPolicy';
 import { TermsOfService } from './pages/TermsOfService';
+import { PointsStore } from './pages/PointsStore';
 import { AuthProvider } from './context/AuthContext';
 import { useEffect } from 'react';
 
@@ -58,6 +59,7 @@ function AppContent() {
           <Route path="/faq" element={<FAQ />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/points" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
         </Routes>
       </main>
       <Footer />

@@ -13,6 +13,8 @@ mail = Mail()
 from app.models.audit_log import AuditLog  # noqa: F401
 # Import CV models so SQLAlchemy creates the tables
 from app.models.cv import CV, CVSection  # noqa: F401
+# Import points system models so SQLAlchemy creates the tables
+from app.models.points import PointsTransaction, PointsPackage, ServicePricing  # noqa: F401
 # Import security models so SQLAlchemy creates the tables
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
 from app.models.two_factor import TwoFactorCode  # noqa: F401
@@ -67,6 +69,7 @@ from app.admin.routes import admin_bp
 from app.chatbot.routes import chatbot_bp
 from app.cv.routes import cv_bp
 from app.auth.security_routes import security_bp
+from app.points import points_bp
 
 # TEMPORARY - Optional imports (won't break app if they fail)
 try:
@@ -300,6 +303,16 @@ def create_app():
     app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
     app.register_blueprint(cv_bp, url_prefix="/api/cv")
     app.register_blueprint(security_bp, url_prefix="/api/auth")
+    app.register_blueprint(points_bp, url_prefix="/api/points")
+
+    # Seed default points pricing & packages on first run
+    with app.app_context():
+        try:
+            from app.utils.points import seed_default_pricing, seed_default_packages
+            seed_default_pricing()
+            seed_default_packages()
+        except Exception as e:
+            print(f"\u26a0\ufe0f Points seeding skipped: {e}")
     
     # TEMPORARY - Register optional blueprints if available
     if MIGRATION_BP_AVAILABLE:

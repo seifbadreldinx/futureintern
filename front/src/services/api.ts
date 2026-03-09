@@ -598,6 +598,84 @@ export const api = {
       });
     },
   },
+
+  // ========== Points System ==========
+  points: {
+    // Get current balance + summary
+    getBalance: async () => {
+      return apiRequest<{ balance: number; total_earned: number; total_spent: number }>('/points/balance');
+    },
+
+    // Get transaction history
+    getTransactions: async (page = 1, perPage = 20) => {
+      return apiRequest<any>(`/points/transactions?page=${page}&per_page=${perPage}`);
+    },
+
+    // Get available store packages
+    getStore: async () => {
+      return apiRequest<{ packages: any[] }>('/points/store');
+    },
+
+    // Purchase a package
+    purchase: async (packageId: number) => {
+      return apiRequest<any>('/points/purchase', {
+        method: 'POST',
+        body: JSON.stringify({ package_id: packageId }),
+      });
+    },
+
+    // Get service pricing
+    getPricing: async () => {
+      return apiRequest<{ services: any[] }>('/points/pricing');
+    },
+
+    // --- Admin ---
+    adminGetPackages: async () => {
+      return apiRequest<{ packages: any[] }>('/admin/points/packages');
+    },
+
+    adminCreatePackage: async (data: { name: string; points: number; price: number; discount_percent?: number; description?: string; is_active?: boolean }) => {
+      return apiRequest<any>('/admin/points/packages', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+
+    adminUpdatePackage: async (id: number, data: any) => {
+      return apiRequest<any>(`/admin/points/packages/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    adminDeletePackage: async (id: number) => {
+      return apiRequest<any>(`/admin/points/packages/${id}`, {
+        method: 'DELETE',
+      });
+    },
+
+    adminGetPricing: async () => {
+      return apiRequest<{ services: any[] }>('/admin/points/pricing');
+    },
+
+    adminUpdatePricing: async (id: number, data: any) => {
+      return apiRequest<any>(`/admin/points/pricing/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
+    adminGrantPoints: async (userId: number, amount: number, reason?: string) => {
+      return apiRequest<any>('/admin/points/grant', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, amount, reason }),
+      });
+    },
+
+    adminGetStats: async () => {
+      return apiRequest<any>('/admin/points/stats');
+    },
+  },
 };
 
 // Export helper functions

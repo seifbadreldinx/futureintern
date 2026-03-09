@@ -704,3 +704,223 @@ def deactivate_expired_internships():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ========== Points System Management ==========
+
+@admin_bp.route("/points/packages", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def list_points_packages():
+    """List all points packages (including inactive) - Admin only"""
+    try:
+        from app.models.points import PointsPackage
+        packages = PointsPackage.query.order_by(PointsPackage.points.asc()).all()
+        return jsonify({'packages': [p.to_dict() for p in packages]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/packages", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def create_points_package():
+    """Create a new points package - Admin only"""
+    try:
+        from app.models.points import PointsPackage
+        data = request.get_json() or {}
+
+        required = ['name', 'points', 'price']
+        for field in required:
+            if field not in data:
+                return jsonify({'error': f'{field} is required'}), 400
+
+        package = PointsPackage(
+            name=str(data['name'])[:100],
+            points=int(data['points']),
+            price=float(data['price']),
+            discount_percent=float(data.get('discount_percent', 0)),
+            description=str(data.get('description', ''))[:255] if data.get('description') else None,
+            is_active=data.get('is_active', True),
+        )
+        db.session.add(package)
+        db.session.commit()
+
+        return jsonify({'message': 'Package created', 'package': package.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/packages/<int:package_id>", methods=["PUT"])
+@jwt_required()
+@role_required('admin')
+def update_points_package(package_id):
+    """Update a points package - Admin only"""
+    try:
+        from app.models.points import PointsPackage
+        package = db.session.get(PointsPackage, package_id)
+        if not package:
+            return jsonify({'error': 'Package not found'}), 404
+
+        data = request.get_json() or {}
+        if 'name' in data:
+            package.name = str(data['name'])[:100]
+        if 'points' in data:
+            package.points = int(data['points'])
+        if 'price' in data:
+            package.price = float(data['price'])
+        if 'discount_percent' in data:
+            package.discount_percent = float(data['discount_percent'])
+        if 'description' in data:
+            package.description = str(data['description'])[:255] if data['description'] else None
+        if 'is_active' in data:
+            package.is_active = bool(data['is_active'])
+
+        db.session.commit()
+        return jsonify({'message': 'Package updated', 'package': package.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/packages/<int:package_id>", methods=["DELETE"])
+@jwt_required()
+@role_required('admin')
+def delete_points_package(package_id):
+    """Delete a points package - Admin only"""
+    try:
+        from app.models.points import PointsPackage
+        package = db.session.get(PointsPackage, package_id)
+        if not package:
+            return jsonify({'error': 'Package not found'}), 404
+
+        db.session.delete(package)
+        db.session.commit()
+        return jsonify({'message': 'Package deleted'}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/pricing", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def list_service_pricing():
+    """List all service pricing configs - Admin only"""
+    try:
+        from app.models.points import ServicePricing
+        services = ServicePricing.query.all()
+        return jsonify({'services': [s.to_dict() for s in services]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/pricing/<int:pricing_id>", methods=["PUT"])
+@jwt_required()
+@role_required('admin')
+def update_service_pricing(pricing_id):
+    """Update a service pricing config - Admin only"""
+    try:
+        from app.models.points import ServicePricing
+        pricing = db.session.get(ServicePricing, pricing_id)
+        if not pricing:
+            return jsonify({'error': 'Service pricing not found'}), 404
+
+        data = request.get_json() or {}
+        if 'points_cost' in data:
+            pricing.points_cost = int(data['points_cost'])
+        if 'first_time_free' in data:
+            pricing.first_time_free = bool(data['first_time_free'])
+        if 'display_name' in data:
+            pricing.display_name = str(data['display_name'])[:100]
+        if 'description' in data:
+            pricing.description = str(data['description'])[:255] if data['description'] else None
+        if 'is_active' in data:
+            pricing.is_active = bool(data['is_active'])
+
+        db.session.commit()
+        return jsonify({'message': 'Service pricing updated', 'service': pricing.to_dict()}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/grant", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def grant_points():
+    """Grant points to a user - Admin only"""
+    try:
+        from app.utils.points import record_transaction
+        from flask_jwt_extended import get_jwt_identity
+
+        data = request.get_json() or {}
+        target_user_id = data.get('user_id')
+        amount = data.get('amount')
+        reason = data.get('reason', 'Admin grant')
+
+        if not target_user_id or not amount:
+            return jsonify({'error': 'user_id and amount are required'}), 400
+
+        amount = int(amount)
+        if amount <= 0:
+            return jsonify({'error': 'Amount must be positive'}), 400
+
+        target_user = db.session.get(User, int(target_user_id))
+        if not target_user:
+            return jsonify({'error': 'User not found'}), 404
+
+        admin_id = int(get_jwt_identity())
+        record_transaction(
+            target_user, amount, 'admin_grant',
+            description=f'{reason} (by admin #{admin_id})',
+        )
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Granted {amount} points to {target_user.name}',
+            'new_balance': target_user.points,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/points/stats", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def points_stats():
+    """Get points system statistics - Admin only"""
+    try:
+        from app.models.points import PointsTransaction, PointsPackage
+
+        total_points_in_circulation = db.session.query(
+            db.func.coalesce(db.func.sum(User.points), 0)
+        ).filter(User.role == 'student').scalar()
+
+        total_purchases = PointsTransaction.query.filter_by(transaction_type='purchase').count()
+        total_service_charges = PointsTransaction.query.filter_by(transaction_type='service_charge').count()
+        total_granted = PointsTransaction.query.filter_by(transaction_type='admin_grant').count()
+
+        # Points purchased total
+        purchased_points = db.session.query(
+            db.func.coalesce(db.func.sum(PointsTransaction.amount), 0)
+        ).filter(PointsTransaction.transaction_type == 'purchase').scalar()
+
+        # Points spent total
+        spent_points = db.session.query(
+            db.func.coalesce(db.func.sum(PointsTransaction.amount), 0)
+        ).filter(PointsTransaction.transaction_type == 'service_charge').scalar()
+
+        return jsonify({
+            'total_points_in_circulation': int(total_points_in_circulation),
+            'total_purchases': total_purchases,
+            'total_purchased_points': int(purchased_points),
+            'total_service_charges': total_service_charges,
+            'total_spent_points': abs(int(spent_points)),
+            'total_admin_grants': total_granted,
+            'active_packages': PointsPackage.query.filter_by(is_active=True).count(),
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
