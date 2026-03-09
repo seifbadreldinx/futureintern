@@ -11,6 +11,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=True)  # nullable for OAuth users
     role = db.Column(db.String(20), nullable=False)  # student, company, admin
+    points = db.Column(db.Integer, default=0, nullable=False) # Freemium Economy Currency
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Google OAuth fields
@@ -62,6 +63,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'role': self.role,
+            'points': self.points,
             'profile_image': self.profile_image,
             'auth_provider': self.auth_provider,
             'created_at': self.created_at.isoformat() if self.created_at else None

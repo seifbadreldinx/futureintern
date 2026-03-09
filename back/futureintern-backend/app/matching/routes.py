@@ -22,6 +22,18 @@ def get_recommendations():
 
         if not student:
             return jsonify({'error': 'Student not found'}), 404
+            
+        # Check Freemium Points Balance
+        if student.points < 10:
+            return jsonify({
+                'error': 'Insufficient points',
+                'message': 'You need at least 10 points to use AI Recommendations. Please interact more with the platform to earn points!'
+            }), 402 # Payment Required
+            
+        # Deduct Points
+        from app.models import db
+        student.points -= 10
+        db.session.commit()
 
         # 2️⃣ Get all active internships
         internships = Internship.query.filter_by(is_active=True).all()

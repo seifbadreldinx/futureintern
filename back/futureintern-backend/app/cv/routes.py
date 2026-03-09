@@ -185,6 +185,17 @@ def export_pdf():
     cv = _get_cv_or_404(user)
     if not cv:
         return jsonify({'error': 'No CV found. Please create your CV first.'}), 404
+        
+    # Check Freemium Points Balance
+    if user.points < 15:
+        return jsonify({
+            'error': 'Insufficient points',
+            'message': 'You need at least 15 points to export your CV to a premium PDF. Please interact more with the platform or complete your profile to earn points!'
+        }), 402 # Payment Required
+        
+    # Deduct Points
+    user.points -= 15
+    db.session.commit()
 
     try:
         from reportlab.lib.pagesizes import A4

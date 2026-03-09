@@ -178,13 +178,14 @@ def register_student():
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Create new student
+        # Create new student with 20 starting points
         user = User(
             name=name,
             email=email,
             role='student',
             university=university,
-            major=major
+            major=major,
+            points=20
         )
         user.set_password(data['password'])  # Hash password
         
@@ -558,13 +559,14 @@ def google_auth():
                 user.auth_provider = 'google'
                 db.session.commit()
         else:
-            # New user — create account automatically
+            # New user — create account automatically with 20 starting points
             user = User(
                 name=name,
                 email=email,
                 role='student',
                 google_id=google_id,
-                auth_provider='google'
+                auth_provider='google',
+                points=20
             )
             db.session.add(user)
             db.session.commit()

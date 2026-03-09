@@ -67,19 +67,49 @@ def update_profile():
             user.phone = data['phone']
         
         # Student-specific fields
+        points_awarded = 0
         if user.role == 'student':
-            if 'university' in data:
+            if 'university' in data and not user.university:
                 user.university = data['university']
-            if 'major' in data:
+                points_awarded += 5
+            elif 'university' in data:
+                user.university = data['university']
+
+            if 'major' in data and not user.major:
                 user.major = data['major']
-            if 'skills' in data:
+                points_awarded += 5
+            elif 'major' in data:
+                user.major = data['major']
+
+            if 'skills' in data and not user.skills:
                 user.skills = data['skills']
-            if 'interests' in data:
+                points_awarded += 5
+            elif 'skills' in data:
+                user.skills = data['skills']
+
+            if 'interests' in data and not user.interests:
                 user.interests = data['interests']
-            if 'bio' in data:
+                points_awarded += 5
+            elif 'interests' in data:
+                user.interests = data['interests']
+
+            if 'bio' in data and not user.bio:
                 user.bio = data['bio']
-            if 'location' in data:
+                points_awarded += 5
+            elif 'bio' in data:
+                user.bio = data['bio']
+
+            if 'location' in data and not user.location:
                 user.location = data['location']
+                points_awarded += 5
+            elif 'location' in data:
+                user.location = data['location']
+                
+            # Cap total points a user can have to prevent infinite farming from empty profiles
+            if points_awarded > 0:
+                user.points += points_awarded
+                if user.points > 1000: # Example soft cap
+                     user.points = 1000
         
         # Company-specific fields (Task 3.2)
         elif user.role == 'company':

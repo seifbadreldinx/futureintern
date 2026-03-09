@@ -1,23 +1,5 @@
 // Chatbot service for handling AI responses
-// Supports OpenAI API and fallback to rule-based responses
-
-interface ChatbotConfig {
-  apiKey?: string;
-  apiUrl?: string;
-  model?: string;
-}
-
-// Get configuration from environment variables or use provided API key
-const getConfig = (): ChatbotConfig => {
-  // Use environment variable for API key - NEVER commit API keys to Git!
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
-  return {
-    apiKey: apiKey,
-    apiUrl: import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions',
-    model: import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini' // Using a smarter model
-  };
-};
+// Now proxies requests through the backend to protect API keys
 
 // Rule-based fallback responses for common questions
 const getFallbackResponse = (question: string): string => {
@@ -149,106 +131,36 @@ export const getChatbotResponse = async (
   userMessage: string,
   conversationHistory: ConversationMessage[] = []
 ): Promise<string> => {
-  const config = getConfig();
-
-  // If no API key is available, use fallback responses
-  if (!config.apiKey) {
-    await new Promise(resolve => setTimeout(resolve, 800));
-    return getFallbackResponse(userMessage);
-  }
-
   try {
-    const apiUrl = config.apiUrl || 'https://api.openai.com/v1/chat/completions';
-    
-    // Build messages array with system prompt and conversation history
-    const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
-      {
-        role: 'system',
-        content: `You are an intelligent and thoughtful assistant for FutureIntern, a professional platform connecting students with internship opportunities.
-
-**Language Support:**
-- You are fully bilingual and can communicate fluently in both English and Arabic
-- Detect the language of the user's message and respond in the same language
-- If the user writes in Arabic, respond in Arabic. If they write in English, respond in English
-- You can seamlessly switch between languages if the user switches languages
-- For Arabic responses, use proper Arabic grammar and formal language (الفصحى) when appropriate
-
-**Your Role:**
-- Think deeply about each question before responding
-- Consider the context and intent behind user questions
-- Provide comprehensive, well-structured answers
-- Be friendly, professional, and empathetic
-- Anticipate follow-up questions and address them proactively
-- Remember previous messages in the conversation and maintain context
-
-**Your Knowledge Base:**
-You have extensive knowledge about:
-- Internship application processes and best practices
-- CV/resume upload and optimization
-- AI-powered matching algorithms and how they work
-- Account setup, profile management, and optimization
-- Platform navigation and features
-- Career guidance and internship search strategies
-- Common student concerns and questions
-
-**Response Guidelines:**
-1. **Think First**: Analyze what the user is really asking - are they confused about a process? Do they need step-by-step guidance? Are they looking for tips?
-2. **Be Comprehensive**: Provide detailed, actionable answers. Break down complex processes into clear steps.
-3. **Be Proactive**: Anticipate related questions and address them. For example, if someone asks about applying, also mention CV requirements and what to expect.
-4. **Use Examples**: When helpful, provide concrete examples or scenarios.
-5. **Be Encouraging**: Support students in their internship search journey with positive, motivating language.
-6. **Stay Focused**: Keep responses relevant to FutureIntern and internships, but be helpful and conversational.
-7. **Maintain Context**: Remember what was discussed earlier in the conversation and reference it when relevant.
-
-**Platform-Specific Information:**
-- Students can browse internships at /browse
-- Dashboard is available at /dashboard for managing applications
-- Contact support at /contact or visit /get-help for detailed guides
-- The platform uses AI matching to connect students with relevant opportunities
-- Profile completion improves matching accuracy
-
-**Tone:** Professional yet warm, encouraging, and supportive. Think like a career counselor who genuinely wants to help students succeed.
-
-If asked about something outside your knowledge, politely acknowledge it and direct users to contact support at /contact or visit /get-help for specialized assistance.`
-      }
-    ];
-
-    // Add conversation history (skip the initial greeting message)
-    conversationHistory.forEach((msg) => {
-      if (msg.sender === 'user') {
-        messages.push({ role: 'user', content: msg.text });
-      } else if (msg.sender === 'bot') {
-        messages.push({ role: 'assistant', content: msg.text });
-      }
-    });
-
-    // Add the current user message
-    messages.push({ role: 'user', content: userMessage });
+    const apiUrl = import.meta.env.VITE_API_BASE_URL + '/chatbot/chat';
+    const token = localStorage.getItem('token');
 
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
       },
       body: JSON.stringify({
-        model: config.model,
-        messages: messages,
-        max_tokens: 500,
-        temperature: 0.8 // Slightly higher for more natural, thoughtful responses
+        message: userMessage,
+        history: conversationHistory
       })
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
+      if (response.status === 402) {
+        // Return the specific points error message from backend
+        return data.response || "Insufficient points to use this feature.";
+      }
       throw new Error(`API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || getFallbackResponse(userMessage);
+    return data.response || getFallbackResponse(userMessage);
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('Chatbot API error:', error);
     // Fallback to rule-based responses on error
     return getFallbackResponse(userMessage);
   }
 };
-

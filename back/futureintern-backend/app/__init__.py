@@ -57,7 +57,7 @@ except ImportError:
     SWAGGER_AVAILABLE = False
     print("Warning: flasgger not available. API documentation will be disabled.")
 
-# استدعاء Blueprints
+# Blueprints
 from app.auth.routes import auth_bp
 from app.users.routes import users_bp
 from app.internships.routes import internships_bp

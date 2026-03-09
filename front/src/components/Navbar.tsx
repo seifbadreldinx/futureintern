@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Menu, X, User, Shield } from 'lucide-react';
+import { GraduationCap, Menu, X, User, Shield, Coins } from 'lucide-react';
 import { isAuthenticated, logout as doLogout } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 
@@ -79,6 +79,12 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             {isAuth ? (
               <>
+                {user?.role === 'student' && user.points !== undefined && (
+                  <div className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2" title="Your Freemium Points">
+                    <Coins className="w-4 h-4" />
+                    <span className="font-bold text-sm">{user.points}</span>
+                  </div>
+                )}
                 <Link
                   to={dashboardPath}
                   className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
@@ -153,6 +159,12 @@ export function Navbar() {
             <div className="pt-4 border-t border-gray-200 space-y-2">
               {isAuth ? (
                 <>
+                  {user?.role === 'student' && user.points !== undefined && (
+                    <div className="flex items-center space-x-2 px-4 py-2.5 mx-2 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200">
+                      <Coins className="w-5 h-5" />
+                      <span className="font-bold">Points Balance: {user.points}</span>
+                    </div>
+                  )}
                   <Link
                     to={dashboardPath}
                     onClick={() => setMobileMenuOpen(false)}

@@ -187,18 +187,133 @@ def chat():
             return jsonify({'error': 'Message is required'}), 400
         
         user_message = data['message'].strip()
+        conversation_history = data.get('history', [])
         
         if not user_message:
             return jsonify({'error': 'Message cannot be empty'}), 400
+            
+        from app.models.user import User
+        from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+        from app.models import db
+        import requests
+        from flask import current_app
+        import os
+
+        # Check points logic if user is authenticated
+        user = None
+        try:
+            verify_jwt_in_request(optional=True)
+            user_id = get_jwt_identity()
+            if user_id:
+                user = db.session.get(User, user_id)
+        except Exception:
+            pass
+            
+        if user and user.role == 'student':
+            if user.points < 1:
+                return jsonify({
+                    'response': 'You do not have enough points. Please interact more with the platform or complete your profile to earn points! (Cost: 1 Point)',
+                    'category': 'error',
+                    'timestamp': datetime.utcnow().isoformat()
+                }), 402  # Payment Required
+            
+            # Deduct point
+            user.points -= 1
+            db.session.commit()
+            
+        # 1. Try OpenAI if API Key is configured
+        openai_key = current_app.config.get('OPENAI_API_KEY')
+        if openai_key:
+            try:
+                system_prompt = """You are an intelligent and thoughtful assistant for FutureIntern, a professional platform connecting students with internship opportunities.
+
+**Language Support:**
+- You are fully bilingual and can communicate fluently in both English and Arabic
+- Detect the language of the user's message and respond in the same language
+- If the user writes in Arabic, respond in Arabic. If they write in English, respond in English
+- You can seamlessly switch between languages if the user switches languages
+- For Arabic responses, use proper Arabic grammar and formal language (الفصحى) when appropriate
+
+**Your Role:**
+- Think deeply about each question before responding
+- Consider the context and intent behind user questions
+- Provide comprehensive, well-structured answers
+- Be friendly, professional, and empathetic
+- Anticipate follow-up questions and address them proactively
+- Remember previous messages in the conversation and maintain context
+
+**Your Knowledge Base:**
+You have extensive knowledge about:
+- Internship application processes and best practices
+- CV/resume upload and optimization
+- AI-powered matching algorithms and how they work
+- Account setup, profile management, and optimization
+- Platform navigation and features
+- Career guidance and internship search strategies
+- Common student concerns and questions
+
+**Response Guidelines:**
+1. **Think First**: Analyze what the user is really asking - are they confused about a process? Do they need step-by-step guidance? Are they looking for tips?
+2. **Be Comprehensive**: Provide detailed, actionable answers. Break down complex processes into clear steps.
+3. **Be Proactive**: Anticipate related questions and address them. For example, if someone asks about applying, also mention CV requirements and what to expect.
+4. **Use Examples**: When helpful, provide concrete examples or scenarios.
+5. **Be Encouraging**: Support students in their internship search journey with positive, motivating language.
+6. **Stay Focused**: Keep responses relevant to FutureIntern and internships, but be helpful and conversational.
+7. **Maintain Context**: Remember what was discussed earlier in the conversation and reference it when relevant.
+
+**Platform-Specific Information:**
+- Students can browse internships at /browse
+- Dashboard is available at /dashboard for managing applications
+- Contact support at /contact or visit /get-help for detailed guides
+- The platform uses AI matching to connect students with relevant opportunities
+- Profile completion improves matching accuracy
+
+**Tone:** Professional yet warm, encouraging, and supportive. Think like a career counselor who genuinely wants to help students succeed.
+
+If asked about something outside your knowledge, politely acknowledge it and direct users to contact support at /contact or visit /get-help for specialized assistance."""
+                
+                messages = [{"role": "system", "content": system_prompt}]
+                for msg in conversation_history:
+                    role = "user" if msg.get("sender") == "user" else "assistant"
+                    messages.append({"role": role, "content": msg.get("text", "")})
+                messages.append({"role": "user", "content": user_message})
+
+                openai_url = "https://api.openai.com/v1/chat/completions"
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {openai_key}"
+                }
+                payload = {
+                    "model": current_app.config.get('OPENAI_MODEL', 'gpt-4o-mini'),
+                    "messages": messages,
+                    "max_tokens": 500,
+                    "temperature": 0.8
+                }
+                response = requests.post(openai_url, headers=headers, json=payload, timeout=15)
+                response.raise_for_status()
+                response_data = response.json()
+                bot_answer = response_data.get('choices', [{}])[0].get('message', {}).get('content')
+                
+                if bot_answer:
+                    return jsonify({
+                        'response': bot_answer,
+                        'category': 'ai',
+                        'confidence': 100.0,
+                        'nlp_used': True,
+                        'timestamp': datetime.utcnow().isoformat()
+                    }), 200
+            except Exception as e:
+                print(f"OpenAI fallback error: {str(e)}")
+                # Continue below to fallback mechanism
         
-        # Find best matching answer using NLTK-enhanced matching
+        # 2. Fallback to NLTK-enhanced matching
         answer, category, confidence = find_best_match(user_message)
         
         if answer:
             return jsonify({
                 'response': answer,
                 'category': category,
-                'confidence': round(confidence * 100, 1),  # Convert to percentage
+                'confidence': round(confidence * 100, 1) if confidence else 0.0,  # Convert to percentage
                 'nlp_used': True,
                 'timestamp': datetime.utcnow().isoformat()
             }), 200
