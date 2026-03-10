@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle, Flame, Target, FileText, UserCheck } from 'lucide-react';
+import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle, Flame, Target, FileText, UserCheck, LogIn, Award, Star, Settings, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -162,6 +162,21 @@ export function PointsStore() {
     }
   };
 
+  const getTxnSourceInfo = (type: string) => {
+    switch (type) {
+      case 'signup_bonus': return { label: 'Sign-Up Bonus', tag: 'Bonus', icon: Gift, bg: 'bg-green-100 dark:bg-green-900/30', iconColor: 'text-green-600 dark:text-green-400' };
+      case 'purchase': return { label: 'Points Purchase', tag: 'Purchase', icon: ShoppingBag, bg: 'bg-blue-100 dark:bg-blue-900/30', iconColor: 'text-blue-600 dark:text-blue-400' };
+      case 'service_charge': return { label: 'Service Used', tag: 'Spent', icon: Settings, bg: 'bg-orange-100 dark:bg-orange-900/30', iconColor: 'text-orange-600 dark:text-orange-400' };
+      case 'admin_grant': return { label: 'Admin Grant', tag: 'Granted', icon: Award, bg: 'bg-purple-100 dark:bg-purple-900/30', iconColor: 'text-purple-600 dark:text-purple-400' };
+      case 'refund': return { label: 'Refund', tag: 'Refund', icon: ArrowUpRight, bg: 'bg-gray-100 dark:bg-slate-800', iconColor: 'text-gray-600 dark:text-gray-400' };
+      case 'daily_login': return { label: 'Daily Login Reward', tag: 'Login', icon: LogIn, bg: 'bg-amber-100 dark:bg-amber-900/30', iconColor: 'text-amber-600 dark:text-amber-400' };
+      case 'streak_bonus': return { label: 'Login Streak Bonus', tag: 'Streak', icon: Flame, bg: 'bg-red-100 dark:bg-red-900/30', iconColor: 'text-red-600 dark:text-red-400' };
+      case 'application_reward': return { label: 'Application Reward', tag: 'Applied', icon: FileText, bg: 'bg-cyan-100 dark:bg-cyan-900/30', iconColor: 'text-cyan-600 dark:text-cyan-400' };
+      case 'profile_completion': return { label: 'Profile Completed', tag: 'Profile', icon: UserCheck, bg: 'bg-indigo-100 dark:bg-indigo-900/30', iconColor: 'text-indigo-600 dark:text-indigo-400' };
+      default: return { label: type.replace(/_/g, ' '), tag: type, icon: Star, bg: 'bg-gray-100 dark:bg-slate-800', iconColor: 'text-gray-600 dark:text-gray-400' };
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -210,7 +225,7 @@ export function PointsStore() {
 
       {/* Stats Row */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-gray-200 dark:border-slate-800 shadow-sm">
             <p className="text-sm text-gray-500 dark:text-slate-400">Total Earned</p>
             <p className="text-2xl font-bold text-green-600 dark:text-green-400">+{balance?.total_earned ?? 0}</p>
@@ -218,10 +233,6 @@ export function PointsStore() {
           <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-gray-200 dark:border-slate-800 shadow-sm">
             <p className="text-sm text-gray-500 dark:text-slate-400">Total Spent</p>
             <p className="text-2xl font-bold text-red-600 dark:text-red-400">-{balance?.total_spent ?? 0}</p>
-          </div>
-          <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-gray-200 dark:border-slate-800 shadow-sm">
-            <p className="text-sm text-gray-500 dark:text-slate-400">Available</p>
-            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{balance?.balance ?? 0}</p>
           </div>
         </div>
       </div>
@@ -500,33 +511,57 @@ export function PointsStore() {
 
         {/* History Tab */}
         {activeTab === 'history' && (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-gray-200 dark:border-slate-800">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Transaction History</h2>
-            </div>
-            <div className="divide-y divide-gray-100 dark:divide-slate-800">
-              {transactions.map((txn) => (
-                <div key={txn.id} className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 dark:text-white truncate">{txn.description || txn.transaction_type}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getTxnBadgeColor(txn.transaction_type)}`}>
-                        {txn.transaction_type.replace('_', ' ')}
-                      </span>
-                      <span className="text-xs text-gray-400">{new Date(txn.created_at).toLocaleDateString()}</span>
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-slate-800">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Points Activity Log</h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Every point earned and spent, with its source</p>
+              </div>
+              <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                {transactions.map((txn) => {
+                  const source = getTxnSourceInfo(txn.transaction_type);
+                  const SourceIcon = source.icon;
+                  return (
+                    <div key={txn.id} className="flex items-center gap-4 p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                      {/* Icon */}
+                      <div className={`flex-shrink-0 p-3 rounded-xl ${source.bg}`}>
+                        <SourceIcon className={`w-5 h-5 ${source.iconColor}`} />
+                      </div>
+                      {/* Details */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-900 dark:text-white">{source.label}</p>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getTxnBadgeColor(txn.transaction_type)}`}>
+                            {source.tag}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 truncate">{txn.description || '—'}</p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
+                          {new Date(txn.created_at).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}{' '}
+                          at {new Date(txn.created_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </div>
+                      {/* Amount */}
+                      <div className="text-right flex-shrink-0">
+                        <div className="flex items-center gap-1 justify-end">
+                          {txn.amount >= 0 ? <ArrowUpRight className="w-4 h-4 text-green-500" /> : <ArrowDownRight className="w-4 h-4 text-red-500" />}
+                          <p className={`text-lg font-bold ${getTxnColor(txn.amount)}`}>
+                            {txn.amount > 0 ? '+' : ''}{txn.amount} pts
+                          </p>
+                        </div>
+                        <p className="text-xs text-gray-400 dark:text-slate-500">Balance: {txn.balance_after} pts</p>
+                      </div>
                     </div>
+                  );
+                })}
+                {transactions.length === 0 && (
+                  <div className="p-12 text-center text-gray-500 dark:text-slate-400">
+                    <History className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium">No transactions yet</p>
+                    <p className="text-sm mt-1">Your points activity will appear here</p>
                   </div>
-                  <div className="text-right ml-4">
-                    <p className={`text-lg font-bold ${getTxnColor(txn.amount)}`}>
-                      {txn.amount > 0 ? '+' : ''}{txn.amount}
-                    </p>
-                    <p className="text-xs text-gray-400">Bal: {txn.balance_after}</p>
-                  </div>
-                </div>
-              ))}
-              {transactions.length === 0 && (
-                <div className="p-8 text-center text-gray-500 dark:text-slate-400">No transactions yet.</div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}

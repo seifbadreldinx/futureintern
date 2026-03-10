@@ -80,10 +80,10 @@ export function Navbar() {
             {isAuth ? (
               <>
                 {user?.role === 'student' && user.points !== undefined && (
-                  <div className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2" title="Your Points Balance">
+                  <Link to="/points-store" className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2 hover:bg-yellow-100 transition-colors" title="View Points History">
                     <Coins className="w-4 h-4" />
                     <span className="font-bold text-sm">{user.points}</span>
-                  </div>
+                  </Link>
                 )}
                 <Link
                   to={dashboardPath}
@@ -160,10 +160,10 @@ export function Navbar() {
               {isAuth ? (
                 <>
                   {user?.role === 'student' && user.points !== undefined && (
-                    <div className="flex items-center space-x-2 px-4 py-2.5 mx-2 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200">
+                    <Link to="/points-store" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-2 px-4 py-2.5 mx-2 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition-colors">
                       <Coins className="w-5 h-5" />
                       <span className="font-bold">Points Balance: {user.points}</span>
-                    </div>
+                    </Link>
                   )}
                   <Link
                     to={dashboardPath}
