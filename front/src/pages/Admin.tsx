@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import {
   LayoutDashboard,
@@ -32,7 +32,6 @@ import {
   ToggleLeft,
   ToggleRight,
   ShoppingCart,
-  Clock,
   Star,
   MapPin,
 } from 'lucide-react';
@@ -85,7 +84,7 @@ export function Admin() {
   const [showPackageModal, setShowPackageModal] = useState(false);
   const [editingPackage, setEditingPackage] = useState<any>(null);
   const [packageForm, setPackageForm] = useState({ name: '', points: 0, price: 0, discount_percent: 0, description: '', is_active: true });
-  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [_showGrantModal, setShowGrantModal] = useState(false);
   const [grantForm, setGrantForm] = useState({ user_id: '', amount: 0, reason: '' });
   const [pointsSubTab, setPointsSubTab] = useState<'stats' | 'packages' | 'pricing' | 'grant' | 'requests'>('stats');
   const [purchaseRequests, setPurchaseRequests] = useState<any[]>([]);
