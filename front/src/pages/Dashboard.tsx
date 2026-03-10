@@ -39,7 +39,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-24">
       <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b-4 border-slate-900 dark:border-white transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
           <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
