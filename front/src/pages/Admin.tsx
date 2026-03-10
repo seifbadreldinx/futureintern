@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -1435,7 +1436,7 @@ export function Admin() {
       </div>
 
       {/* Add User Modal */}
-      {showAddUserModal && (
+      {showAddUserModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
@@ -1566,10 +1567,10 @@ export function Admin() {
             </form>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Edit Internship Modal */}
-      {showEditInternshipModal && editingInternship && (
+      {showEditInternshipModal && editingInternship && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
@@ -1721,10 +1722,10 @@ export function Admin() {
             </form>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Package Create/Edit Modal */}
-      {showPackageModal && (
+      {showPackageModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
@@ -1830,10 +1831,10 @@ export function Admin() {
             </form>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* View User Detail Modal */}
-      {viewingUser && (
+      {viewingUser && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
@@ -1866,10 +1867,10 @@ export function Admin() {
             </div>
           </div>
         </div>
-      )}
+      , document.body)}
 
       {/* Edit User Modal */}
-      {showEditUserModal && editingUser && (
+      {showEditUserModal && editingUser && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
@@ -1930,7 +1931,7 @@ export function Admin() {
             </form>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 }
