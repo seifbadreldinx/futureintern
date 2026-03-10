@@ -166,12 +166,13 @@
   pointer-events: none;
 }
 
-/* Modern glassmorphism effect */
+/* Bold Vibrant glassmorphism effect */
 .glass-effect {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 4px solid #0f172a;
+  box-shadow: 10px 10px 0px 0px #0f172a;
 }
 
 /* Smooth scroll behavior */
@@ -437,4 +438,47 @@ html {
 
 .animate-bounce-subtle {
   animation: bounce-subtle 2s infinite;
+}
+
+/* Updated education bg dark mode */
+.dark .education-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #020617 50%, #1e293b 75%, #0f172a 100%);
+  background-size: 400% 400%;
+}
+
+.dark .education-bg::before {
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(56, 189, 248, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 40% 20%, rgba(99, 102, 241, 0.02) 0%, transparent 50%);
+}
+
+/* Infinite scroll marquee */
+@keyframes infinite-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infinite-scroll 40s linear infinite;
+}
+
+.animate-infinite-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

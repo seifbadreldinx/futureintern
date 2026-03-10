@@ -1,11 +1,12 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, GraduationCap, Briefcase, User, FileText } from 'lucide-react';
+import { MapPin, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { api } from '../services/api';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { resolveLogoUrl } from '../utils/logoUrl';
 
-export function FeaturedOpportunities() {
+export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
   const sectionRef = useScrollReveal();
   const [internships, setInternships] = useState<any[]>([]);
 
@@ -22,123 +23,100 @@ export function FeaturedOpportunities() {
     })();
   }, []);
 
-  if (internships.length === 0) return null; // Don't show empty section
+  if (internships.length === 0) return null;
 
-  // Temporarily disabled to fix layout issues
-  return null;
-
-  const getBadgeColor = (type: string) => {
+  const getBadgeStyle = (type: string) => {
     switch (type) {
       case 'Full-time':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-rose-500 text-white';
       case 'Part-time':
-        return 'bg-green-100 text-green-800';
+        return 'bg-blue-600 text-white';
       case 'Remote':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-amber-400 text-slate-900';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-amber-400 text-slate-900';
     }
   };
 
   return (
     <section
       ref={sectionRef.elementRef}
-      className={`pt-4 pb-0 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-gray-50/30 to-white relative overflow-hidden ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
+      className={`py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-white dark:bg-transparent ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
     >
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 opacity-5">
+      {/* Bold Geometric Shapes */}
+      <div className="absolute top-1/4 left-10 w-16 h-16 bg-blue-600 border-4 border-slate-900 rounded-full animate-float pointer-events-none"></div>
+      <div className="absolute top-1/2 right-10 w-12 h-12 bg-amber-400 border-4 border-slate-900 rotate-12 animate-float animation-delay-300 pointer-events-none"></div>
+      <div className="absolute bottom-20 left-1/4 w-14 h-14 bg-rose-500 border-4 border-slate-900 -rotate-12 animate-float animation-delay-500 pointer-events-none"></div>
+
+      <div className="absolute inset-0 opacity-[0.05]">
         <div className="absolute top-0 left-0 w-full h-full" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundImage: `radial-gradient(#0f172a 1.5px, transparent 1.5px)`,
+          backgroundSize: '40px 40px'
         }}></div>
       </div>
 
-      {/* Background icons - students and employees */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-5">
-        <div className="absolute top-16 left-8 animate-float">
-          <GraduationCap className="w-20 h-20 text-gray-600" />
-        </div>
-        <div className="absolute top-32 right-12 animate-float animation-delay-200">
-          <Briefcase className="w-16 h-16 text-gray-600" />
-        </div>
-        <div className="absolute bottom-24 left-24 animate-float animation-delay-400">
-          <User className="w-18 h-18 text-gray-600" />
-        </div>
-        <div className="absolute bottom-16 right-24 animate-float animation-delay-300">
-          <FileText className="w-20 h-20 text-gray-600" />
-        </div>
-      </div>
-
       <div className="max-w-7xl mx-auto relative z-10">
-        <div className="flex justify-between items-center mb-12 animate-fade-in-up">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-            Featured Opportunities
-          </h2>
+        <div className="flex justify-between items-end mb-16 animate-fade-in-up">
+          <div>
+            <h2 className="text-4xl sm:text-6xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-4">
+              Featured <br /><span className="text-rose-500">Internships</span>
+            </h2>
+            <div className="h-2 w-32 bg-blue-600 rounded-full"></div>
+          </div>
           <Link
             to="/browse"
-            className="text-gray-700 hover:text-gray-900 font-medium hidden sm:block transition-all hover:translate-x-1"
+            className="px-8 py-4 bg-amber-400 dark:bg-amber-500 text-slate-900 dark:text-white border-4 border-slate-900 dark:border-white rounded-2xl font-black text-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all hidden sm:flex items-center"
           >
-            View All →
+            Find Internships <ArrowRight className="ml-2 w-6 h-6" />
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {internships.map((internship, index) => (
             <Link
               key={internship.id}
               to={`/internship/${internship.id}`}
-              className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-xl hover:border-blue-300 transition-all cursor-pointer transform hover:-translate-y-2 duration-300 animate-fade-in-up"
+              className="group bg-white dark:bg-slate-900 border-4 border-slate-900 dark:border-white rounded-[2rem] p-8 shadow-[12px_12px_0px_0px_#0f172a] dark:shadow-[12px_12px_0px_0px_var(--primary)] hover:translate-x-2 hover:translate-y-2 hover:shadow-none transition-all duration-300 animate-fade-in-up opacity-0"
               style={{
-                animationDelay: `${(index + 1) * 0.1}s`
+                animationDelay: `${(index + 1) * 0.1}s`,
+                animationFillMode: 'forwards'
               }}
             >
-              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-4 shadow-sm border border-gray-100 overflow-hidden">
+              <div className="w-16 h-16 bg-slate-900 rounded-2xl flex items-center justify-center mb-6 transform group-hover:rotate-3 transition-transform overflow-hidden border-4 border-slate-900 shadow-[4px_4px_0px_0px_#f43f5e]">
                 {internship.company?.profile_image ? (
                   <img
                     src={resolveLogoUrl(internship.company.profile_image)}
                     alt={internship.company?.name}
-                    onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
-                    className="w-full h-full object-contain p-1"
+                    onError={(e) => e.currentTarget.src = `https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=0f172a&color=ffffff&size=128&font-size=0.5`}
+                    className="w-full h-full object-cover"
                   />
                 ) : (
-                  <img
-                    src={`https://ui-avatars.com/api/?name=${internship.company?.name || 'C'}&background=eff6ff&color=2563eb&size=128&font-size=0.5`}
-                    alt={internship.company?.name}
-                    className="w-full h-full object-contain p-1"
-                  />
+                  <span className="text-white font-black text-2xl">{(internship.company?.name || 'C').charAt(0)}</span>
                 )}
               </div>
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2 line-clamp-1 uppercase tracking-tight">
                 {internship.title}
               </h3>
 
-              <div className="flex items-center text-gray-600 mb-3 text-sm">
-                <span className="font-medium truncate">{internship.company?.name || internship.company || 'Company'}</span>
+              <div className="flex items-center mb-4">
+                <span className="font-black text-sm text-rose-500 uppercase tracking-widest">{internship.company?.name || internship.company || 'Company'}</span>
               </div>
 
-              <div className="flex items-center text-gray-500 text-sm mb-4">
-                <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="truncate">{internship.location}</span>
+              <div className="flex items-center text-slate-600 dark:text-slate-200 font-bold text-sm mb-6">
+                <MapPin className="w-5 h-5 mr-2 text-blue-600" />
+                {internship.location}
               </div>
 
-              <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type)}`}>
+              <span className={`inline-block px-5 py-2 border-4 border-slate-900 dark:border-white rounded-xl text-sm font-black tracking-wider uppercase shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_#ffffff] ${getBadgeStyle(internship.type)}`}>
                 {internship.type || 'Full-time'}
               </span>
             </Link>
           ))}
         </div>
-
-        <div className="text-center mt-8 sm:hidden animate-fade-in-up animation-delay-500">
-          <Link
-            to="/browse"
-            className="text-gray-700 hover:text-gray-900 font-medium transition-all"
-          >
-            View All Internships →
-          </Link>
-        </div>
       </div>
     </section>
   );
-}
+});
 
 

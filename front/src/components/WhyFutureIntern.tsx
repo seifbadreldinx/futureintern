@@ -1,4 +1,4 @@
-import { memo } from 'react';
+﻿import { memo } from 'react';
 import { ClipboardCheck, Trophy, MessagesSquare, Headphones, MessageCircleQuestion, Route, Sparkles } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
@@ -61,13 +61,11 @@ export const WhyFutureIntern = memo(function WhyFutureIntern() {
             ref={sectionRef.elementRef}
             className={`py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-white dark:bg-transparent ${sectionRef.isRevealed ? 'scroll-reveal revealed' : 'scroll-reveal'}`}
         >
-            {/* Specific Geometric Shapes from Image */}
-            {/* Top Right Cluster */}
+            {/* Geometric Shapes */}
             <div className="absolute top-10 right-[10%] w-0 h-0 border-l-[30px] border-l-transparent border-r-[30px] border-r-transparent border-b-[50px] border-b-amber-400 rotate-[35deg] animate-float pointer-events-none hidden sm:block"></div>
             <div className="absolute top-5 right-[15%] w-10 h-10 bg-rose-500 border-4 border-slate-900 rotate-12 animate-float animation-delay-300 pointer-events-none hidden sm:block"></div>
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-600 rounded-full border-[10px] border-slate-900 animate-float animation-delay-500 pointer-events-none hidden sm:block"></div>
 
-            {/* Left/Bottom Decor */}
             <div className="absolute top-1/4 -left-10 w-24 h-24 rounded-full border-8 border-blue-600 animate-float pointer-events-none opacity-20"></div>
             <div className="absolute bottom-10 right-10 w-12 h-12 bg-rose-500 border-4 border-slate-900 rounded-full animate-float animation-delay-200 pointer-events-none"></div>
             <div className="absolute bottom-20 right-[15%] w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-b-[35px] border-b-blue-600 -rotate-12 animate-float animation-delay-700 pointer-events-none"></div>

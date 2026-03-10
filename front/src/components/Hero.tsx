@@ -1,130 +1,84 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, GraduationCap, Briefcase, User, FileText, Send, Users } from 'lucide-react';
+import { GraduationCap, Briefcase, User, FileText, Globe, ArrowRight } from 'lucide-react';
+import { useScrollReveal } from '../hooks/useScrollReveal';
 
 export function Hero() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [location, setLocation] = useState('');
-  const navigate = useNavigate();
+  const { elementRef, isRevealed } = useScrollReveal();
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Navigate to browse page with search params
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
-    if (location) params.set('location', location);
-    navigate(`/browse?${params.toString()}`);
+  const scrollToHow = () => {
+    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section className="education-bg relative overflow-hidden pt-8 pb-0 px-4 sm:px-6 lg:px-8">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-20 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl animate-float animation-delay-300"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/5 rounded-full blur-2xl animate-float animation-delay-500"></div>
-      </div>
+    <section
+      ref={elementRef}
+      className="relative overflow-hidden py-32 sm:py-48 px-4 sm:px-6 lg:px-8 min-h-[85vh] flex items-center bg-transparent"
+    >
+      {/* Bold Geometric Shapes */}
+      <div className="absolute top-20 left-[10%] w-12 h-12 bg-amber-400 border-4 border-slate-900 rounded-full animate-float pointer-events-none"></div>
+      <div className="absolute top-40 right-[15%] w-16 h-16 bg-rose-500 border-4 border-slate-900 rotate-12 animate-float animation-delay-300 pointer-events-none"></div>
+      <div className="absolute bottom-20 left-[20%] w-14 h-14 bg-blue-600 border-4 border-slate-900 -rotate-12 animate-float animation-delay-500 pointer-events-none"></div>
+      <div className="absolute bottom-40 right-[5%] w-10 h-10 bg-amber-400 border-4 border-slate-900 rounded-full animate-float animation-delay-200 pointer-events-none"></div>
+      <div className="absolute top-1/2 left-[5%] w-8 h-8 bg-rose-500 border-4 border-slate-900 rotate-45 animate-float pointer-events-none"></div>
 
-      {/* Student and Employee Icons Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-10">
-        {/* Student icons - left side */}
-        <div className="absolute top-32 left-8 animate-float">
-          <GraduationCap className="w-16 h-16 text-gray-700" />
-        </div>
-        <div className="absolute top-48 left-24 animate-float animation-delay-200">
-          <User className="w-12 h-12 text-gray-600" />
-        </div>
-        <div className="absolute top-64 left-12 animate-float animation-delay-400">
-          <FileText className="w-14 h-14 text-gray-700" />
-        </div>
-        <div className="absolute bottom-32 left-16 animate-float animation-delay-300">
-          <Send className="w-12 h-12 text-gray-600" />
-        </div>
-        <div className="absolute bottom-48 left-32 animate-float animation-delay-500">
-          <GraduationCap className="w-14 h-14 text-gray-700" />
-        </div>
+      {/* Organic Vibrant Glows */}
+      <div className="absolute top-0 right-0 w-[70%] h-[100%] bg-rose-500/10 dark:bg-rose-500/20 blur-[150px] rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+      <div className="absolute bottom-0 left-10 w-[60%] h-[80%] bg-blue-500/10 dark:bg-blue-500/20 blur-[150px] rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
-        {/* Employee/Company icons - right side */}
-        <div className="absolute top-28 right-12 animate-float animation-delay-100">
-          <Briefcase className="w-16 h-16 text-gray-700" />
+      {/* Decorative icons */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.03] dark:opacity-[0.1]">
+        <div className="absolute top-24 left-[10%] animate-float">
+          <GraduationCap className="w-24 h-24 text-indigo-600 dark:text-white" />
         </div>
-        <div className="absolute top-44 right-28 animate-float animation-delay-300">
-          <Users className="w-14 h-14 text-gray-600" />
+        <div className="absolute top-1/2 left-[5%] animate-float animation-delay-200">
+          <User className="w-16 h-16 text-rose-600 dark:text-white" />
         </div>
-        <div className="absolute top-60 right-16 animate-float animation-delay-500">
-          <Briefcase className="w-12 h-12 text-gray-700" />
+        <div className="absolute bottom-32 left-[12%] animate-float animation-delay-300">
+          <FileText className="w-20 h-20 text-amber-600 dark:text-white" />
         </div>
-        <div className="absolute bottom-36 right-24 animate-float animation-delay-200">
-          <User className="w-14 h-14 text-gray-600" />
+        <div className="absolute top-32 right-[8%] animate-float animation-delay-100">
+          <Briefcase className="w-20 h-20 text-indigo-600 dark:text-white" />
         </div>
-        <div className="absolute bottom-52 right-12 animate-float animation-delay-400">
-          <FileText className="w-16 h-16 text-gray-700" />
+        <div className="absolute top-[60%] right-[5%] animate-float animation-delay-500">
+          <Globe className="w-24 h-24 text-rose-600 dark:text-white" />
         </div>
-
-        {/* Center icons - applying/job search */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float animation-delay-300">
-          <Send className="w-20 h-20 text-gray-600" />
-        </div>
-        <div className="absolute top-1/2 left-[45%] transform -translate-y-1/2 animate-float animation-delay-100">
-          <GraduationCap className="w-14 h-14 text-gray-700" />
-        </div>
-        <div className="absolute top-1/2 left-[55%] transform -translate-y-1/2 animate-float animation-delay-500">
-          <Briefcase className="w-14 h-14 text-gray-700" />
+        <div className="absolute bottom-40 right-[15%] animate-float animation-delay-400">
+          <GraduationCap className="w-16 h-16 text-indigo-600 dark:text-white" />
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto text-center relative z-10">
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-3 animate-fade-in-up drop-shadow-lg">
-          Your Journey to a Dream Internship Starts Here.
+      <div className="max-w-4xl mx-auto text-center relative z-10 w-full">
+        <h1 className={`text-3xl sm:text-4xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6 transition-all duration-1000 drop-shadow-sm tracking-tight leading-[1.1] ${isRevealed ? 'reveal-up active' : 'reveal-up'}`}>
+          Opportunities Are Waiting <br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-amber-500 to-blue-600 dark:from-rose-400 dark:via-amber-300 dark:to-blue-400">
+            Start Your Journey
+          </span>
         </h1>
-        <p className="text-lg sm:text-xl text-gray-700 mb-6 animate-fade-in-up animation-delay-200 drop-shadow-md">
-          Connecting students with top companies to launch their careers.
+
+        <p className={`text-lg sm:text-xl text-gray-600 dark:text-indigo-50/90 mb-12 max-w-2xl mx-auto font-medium transition-all duration-1000 delay-200 ${isRevealed ? 'reveal-up active' : 'reveal-up'}`}>
+          Explore internships, connect with companies, and grow your professional path. Your career doesn't wait for graduation.
         </p>
 
-        <form onSubmit={handleSearch} className="glass-effect rounded-2xl shadow-2xl p-4 sm:p-6 max-w-3xl mx-auto animate-fade-in-up animation-delay-300 hover:shadow-3xl transition-shadow duration-300">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="hero-search"
-                name="hero_search"
-                type="text"
-                placeholder="Keyword or Title"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
-              />
-            </div>
+        <div className={`flex flex-col items-center gap-10 mb-16 transition-all duration-1000 delay-300 ${isRevealed ? 'reveal-up active' : 'reveal-up'}`}>
+          <button
+            onClick={scrollToHow}
+            className="px-12 py-6 bg-rose-500 text-white border-4 border-slate-900 dark:border-white rounded-[2rem] transition-all font-black text-2xl shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none active:scale-95 flex items-center justify-center gap-3 group"
+          >
+            Get Started Free
+            <ArrowRight className="w-6 h-6 transition-transform group-hover:translate-x-2" />
+          </button>
 
-            <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                id="hero-location"
-                name="hero_location"
-                type="text"
-                placeholder="Location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
-              />
-            </div>
+          <button
+            onClick={scrollToHow}
+            className="text-gray-500 dark:text-gray-400 font-bold flex items-center gap-2 hover:text-indigo-600 dark:hover:text-white transition-colors"
+          >
+            Learn How it Works <ArrowRight className="w-4 h-4 rotate-90" />
+          </button>
+        </div>
 
-            <button
-              type="submit"
-              className="px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all font-medium shadow-lg hover:shadow-xl transform hover:scale-105 duration-200"
-            >
-              Search
-            </button>
-          </div>
-        </form>
-
-        {/* Branded Logo Section */}
-        <div className="mt-6 mb-8 animate-fade-in-up">
-          <img
-            src="/futureintern-logo.jpg"
-            alt="FutureIntern - Ignite Your Passion"
-            className="mx-auto w-full max-w-3xl h-auto max-h-[300px] object-contain opacity-90 hover:opacity-100 transition-opacity duration-300"
-          />
+        {/* Scroll indicator */}
+        <div className={`mt-12 animate-bounce transition-all duration-1000 delay-500 hidden sm:block ${isRevealed ? 'reveal-up active' : 'reveal-up'}`}>
+          <div className="w-1.5 h-24 bg-gradient-to-b from-slate-900 dark:from-white to-transparent mx-auto rounded-full"></div>
+          <span className="text-sm text-slate-900 dark:text-white font-black uppercase tracking-[0.4em] mt-6 block">SCROLL DOWN</span>
         </div>
       </div>
     </section>

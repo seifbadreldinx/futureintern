@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Menu, X, User, Shield, Coins } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Shield, Coins, LogOut } from 'lucide-react';
 import { isAuthenticated, logout as doLogout } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Navbar() {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
-  const isHome = location.pathname === '/';
   const [isAuth, setIsAuth] = useState<boolean>(isAuthenticated());
   const isAdmin = user?.role === 'admin';
   const dashboardPath = isAdmin ? '/admin' : '/dashboard';
-  const dashboardLabel = isAdmin ? 'Admin Panel' : 'Dashboard';
+  const dashboardLabel = isAdmin ? 'Admin' : 'Dashboard';
 
   useEffect(() => {
     const onStorage = () => setIsAuth(isAuthenticated());
@@ -21,161 +21,136 @@ export function Navbar() {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  // Don't show navbar on auth pages
   if (isAuthPage) {
     return null;
   }
 
   const navLinks = [
-    { to: '/browse', label: 'Internships', isAnchor: false },
-    { to: '/companies', label: 'Companies', isAnchor: false },
-    { to: '/about', label: 'About Us', isAnchor: false },
-    { to: '/get-help', label: 'Get Help', isAnchor: false },
-    { to: '/contact', label: 'Contact Us', isAnchor: false },
+    { to: '/browse', label: 'Internships' },
+    { to: '/#resources', label: 'Resources' },
+    { to: '/about', label: 'About' },
+    { to: '/contact', label: 'Contact' },
   ];
 
   return (
-    <nav
-      className={`sticky top-0 z-50 transition-all duration-300 ${isHome
-        ? 'bg-white/80 backdrop-blur-md border-b border-white/20 shadow-sm'
-        : 'bg-white border-b border-gray-200 shadow-sm'
-        }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
-          {/* Logo */}
-          <Link
-            to="/"
-            className="flex items-center space-x-3 group animate-fade-in-up"
-          >
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-gray-700 to-gray-900 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              <GraduationCap className="relative w-9 h-9 text-gray-700 group-hover:scale-110 transition-transform duration-300" />
-            </div>
-            <span className="text-2xl font-bold text-gray-900 group-hover:text-gray-700 transition-all">
-              FutureIntern
+    <nav className="absolute top-6 left-0 right-0 z-50 transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Logo + Nav Links */}
+        <div className="flex items-center gap-10">
+          <Link to="/" className="group relative">
+            <span className="text-3xl sm:text-4xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none relative">
+              Future<span className="text-rose-500">Intern</span>
+              <div className="absolute -bottom-1.5 left-0 w-full h-1.5 bg-amber-400 -rotate-1 rounded-full opacity-50 group-hover:opacity-100 transition-opacity"></div>
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
-            {navLinks.map((link, index) => (
+            {navLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.to}
                 to={link.to}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group ${location.pathname === link.to
-                  ? 'text-gray-900 bg-gray-100'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
+                className={`px-4 py-2 rounded-xl text-lg font-black transition-all uppercase tracking-tighter ${location.pathname === link.to
+                  ? 'text-rose-500'
+                  : 'text-slate-900 dark:text-slate-200 hover:text-rose-500 dark:hover:text-amber-400'
                   }`}
-                style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {link.label}
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gray-900 group-hover:w-full transition-all duration-300"></span>
               </Link>
             ))}
           </div>
+        </div>
 
-          {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
-            {isAuth ? (
-              <>
-                {user?.role === 'student' && user.points !== undefined && (
-                  <Link to="/points-store" className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2 hover:bg-yellow-100 transition-colors" title="View Points History">
-                    <Coins className="w-4 h-4" />
-                    <span className="font-bold text-sm">{user.points}</span>
-                  </Link>
-                )}
-                <Link
-                  to={dashboardPath}
-                  className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors rounded-lg hover:bg-gray-100"
-                >
-                  {isAdmin ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
-                  <span className="font-medium">{dashboardLabel}</span>
-                </Link>
-                <button
-                  onClick={() => { doLogout(); setIsAuth(false); }}
-                  className="px-5 py-2.5 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 font-medium transition-all duration-200"
-                >
-                  Log Out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/register-company"
-                  className="px-5 py-2.5 text-gray-700 hover:text-indigo-600 font-medium transition-all duration-200"
-                >
-                  For Companies
-                </Link>
-                <Link
-                  to="/login"
-                  className="px-5 py-2.5 text-gray-700 border-2 border-gray-700 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 font-medium transition-all duration-200 hover:scale-105 hover:shadow-md"
-                >
-                  Log In
-                </Link>
-                <Link
-                  to="/signup"
-                  className="px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg shadow-md"
-                >
-                  Get Intern
-                </Link>
-              </>
-            )}
+        {/* Right side */}
+        <div className="flex items-center space-x-4">
+          <div className="hidden sm:block scale-90">
+            <ThemeToggle />
           </div>
+
+          {isAuth ? (
+            <div className="hidden md:flex items-center space-x-3">
+              {user?.role === 'student' && user.points !== undefined && (
+                <Link to="/points-store" className="flex items-center space-x-1.5 px-4 py-2 bg-amber-400 text-slate-900 border-[3px] border-slate-900 dark:border-white rounded-xl font-black shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_#ffffff] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition-all text-sm uppercase tracking-tighter" title="View Points History">
+                  <Coins className="w-4 h-4" />
+                  <span>{user.points}</span>
+                </Link>
+              )}
+              <Link
+                to={dashboardPath}
+                className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white border-[3px] border-slate-900 dark:border-white rounded-xl font-black shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-lg uppercase tracking-tighter"
+              >
+                {isAdmin ? <Shield className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
+                <span className="hidden lg:inline">{dashboardLabel}</span>
+              </Link>
+              <button
+                onClick={() => { doLogout(); setIsAuth(false); }}
+                className="flex items-center space-x-2 px-5 py-2.5 text-rose-500 border-[3px] border-rose-500 rounded-xl font-black hover:bg-rose-500 hover:text-white transition-all text-sm uppercase tracking-tighter"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center space-x-3">
+              <Link
+                to="/login"
+                className="px-4 py-2 text-lg font-black text-slate-900 dark:text-slate-200 hover:text-rose-500 transition-all uppercase tracking-tighter"
+              >
+                Login
+              </Link>
+              <Link
+                to="/signup"
+                className="px-8 py-2.5 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl text-lg font-black shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all uppercase tracking-tighter"
+              >
+                Join Now
+              </Link>
+            </div>
+          )}
 
           {/* Mobile Menu Button */}
           <button
+            className="md:hidden p-2 text-slate-900 dark:text-white"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <Menu className="w-6 h-6" />
-            )}
+            {mobileMenuOpen ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
         </div>
+      </div>
 
-        {/* Mobile Menu */}
-        <div
-          className={`md:hidden overflow-y-auto transition-all duration-300 ease-in-out ${mobileMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
-            }`}
-        >
-          <div className="py-3 space-y-1.5 border-t border-gray-200 mt-2">
+      {/* Mobile Menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden p-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-b-4 border-slate-900 dark:border-white">
+          <div className="flex flex-col space-y-4">
             {navLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.to}
                 to={link.to}
+                className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter hover:text-rose-500"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`block px-4 py-2.5 rounded-lg text-base font-medium transition-all ${location.pathname === link.to
-                  ? 'text-gray-900 bg-gray-100'
-                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100'
-                  }`}
               >
                 {link.label}
               </Link>
             ))}
-            <div className="pt-4 border-t border-gray-200 space-y-2">
+            <div className="pt-4 border-t-4 border-slate-900 dark:border-white space-y-3">
               {isAuth ? (
                 <>
                   {user?.role === 'student' && user.points !== undefined && (
-                    <Link to="/points-store" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-2 px-4 py-2.5 mx-2 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition-colors">
+                    <Link to="/points-store" onClick={() => setMobileMenuOpen(false)} className="flex items-center space-x-2 px-4 py-2.5 bg-amber-400 text-slate-900 border-[3px] border-slate-900 rounded-xl font-black">
                       <Coins className="w-5 h-5" />
-                      <span className="font-bold">Points Balance: {user.points}</span>
+                      <span>Points: {user.points}</span>
                     </Link>
                   )}
                   <Link
                     to={dashboardPath}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center space-x-2 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50"
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-blue-600 text-white border-[3px] border-slate-900 rounded-xl font-black text-lg uppercase tracking-tighter"
                   >
-                    {isAdmin ? <Shield className="w-5 h-5" /> : <User className="w-5 h-5" />}
+                    {isAdmin ? <Shield className="w-5 h-5" /> : <LayoutDashboard className="w-5 h-5" />}
                     <span>{dashboardLabel}</span>
                   </Link>
                   <button
                     onClick={() => { doLogout(); setMobileMenuOpen(false); setIsAuth(false); }}
-                    className="block w-full text-left px-4 py-2.5 text-gray-700 rounded-lg hover:bg-gray-50"
+                    className="w-full text-left px-4 py-2.5 text-rose-500 font-black text-lg uppercase tracking-tighter hover:text-rose-600"
                   >
                     Log Out
                   </button>
@@ -183,32 +158,25 @@ export function Navbar() {
               ) : (
                 <>
                   <Link
-                    to="/register-company"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-center text-gray-700 font-medium hover:bg-gray-100 rounded-lg transition-all"
-                  >
-                    For Companies
-                  </Link>
-                  <Link
                     to="/login"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-center text-gray-700 border-2 border-gray-700 rounded-lg hover:bg-gray-900 hover:text-white hover:border-gray-900 font-medium transition-all"
+                    className="block px-4 py-2.5 text-center text-slate-900 dark:text-white font-black text-lg uppercase tracking-tighter"
                   >
-                    Log In
+                    Login
                   </Link>
                   <Link
                     to="/signup"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="block px-4 py-2.5 text-center bg-gray-900 text-white rounded-lg font-medium transition-all hover:bg-gray-800"
+                    className="block px-4 py-2.5 text-center bg-rose-500 text-white border-[3px] border-slate-900 rounded-xl font-black text-lg uppercase tracking-tighter"
                   >
-                    Get Intern
+                    Join Now
                   </Link>
                 </>
               )}
             </div>
           </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }
