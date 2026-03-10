@@ -7,7 +7,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import db
 from app.models.user import User
 from app.models.points import PointsTransaction, PointsPackage, ServicePricing
-from app.utils.points import record_transaction
+from app.utils.points import record_transaction, process_daily_login, get_earning_activities
 
 points_bp = Blueprint('points', __name__)
 
@@ -116,3 +116,42 @@ def get_pricing():
     return jsonify({
         'services': [s.to_dict() for s in services],
     }), 200
+
+
+# ────────────────────────────────────────────────────────
+# POST /api/points/daily-claim  →  manually claim daily login reward
+# ────────────────────────────────────────────────────────
+@points_bp.route("/daily-claim", methods=["POST"])
+@jwt_required()
+def daily_claim():
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    result = process_daily_login(user)
+    if result is None:
+        return jsonify({'message': 'Already claimed today', 'already_claimed': True}), 200
+
+    db.session.commit()
+    return jsonify({
+        'message': f'Earned {result["total_earned"]} points!',
+        'already_claimed': False,
+        'daily_reward': result,
+        'new_balance': user.points,
+    }), 200
+
+
+# ────────────────────────────────────────────────────────
+# GET /api/points/earning-activities  →  ways to earn
+# ────────────────────────────────────────────────────────
+@points_bp.route("/earning-activities", methods=["GET"])
+@jwt_required()
+def earning_activities():
+    user_id = int(get_jwt_identity())
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    activities = get_earning_activities(user)
+    return jsonify({'activities': activities}), 200

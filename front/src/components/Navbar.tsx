@@ -80,7 +80,7 @@ export function Navbar() {
             {isAuth ? (
               <>
                 {user?.role === 'student' && user.points !== undefined && (
-                  <div className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2" title="Your Freemium Points">
+                  <div className="flex items-center space-x-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full border border-yellow-200 shadow-sm mr-2" title="Your Points Balance">
                     <Coins className="w-4 h-4" />
                     <span className="font-bold text-sm">{user.points}</span>
                   </div>

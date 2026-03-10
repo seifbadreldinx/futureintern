@@ -21,6 +21,10 @@ export function Login() {
     try {
       const response = await api.auth.login(email, password);
       console.log('Login successful:', response.user);
+      // Store daily reward info for Dashboard toast
+      if (response.daily_reward) {
+        sessionStorage.setItem('daily_reward', JSON.stringify(response.daily_reward));
+      }
       // Force full page reload so AuthProvider re-fetches user with new token.
       // React Router's navigate() doesn't remount the app, so AuthContext
       // would still see user=null from before login.

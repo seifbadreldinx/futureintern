@@ -128,3 +128,132 @@ def seed_default_packages():
     for p in packages:
         db.session.add(PointsPackage(**p))
     db.session.commit()
+
+
+# ────────────────────────────────────────────────────────
+# Earning mechanisms
+# ────────────────────────────────────────────────────────
+
+DAILY_LOGIN_REWARD = 5
+STREAK_BONUSES = {3: 5, 7: 15, 14: 25, 30: 50}   # streak_day -> bonus pts
+APPLICATION_REWARD = 3
+PROFILE_FIELD_REWARD = 5   # per new field filled
+PROFILE_FIELDS = ['university', 'major', 'skills', 'interests', 'bio', 'location']
+
+
+def _next_streak_info(current_streak):
+    """Find the next streak milestone the user hasn't reached yet."""
+    for day in sorted(STREAK_BONUSES.keys()):
+        if current_streak < day:
+            return {'days_needed': day, 'bonus': STREAK_BONUSES[day],
+                    'days_remaining': day - current_streak}
+    return None
+
+
+def process_daily_login(user):
+    """
+    Call on every successful login.
+    Awards daily points (once per calendar day) and updates streak.
+    Returns dict with reward info or None if already claimed today.
+    """
+    from datetime import date, timedelta
+
+    today = date.today()
+    last = user.last_login_date
+
+    # Already logged in today
+    if last == today:
+        return None
+
+    reward = DAILY_LOGIN_REWARD
+    streak = user.login_streak or 0
+
+    # Check streak continuity
+    if last == today - timedelta(days=1):
+        streak += 1
+    else:
+        streak = 1  # reset
+
+    user.last_login_date = today
+    user.login_streak = streak
+
+    # Daily login reward
+    record_transaction(user, reward, 'daily_login',
+                       description=f'Daily login reward (day {streak})')
+
+    # Streak milestone bonus
+    streak_bonus = 0
+    if streak in STREAK_BONUSES:
+        streak_bonus = STREAK_BONUSES[streak]
+        record_transaction(user, streak_bonus, 'streak_bonus',
+                           description=f'{streak}-day login streak bonus!')
+
+    return {
+        'daily_reward': reward,
+        'streak': streak,
+        'streak_bonus': streak_bonus,
+        'total_earned': reward + streak_bonus,
+    }
+
+
+def reward_application(user):
+    """Award points for submitting an internship application."""
+    record_transaction(user, APPLICATION_REWARD, 'application_reward',
+                       description='Points for submitting an application')
+    return APPLICATION_REWARD
+
+
+def reward_profile_field(user, field_name):
+    """Award points for filling in a profile field for the first time."""
+    record_transaction(user, PROFILE_FIELD_REWARD, 'profile_completion',
+                       service_name=field_name,
+                       description=f'Completed profile field: {field_name}')
+    return PROFILE_FIELD_REWARD
+
+
+def get_earning_activities(user):
+    """Return a list of all earning activities with completion status for the user."""
+    from datetime import date
+
+    today = date.today()
+    daily_claimed = user.last_login_date == today
+
+    # Profile completion progress
+    filled = sum(1 for f in PROFILE_FIELDS if getattr(user, f, None))
+    profile_pct = int(filled / len(PROFILE_FIELDS) * 100) if PROFILE_FIELDS else 0
+
+    # Application count
+    app_count = PointsTransaction.query.filter_by(
+        user_id=user.id, transaction_type='application_reward').count()
+
+    return {
+        'daily_login': {
+            'name': 'Daily Login',
+            'description': f'Log in each day to earn {DAILY_LOGIN_REWARD} points',
+            'points': DAILY_LOGIN_REWARD,
+            'claimed_today': daily_claimed,
+            'streak': user.login_streak or 0,
+            'next_streak_bonus': _next_streak_info(user.login_streak or 0),
+        },
+        'profile_completion': {
+            'name': 'Complete Your Profile',
+            'description': f'Earn {PROFILE_FIELD_REWARD} pts for each new field you fill in',
+            'points_per_field': PROFILE_FIELD_REWARD,
+            'filled': filled,
+            'total_fields': len(PROFILE_FIELDS),
+            'percentage': profile_pct,
+            'fields': {f: bool(getattr(user, f, None)) for f in PROFILE_FIELDS},
+        },
+        'applications': {
+            'name': 'Apply for Internships',
+            'description': f'Earn {APPLICATION_REWARD} pts each time you apply',
+            'points': APPLICATION_REWARD,
+            'total_applications': app_count,
+        },
+        'streak_milestones': {
+            'name': 'Login Streak Milestones',
+            'description': 'Bonus points for consecutive daily logins',
+            'milestones': {str(k): v for k, v in STREAK_BONUSES.items()},
+            'current_streak': user.login_streak or 0,
+        },
+    }

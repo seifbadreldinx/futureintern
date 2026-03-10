@@ -629,6 +629,16 @@ export const api = {
       return apiRequest<{ services: any[] }>('/points/pricing');
     },
 
+    // Claim daily login reward
+    claimDaily: async () => {
+      return apiRequest<any>('/points/daily-claim', { method: 'POST' });
+    },
+
+    // Get earning activities / ways to earn
+    getEarningActivities: async () => {
+      return apiRequest<{ activities: any }>('/points/earning-activities');
+    },
+
     // --- Admin ---
     adminGetPackages: async () => {
       return apiRequest<{ packages: any[] }>('/admin/points/packages');

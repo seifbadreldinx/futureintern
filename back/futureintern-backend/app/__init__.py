@@ -127,6 +127,8 @@ def create_app():
                 # Migrations: column_name -> ALTER TABLE SQL
                 migrations = {
                     'points': "ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0 NOT NULL",
+                    'last_login_date': "ALTER TABLE users ADD COLUMN last_login_date DATE",
+                    'login_streak': "ALTER TABLE users ADD COLUMN login_streak INTEGER DEFAULT 0",
                 }
 
                 for col, sql in migrations.items():

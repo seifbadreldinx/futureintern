@@ -363,6 +363,13 @@ def login():
                 'message': 'Verification code sent to your email.'
             }), 200
 
+        # ── Daily login reward ──
+        daily_reward_info = None
+        if user.role == 'student':
+            from app.utils.points import process_daily_login
+            daily_reward_info = process_daily_login(user)
+            db.session.commit()
+
         # ── Issue JWT tokens ──
         access_token = create_access_token(
             identity=str(user.id),
@@ -372,12 +379,16 @@ def login():
 
         log_audit('login_success', resource='user', resource_id=user.id, user_id=user.id)
 
-        return jsonify({
+        response = {
             'message': 'Login successful',
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.to_dict()
-        }), 200
+        }
+        if daily_reward_info:
+            response['daily_reward'] = daily_reward_info
+
+        return jsonify(response), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
@@ -410,6 +421,13 @@ def verify_2fa():
 
         entry.mark_used()
 
+        # ── Daily login reward ──
+        daily_reward_info = None
+        if user.role == 'student':
+            from app.utils.points import process_daily_login
+            daily_reward_info = process_daily_login(user)
+            db.session.commit()
+
         access_token = create_access_token(
             identity=str(user.id),
             additional_claims={'role': user.role, 'email': user.email}
@@ -418,12 +436,16 @@ def verify_2fa():
 
         log_audit('2fa_success', resource='user', resource_id=user.id, user_id=user.id)
 
-        return jsonify({
+        response = {
             'message': 'Login successful',
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.to_dict()
-        }), 200
+        }
+        if daily_reward_info:
+            response['daily_reward'] = daily_reward_info
+
+        return jsonify(response), 200
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500

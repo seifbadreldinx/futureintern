@@ -59,12 +59,25 @@ def apply_for_internship():
         
         try:
             db.session.add(application)
+            db.session.flush()
+
+            # Award points for applying
+            points_earned = 0
+            student = User.query.get(student_id)
+            if student:
+                from app.utils.points import reward_application
+                points_earned = reward_application(student)
+
             db.session.commit()
             
-            return jsonify({
+            resp = {
                 'message': 'Application submitted successfully',
                 'application': application.to_dict(include_details=True)
-            }), 201
+            }
+            if points_earned:
+                resp['points_earned'] = points_earned
+                resp['new_balance'] = student.points
+            return jsonify(resp), 201
             
         except IntegrityError:
             db.session.rollback()

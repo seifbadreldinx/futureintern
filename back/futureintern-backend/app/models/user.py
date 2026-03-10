@@ -11,7 +11,7 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(255), nullable=True)  # nullable for OAuth users
     role = db.Column(db.String(20), nullable=False)  # student, company, admin
-    points = db.Column(db.Integer, default=0, nullable=False) # Freemium Economy Currency
+    points = db.Column(db.Integer, default=0, nullable=False) # Points balance
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     # Google OAuth fields
@@ -35,6 +35,10 @@ class User(db.Model):
     company_website = db.Column(db.String(200))
     company_location = db.Column(db.String(200))
     is_verified = db.Column(db.Boolean, default=False)  # Verification flag
+
+    # Daily login & streak tracking
+    last_login_date = db.Column(db.Date, nullable=True)
+    login_streak = db.Column(db.Integer, default=0)
 
     # Security fields
     failed_login_attempts = db.Column(db.Integer, default=0)
@@ -78,7 +82,8 @@ class User(db.Model):
                 'bio': self.bio,
                 'phone': self.phone,
                 'location': self.location,
-                'resume_url': self.resume_url
+                'resume_url': self.resume_url,
+                'login_streak': self.login_streak or 0,
             })
         elif self.role == 'company':
             user_dict.update({

@@ -70,6 +70,26 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [recommendError, setRecommendError] = useState<string | null>(null);
   const [pointsBalance, setPointsBalance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
+
+  // Check for daily reward toast from login
+  useEffect(() => {
+    const stored = sessionStorage.getItem('daily_reward');
+    if (stored) {
+      sessionStorage.removeItem('daily_reward');
+      try {
+        const info = JSON.parse(stored);
+        let msg = `🎉 +${info.daily_reward} daily login points!`;
+        if (info.streak_bonus > 0) {
+          msg += ` +${info.streak_bonus} streak bonus (${info.streak}-day streak)! 🔥`;
+        } else if (info.streak > 1) {
+          msg += ` (${info.streak}-day streak 🔥)`;
+        }
+        setDailyRewardToast(msg);
+        setTimeout(() => setDailyRewardToast(null), 6000);
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -183,6 +203,17 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
       </div>
 
       <div className="lg:col-span-3">
+        {/* Daily Reward Toast */}
+        {dailyRewardToast && (
+          <div className="mb-4 flex items-center justify-between bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 px-5 py-3 rounded-xl shadow-sm">
+            <div className="flex items-center gap-2">
+              <Coins className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <span className="font-medium">{dailyRewardToast}</span>
+            </div>
+            <button onClick={() => setDailyRewardToast(null)} className="text-amber-600 dark:text-amber-400 hover:text-amber-800">✕</button>
+          </div>
+        )}
+
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

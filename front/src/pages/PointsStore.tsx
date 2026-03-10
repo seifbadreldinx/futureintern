@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle } from 'lucide-react';
+import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle, Flame, Target, FileText, UserCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -42,13 +42,15 @@ interface ServicePrice {
 
 export function PointsStore() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'store' | 'history' | 'pricing'>('store');
+  const [activeTab, setActiveTab] = useState<'store' | 'earn' | 'history' | 'pricing'>('store');
   const [balance, setBalance] = useState<PointsBalance | null>(null);
   const [packages, setPackages] = useState<PointsPackage[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [services, setServices] = useState<ServicePrice[]>([]);
+  const [activities, setActivities] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<number | null>(null);
+  const [claiming, setClaiming] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -58,16 +60,18 @@ export function PointsStore() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [balRes, storeRes, txnRes, pricingRes] = await Promise.all([
+      const [balRes, storeRes, txnRes, pricingRes, earnRes] = await Promise.all([
         api.points.getBalance(),
         api.points.getStore(),
         api.points.getTransactions(),
         api.points.getPricing(),
+        api.points.getEarningActivities().catch(() => ({ activities: null })),
       ]);
       setBalance(balRes);
       setPackages(storeRes.packages || []);
       setTransactions(txnRes.transactions || []);
       setServices(pricingRes.services || []);
+      setActivities(earnRes.activities || null);
     } catch (err) {
       console.error('Failed to load points data:', err);
     } finally {
@@ -82,13 +86,42 @@ export function PointsStore() {
       const res = await api.points.purchase(pkgId);
       setSuccessMsg(res.message || 'Purchase successful!');
       setBalance((prev) => prev ? { ...prev, balance: res.new_balance } : prev);
-      // Refresh transactions
       const txnRes = await api.points.getTransactions();
       setTransactions(txnRes.transactions || []);
     } catch (err: any) {
       alert(err?.message || 'Purchase failed');
     } finally {
       setPurchasing(null);
+    }
+  };
+
+  const handleClaimDaily = async () => {
+    setClaiming(true);
+    setSuccessMsg(null);
+    try {
+      const res = await api.points.claimDaily();
+      if (res.already_claimed) {
+        setSuccessMsg('You already claimed your daily reward today! Come back tomorrow.');
+      } else {
+        const info = res.daily_reward;
+        let msg = `+${info.daily_reward} daily login points!`;
+        if (info.streak_bonus > 0) {
+          msg += ` +${info.streak_bonus} streak bonus (${info.streak}-day streak)!`;
+        }
+        setSuccessMsg(msg);
+        setBalance((prev) => prev ? { ...prev, balance: res.new_balance } : prev);
+      }
+      // Refresh activities and transactions
+      const [earnRes, txnRes] = await Promise.all([
+        api.points.getEarningActivities().catch(() => ({ activities: null })),
+        api.points.getTransactions(),
+      ]);
+      setActivities(earnRes.activities || null);
+      setTransactions(txnRes.transactions || []);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to claim daily reward');
+    } finally {
+      setClaiming(false);
     }
   };
 
@@ -121,6 +154,10 @@ export function PointsStore() {
       case 'service_charge': return 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400';
       case 'admin_grant': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400';
       case 'refund': return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400';
+      case 'daily_login': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+      case 'streak_bonus': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+      case 'application_reward': return 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400';
+      case 'profile_completion': return 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400';
       default: return 'bg-gray-100 text-gray-700';
     }
   };
@@ -194,6 +231,7 @@ export function PointsStore() {
         <div className="flex space-x-1 bg-gray-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
           {([
             { id: 'store' as const, label: 'Buy Points', icon: ShoppingBag },
+            { id: 'earn' as const, label: 'Earn Points', icon: Target },
             { id: 'pricing' as const, label: 'Service Costs', icon: Coins },
             { id: 'history' as const, label: 'History', icon: History },
           ]).map((tab) => (
@@ -270,6 +308,162 @@ export function PointsStore() {
                 No packages available right now. Check back later!
               </div>
             )}
+          </div>
+        )}
+
+        {/* Earn Points Tab */}
+        {activeTab === 'earn' && activities && (
+          <div className="space-y-6">
+            {/* Daily Login Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-xl">
+                    <Flame className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activities.daily_login.name}</h2>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{activities.daily_login.description}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleClaimDaily}
+                  disabled={claiming || activities.daily_login.claimed_today}
+                  className={`px-6 py-3 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+                    activities.daily_login.claimed_today
+                      ? 'bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-lg shadow-amber-500/20'
+                  }`}
+                >
+                  {claiming ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" /> Claiming...</>
+                  ) : activities.daily_login.claimed_today ? (
+                    <><CheckCircle className="w-4 h-4" /> Claimed Today</>
+                  ) : (
+                    <>Claim +{activities.daily_login.points} pts</>
+                  )}
+                </button>
+              </div>
+
+              {/* Streak Info */}
+              <div className="p-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-5 h-5 text-orange-500" />
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">{activities.daily_login.streak}</span>
+                    <span className="text-sm text-gray-500 dark:text-slate-400">day streak</span>
+                  </div>
+                  {activities.daily_login.next_streak_bonus && (
+                    <div className="text-sm text-gray-500 dark:text-slate-400">
+                      Next bonus: <span className="font-bold text-amber-600 dark:text-amber-400">+{activities.daily_login.next_streak_bonus.bonus} pts</span> in {activities.daily_login.next_streak_bonus.days_remaining} day{activities.daily_login.next_streak_bonus.days_remaining !== 1 ? 's' : ''}
+                    </div>
+                  )}
+                </div>
+
+                {/* Streak Milestones */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {Object.entries(activities.streak_milestones.milestones).map(([days, bonus]) => {
+                    const reached = activities.daily_login.streak >= Number(days);
+                    return (
+                      <div key={days} className={`rounded-xl p-4 text-center border transition-all ${
+                        reached
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                          : 'bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700'
+                      }`}>
+                        <p className={`text-2xl font-black ${reached ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-slate-500'}`}>
+                          {reached ? '✓' : String(days)}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">{String(days)}-day streak</p>
+                        <p className={`text-sm font-bold mt-1 ${reached ? 'text-green-600 dark:text-green-400' : 'text-gray-600 dark:text-slate-300'}`}>
+                          +{String(bonus)} pts
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Completion Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-slate-800">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+                    <UserCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activities.profile_completion.name}</h2>
+                    <p className="text-sm text-gray-500 dark:text-slate-400">{activities.profile_completion.description}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">{activities.profile_completion.percentage}%</p>
+                    <p className="text-xs text-gray-500">{activities.profile_completion.filled}/{activities.profile_completion.total_fields} fields</p>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 dark:bg-slate-700 rounded-full h-3">
+                  <div
+                    className="bg-gradient-to-r from-indigo-500 to-purple-500 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${activities.profile_completion.percentage}%` }}
+                  />
+                </div>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.entries(activities.profile_completion.fields as Record<string, boolean>).map(([field, filled]) => (
+                    <div key={field} className={`flex items-center gap-2 p-3 rounded-lg border ${
+                      filled
+                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                        : 'bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700'
+                    }`}>
+                      {filled ? (
+                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-slate-600 flex-shrink-0" />
+                      )}
+                      <span className={`text-sm font-medium capitalize ${filled ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-slate-400'}`}>
+                        {field}
+                      </span>
+                      {!filled && (
+                        <span className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">+{activities.profile_completion.points_per_field}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {activities.profile_completion.percentage < 100 && (
+                  <Link to="/dashboard" className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:underline">
+                    Complete your profile →
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Applications Card */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-cyan-100 dark:bg-cyan-900/30 rounded-xl">
+                  <FileText className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">{activities.applications.name}</h2>
+                  <p className="text-sm text-gray-500 dark:text-slate-400">{activities.applications.description}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-black text-cyan-600 dark:text-cyan-400">{activities.applications.total_applications}</p>
+                  <p className="text-xs text-gray-500">applications rewarded</p>
+                </div>
+              </div>
+              <div className="mt-4">
+                <Link to="/browse" className="inline-block text-cyan-600 dark:text-cyan-400 text-sm font-medium hover:underline">
+                  Browse internships to apply →
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+        {activeTab === 'earn' && !activities && (
+          <div className="text-center py-12 text-gray-500 dark:text-slate-400">
+            Unable to load earning activities. Please try again later.
           </div>
         )}
 

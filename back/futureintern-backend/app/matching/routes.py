@@ -23,7 +23,7 @@ def get_recommendations():
         if not student:
             return jsonify({'error': 'Student not found'}), 404
             
-        # Check Freemium Points Balance
+        # Check Points Balance
         if student.points < 10:
             return jsonify({
                 'error': 'Insufficient points',

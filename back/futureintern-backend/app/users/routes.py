@@ -69,47 +69,28 @@ def update_profile():
         # Student-specific fields
         points_awarded = 0
         if user.role == 'student':
-            if 'university' in data and not user.university:
-                user.university = data['university']
-                points_awarded += 5
-            elif 'university' in data:
-                user.university = data['university']
+            from app.utils.points import reward_profile_field, PROFILE_FIELDS
 
-            if 'major' in data and not user.major:
-                user.major = data['major']
-                points_awarded += 5
-            elif 'major' in data:
-                user.major = data['major']
+            profile_field_map = {
+                'university': 'university',
+                'major': 'major',
+                'skills': 'skills',
+                'interests': 'interests',
+                'bio': 'bio',
+            }
 
-            if 'skills' in data and not user.skills:
-                user.skills = data['skills']
-                points_awarded += 5
-            elif 'skills' in data:
-                user.skills = data['skills']
+            for data_key, model_field in profile_field_map.items():
+                if data_key in data:
+                    was_empty = not getattr(user, model_field, None)
+                    setattr(user, model_field, data[data_key])
+                    if was_empty and data[data_key]:
+                        points_awarded += reward_profile_field(user, model_field)
 
-            if 'interests' in data and not user.interests:
-                user.interests = data['interests']
-                points_awarded += 5
-            elif 'interests' in data:
-                user.interests = data['interests']
-
-            if 'bio' in data and not user.bio:
-                user.bio = data['bio']
-                points_awarded += 5
-            elif 'bio' in data:
-                user.bio = data['bio']
-
-            if 'location' in data and not user.location:
+            if 'location' in data:
+                was_empty = not user.location
                 user.location = data['location']
-                points_awarded += 5
-            elif 'location' in data:
-                user.location = data['location']
-                
-            # Cap total points a user can have to prevent infinite farming from empty profiles
-            if points_awarded > 0:
-                user.points += points_awarded
-                if user.points > 1000: # Example soft cap
-                     user.points = 1000
+                if was_empty and data['location']:
+                    points_awarded += reward_profile_field(user, 'location')
         
         # Company-specific fields (Task 3.2)
         elif user.role == 'company':
