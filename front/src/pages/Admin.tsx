@@ -460,7 +460,7 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Dashboard Overview</h2>
               <button
                 onClick={() => {
                   const rows = [
@@ -493,7 +493,7 @@ export function Admin() {
                   link.click();
                   URL.revokeObjectURL(link.href);
                 }}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-slate-800 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all cursor-pointer font-bold"
               >
                 <Download className="w-4 h-4" />
                 Export Report
@@ -503,9 +503,9 @@ export function Admin() {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {stats.map((stat, index) => (
-                <div key={index} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6 hover:shadow-md dark:hover:shadow-slate-950/40 transition-shadow">
+                <div key={index} className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`${stat.color} p-3 rounded-lg text-white shadow-lg`}>
+                    <div className={`${stat.color} p-3 rounded-xl border-[3px] border-slate-900 dark:border-white text-white shadow-[3px_3px_0px_0px_#0f172a]`}>
                       {stat.icon}
                     </div>
                     <span className={`flex items-center gap-1 text-sm font-medium ${stat.trend === 'up' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
@@ -514,8 +514,8 @@ export function Admin() {
                       {stat.change}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{stat.value}</h3>
-                  <p className="text-sm text-gray-600 dark:text-slate-400">{stat.title}</p>
+                  <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-1">{stat.value}</h3>
+                  <p className="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider">{stat.title}</p>
                 </div>
               ))}
             </div>
@@ -525,14 +525,14 @@ export function Admin() {
             {/* Recent Tables */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Recent Users */}
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Users</h3>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Recent Users</h3>
                   <button onClick={() => setActiveSection('users')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
                 </div>
                 <div className="space-y-3">
                   {users.slice(0, 4).map((user) => (
-                    <div key={user.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/30 rounded-lg border border-transparent dark:border-slate-800/50">
+                    <div key={user.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)]">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center">
                           <Users className="w-5 h-5 text-gray-600 dark:text-slate-400" />
@@ -551,14 +551,14 @@ export function Admin() {
               </div>
 
               {/* Recent Internships */}
-              <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Internships</h3>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">Recent Internships</h3>
                   <button onClick={() => setActiveSection('internships')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
                 </div>
                 <div className="space-y-3">
                   {internships.slice(0, 4).map((internship) => (
-                    <div key={internship.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-800/30 rounded-lg border border-transparent dark:border-slate-800/50">
+                    <div key={internship.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_rgba(255,255,255,0.3)]">
                       <div className="flex-1">
                         <p className="text-sm font-medium text-gray-900 dark:text-slate-200">{internship.title}</p>
                         <p className="text-xs text-gray-500 dark:text-slate-500">{internship.company_name}</p>
@@ -578,7 +578,7 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">User Management</h2>
               <div className="flex flex-1 max-w-2xl gap-3">
                 <div className="relative flex-1 group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -595,7 +595,7 @@ export function Admin() {
                     placeholder={`Search users by ${userSearchType === 'all' ? 'name, email, or ID' : userSearchType}...`}
                     value={userSearchQuery}
                     onChange={(e) => setUserSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                    className="block w-full pl-10 pr-10 py-2.5 bg-white dark:bg-slate-900 border-[3px] border-slate-900 dark:border-white rounded-xl text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]"
                   />
                   {userSearchQuery && (
                     <button
@@ -607,7 +607,7 @@ export function Admin() {
                   )}
                 </div>
 
-                <div className="flex bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700">
+                <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
                   {[
                     { id: 'all', label: 'All' },
                     { id: 'name', label: 'Name' },
@@ -628,7 +628,7 @@ export function Admin() {
 
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all active:scale-95"
                 >
                   <UserPlus className="w-4 h-4" />
                   <span className="hidden md:inline">Add User</span>
@@ -636,10 +636,10 @@ export function Admin() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                  <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">ID</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">User</th>
@@ -701,7 +701,7 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Internship Management</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Internship Management</h2>
               <div className="flex gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
@@ -717,7 +717,7 @@ export function Admin() {
                 </div>
                 <button
                   onClick={() => navigate('/create-internship')}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-blue-600 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition-colors shadow-lg"
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-900 dark:bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                 >
                   <Plus className="w-4 h-4" />
                   Add Internship
@@ -727,7 +727,7 @@ export function Admin() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {internships.map((internship) => (
-                <div key={internship.id} className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6 hover:shadow-md dark:hover:shadow-slate-950/40 transition-shadow">
+                <div key={internship.id} className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">{internship.title}</h3>
@@ -771,14 +771,14 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Company Management</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Company Management</h2>
               <span className="text-sm text-gray-500 dark:text-slate-400">{companies.length} companies</span>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                  <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">ID</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Company</th>
@@ -841,7 +841,7 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Application Management</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Application Management</h2>
               <div className="flex gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-slate-500" />
@@ -858,10 +858,10 @@ export function Admin() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                  <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Student</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Internship</th>
@@ -917,11 +917,11 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Points System Management</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Points System Management</h2>
             </div>
 
             {/* Sub-tabs */}
-            <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700 w-fit">
+            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] w-fit">
               {([
                 { id: 'stats' as const, label: 'Statistics', icon: TrendingUp },
                 { id: 'packages' as const, label: 'Packages', icon: Package },
@@ -957,12 +957,12 @@ export function Admin() {
                     { title: 'Total Purchased Points', value: pointsStats?.total_purchased_points ?? '—', icon: <TrendingUp className="w-6 h-6" />, color: 'bg-blue-500' },
                     { title: 'Active Packages', value: pointsStats?.active_packages ?? '—', icon: <Package className="w-6 h-6" />, color: 'bg-purple-500' },
                   ].map((stat, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]">
                       <div className="flex items-center gap-4">
-                        <div className={`${stat.color} p-3 rounded-lg text-white`}>{stat.icon}</div>
+                        <div className={`${stat.color} p-3 rounded-xl border-[3px] border-slate-900 dark:border-white text-white shadow-[3px_3px_0px_0px_#0f172a]`}>{stat.icon}</div>
                         <div>
-                          <p className="text-sm text-gray-500 dark:text-slate-400">{stat.title}</p>
-                          <p className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                          <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{stat.title}</p>
+                          <p className="text-xl font-black text-slate-900 dark:text-white">{stat.value}</p>
                         </div>
                       </div>
                     </div>
@@ -973,9 +973,9 @@ export function Admin() {
                     { title: 'Service Charges', value: pointsStats?.total_service_charges ?? '—', sub: `${pointsStats?.total_spent_points ?? 0} pts spent` },
                     { title: 'Admin Grants', value: pointsStats?.total_admin_grants ?? '—', sub: 'Total grant operations' },
                   ].map((item, idx) => (
-                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.title}</p>
-                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{item.value}</p>
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]">
+                      <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.title}</p>
+                      <p className="text-2xl font-black text-slate-900 dark:text-white">{item.value}</p>
                       <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{item.sub}</p>
                     </div>
                   ))}
@@ -989,16 +989,16 @@ export function Admin() {
                 <div className="flex justify-end">
                   <button
                     onClick={openCreatePackage}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
                   >
                     <Plus className="w-4 h-4" />
                     New Package
                   </button>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
                   <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                    <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Name</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Points</th>
@@ -1043,9 +1043,9 @@ export function Admin() {
             {/* Pricing Sub-tab */}
             {pointsSubTab === 'pricing' && (
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
                   <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                    <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Service</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Cost (pts)</th>
@@ -1133,9 +1133,9 @@ export function Admin() {
                   ))}
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
                   <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                    <thead className="bg-slate-100 dark:bg-slate-800/50 border-b-[3px] border-slate-900 dark:border-white">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">ID</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Student</th>
@@ -1218,8 +1218,8 @@ export function Admin() {
             {pointsSubTab === 'grant' && (
               <div className="space-y-6">
                 <div className="max-w-lg">
-                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+                    <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-tight">
                       <Gift className="w-5 h-5 text-amber-500" />
                       Grant Points to User
                     </h3>
@@ -1261,7 +1261,7 @@ export function Admin() {
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-50 shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+                        className="w-full px-4 py-2 bg-amber-400 text-slate-900 font-black rounded-xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] disabled:opacity-50 transition-all flex items-center justify-center gap-2 uppercase tracking-tight"
                       >
                         {isSubmitting ? (
                           <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1284,7 +1284,7 @@ export function Admin() {
         return (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Logs & Security Monitoring</h2>
+              <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">Logs & Security Monitoring</h2>
               <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full border border-green-100 dark:border-green-900/30">
                 <ShieldCheck className="w-4 h-4" />
                 <span className="text-sm font-bold">System Secure</span>
@@ -1299,14 +1299,14 @@ export function Admin() {
                 { title: 'System Health', value: securityStats?.system_health || 'N/A', icon: <Activity className="w-6 h-6" />, color: 'bg-green-500' },
                 { title: 'System Uptime', value: securityStats?.system_uptime || '99.9%', icon: <TrendingUp className="w-6 h-6" />, color: 'bg-indigo-500' },
               ].map((item, idx) => (
-                <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]">
                   <div className="flex items-center gap-4">
-                    <div className={`${item.color} p-3 rounded-lg text-white`}>
+                    <div className={`${item.color} p-3 rounded-xl border-[3px] border-slate-900 dark:border-white text-white shadow-[3px_3px_0px_0px_#0f172a]`}>
                       {item.icon}
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.title}</p>
-                      <p className="text-xl font-bold text-gray-900 dark:text-white">{item.value}</p>
+                      <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{item.title}</p>
+                      <p className="text-xl font-black text-slate-900 dark:text-white">{item.value}</p>
                     </div>
                   </div>
                 </div>
@@ -1315,7 +1315,7 @@ export function Admin() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               {/* Audit Logs Table */}
-              <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
                 <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
                     <History className="w-5 h-5 text-gray-400" />
@@ -1355,9 +1355,9 @@ export function Admin() {
 
               {/* Security Insights */}
               <div className="space-y-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Terminal className="w-5 h-5 text-gray-400" />
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 flex items-center gap-2 uppercase tracking-tight">
+                    <Terminal className="w-5 h-5 text-slate-400" />
                     Top Admin Actions
                   </h3>
                   <div className="space-y-4">
@@ -1375,7 +1375,7 @@ export function Admin() {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-xl p-6 text-white border border-slate-800">
+                <div className="bg-gradient-to-br from-slate-900 to-blue-900 rounded-2xl p-6 text-white border-4 border-slate-900 shadow-[8px_8px_0px_0px_#0f172a]">
                   <h4 className="font-bold mb-2 flex items-center gap-2">
                     <ShieldCheck className="w-5 h-5 text-blue-400" />
                     Security Tip
@@ -1406,7 +1406,7 @@ export function Admin() {
     <div className="min-h-screen">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 min-h-screen sticky top-0">
+        <aside className="w-64 bg-white dark:bg-slate-900 border-r-4 border-slate-900 dark:border-white min-h-screen sticky top-0">
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -1414,13 +1414,13 @@ export function Admin() {
                 <button
                   key={item.id}
                   onClick={() => setActiveSection(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeSection === item.id
-                    ? 'bg-gray-900 dark:bg-slate-800 text-white shadow-lg'
-                    : 'text-gray-700 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeSection === item.id
+                    ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] font-bold'
+                    : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-[3px] border-transparent font-medium'
                     }`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <span>{item.label}</span>
                 </button>
               );
             })}
@@ -1436,8 +1436,8 @@ export function Admin() {
       {/* Add User Modal */}
       {showAddUserModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b-[3px] border-slate-900 dark:border-white flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-blue-600" />
                 Add New User
@@ -1543,14 +1543,14 @@ export function Admin() {
                 <button
                   type="button"
                   onClick={() => setShowAddUserModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl border-[3px] border-slate-900 dark:border-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1570,8 +1570,8 @@ export function Admin() {
       {/* Edit Internship Modal */}
       {showEditInternshipModal && editingInternship && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200 dark:border-slate-800 overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-6 border-b-[3px] border-slate-900 dark:border-white flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Edit className="w-5 h-5 text-blue-600" />
                 Edit Internship
@@ -1698,14 +1698,14 @@ export function Admin() {
                 <button
                   type="button"
                   onClick={() => setShowEditInternshipModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl border-[3px] border-slate-900 dark:border-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1725,8 +1725,8 @@ export function Admin() {
       {/* Package Create/Edit Modal */}
       {showPackageModal && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
+            <div className="p-6 border-b-[3px] border-slate-900 dark:border-white flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Package className="w-5 h-5 text-amber-500" />
                 {editingPackage ? 'Edit Package' : 'New Package'}
@@ -1807,14 +1807,14 @@ export function Admin() {
                 <button
                   type="button"
                   onClick={() => setShowPackageModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                  className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl border-[3px] border-slate-900 dark:border-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1834,8 +1834,8 @@ export function Admin() {
       {/* View User Detail Modal */}
       {viewingUser && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
+            <div className="p-6 border-b-[3px] border-slate-900 dark:border-white flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Eye className="w-5 h-5 text-blue-600" />
                 User Details
@@ -1854,11 +1854,11 @@ export function Admin() {
               {viewingUser.is_verified !== null && viewingUser.role === 'company' && <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Verified</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.is_verified ? 'Yes' : 'No'}</span></div>}
               <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Joined</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString() : '—'}</span></div>
               <div className="pt-4 flex gap-3">
-                <button onClick={() => { setViewingUser(null); handleEditUser(viewingUser); }} className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                <button onClick={() => { setViewingUser(null); handleEditUser(viewingUser); }} className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all flex items-center justify-center gap-2">
                   <Edit className="w-4 h-4" />
                   Edit User
                 </button>
-                <button onClick={() => setViewingUser(null)} className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all">
+                <button onClick={() => setViewingUser(null)} className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl border-[3px] border-slate-900 dark:border-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
                   Close
                 </button>
               </div>
@@ -1870,8 +1870,8 @@ export function Admin() {
       {/* Edit User Modal */}
       {showEditUserModal && editingUser && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
+            <div className="p-6 border-b-[3px] border-slate-900 dark:border-white flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
               <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Edit className="w-5 h-5 text-blue-600" />
                 Edit User
@@ -1919,10 +1919,10 @@ export function Admin() {
                 <input type="text" value={editUserForm.phone} onChange={(e) => setEditUserForm({ ...editUserForm, phone: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
               </div>
               <div className="pt-4 flex gap-3">
-                <button type="button" onClick={() => setShowEditUserModal(false)} className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all">
+                <button type="button" onClick={() => setShowEditUserModal(false)} className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-bold rounded-xl border-[3px] border-slate-900 dark:border-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2">
+                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2 bg-blue-600 text-white font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] disabled:opacity-50 transition-all flex items-center justify-center gap-2">
                   {isSubmitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><CheckCircle className="w-4 h-4" />Save Changes</>}
                 </button>
               </div>

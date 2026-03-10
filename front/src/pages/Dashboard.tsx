@@ -40,13 +40,13 @@ export function Dashboard() {
 
   return (
     <div className="min-h-screen">
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 transition-colors">
+      <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b-4 border-slate-900 dark:border-white transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
             {user.role === 'company' ? 'Company Dashboard' : 'Dashboard'}
           </h1>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600 dark:text-slate-400">Welcome, {user.name}</span>
+            <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Welcome, {user.name}</span>
           </div>
         </div>
       </div>
@@ -162,9 +162,9 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 mb-6 border border-transparent dark:border-slate-800">
-          <div className="flex items-center space-x-4 mb-6 pb-6 border-b border-gray-200 dark:border-slate-800">
-            <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 mb-6">
+          <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
+            <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               {user.profile_image_url ? (
                 <img src={user.profile_image_url} alt={user.name} className="w-full h-full object-cover" />
               ) : (
@@ -172,8 +172,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white text-lg truncate">{user.name}</p>
-              <p className="text-sm text-gray-600 dark:text-slate-400 truncate">{user.email}</p>
+              <p className="font-black text-slate-900 dark:text-white text-lg truncate">{user.name}</p>
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
             </div>
           </div>
 
@@ -188,34 +188,34 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeTab === tab.id
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/30'
-                  : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === tab.id
+                  ? 'bg-blue-600 text-white border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] font-bold'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-[3px] border-transparent font-medium'
                   }`}
               >
                 <tab.icon className="w-5 h-5" />
-                <span className="font-medium">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
-            <Link to="/points" className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-lg hover:from-amber-100 hover:to-orange-100 dark:hover:from-amber-900/30 dark:hover:to-orange-900/30 transition-all group">
+          <div className="mt-6 pt-6 border-t-[3px] border-slate-900 dark:border-white">
+            <Link to="/points" className="w-full flex items-center justify-between px-4 py-3 bg-amber-400 dark:bg-amber-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all group">
               <div className="flex items-center space-x-3">
-                <Coins className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                <span className="font-medium text-amber-700 dark:text-amber-400">Points</span>
+                <Coins className="w-5 h-5 text-slate-900" />
+                <span className="font-black text-slate-900">Points</span>
               </div>
-              <span className="font-bold text-amber-700 dark:text-amber-400">{pointsBalance}</span>
+              <span className="font-black text-slate-900">{pointsBalance}</span>
             </Link>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-800">
+          <div className="mt-4 pt-4 border-t-[3px] border-slate-900 dark:border-white">
             <button
               onClick={logout}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 group"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-white bg-rose-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all duration-200 group"
             >
               <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">Log Out</span>
+              <span className="font-bold">Log Out</span>
             </button>
           </div>
         </div>
@@ -236,73 +236,73 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-blue-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{applications.length}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Total Applications</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{applications.length}</p>
                   </div>
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-xl">
-                    <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <div className="p-3 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <FileText className="w-8 h-8 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-green-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Saved Internships</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{savedInternships.length}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Saved Internships</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{savedInternships.length}</p>
                   </div>
-                  <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-xl">
-                    <BookOpen className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  <div className="p-3 bg-green-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <BookOpen className="w-8 h-8 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-yellow-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Under Review</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Under Review</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">
                       {applications.filter((a) => a.status === 'Under Review').length}
                     </p>
                   </div>
-                  <div className="p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded-xl">
-                    <Briefcase className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  <div className="p-3 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <Briefcase className="w-8 h-8 text-slate-900" />
                   </div>
                 </div>
               </div>
-              <Link to="/points" className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-amber-500/30 transition-all block">
+              <Link to="/points" className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all block">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Points Balance</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{pointsBalance}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Points Balance</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{pointsBalance}</p>
                   </div>
-                  <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-xl">
-                    <Coins className="w-8 h-8 text-amber-600 dark:text-amber-400" />
+                  <div className="p-3 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <Coins className="w-8 h-8 text-slate-900" />
                   </div>
                 </div>
               </Link>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Applications</h2>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Recent Applications</h2>
               <div className="space-y-4">
                 {applications.slice(0, 3).map((app: any) => (
-                  <div key={app.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                  <div key={app.id} className="flex items-center justify-between p-4 border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/30 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{app.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-slate-400">{app.company_name || 'Company'}</p>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{app.title}</h3>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{app.company_name || 'Company'}</p>
                     </div>
                     <div className="text-right">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(app.status)} dark:bg-opacity-20`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border-[2px] border-slate-900 dark:border-white shadow-[2px_2px_0px_0px_#0f172a] ${getStatusColor(app.status)}`}>
                         {app.status}
                       </span>
-                      <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">{new Date(app.created_at).toLocaleDateString()}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-500 mt-1 font-medium">{new Date(app.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                 ))}
               </div>
-              <Link to="/browse" className="mt-6 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors">
+              <Link to="/browse" className="mt-6 inline-block text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold transition-colors">
                 Browse more internships →
               </Link>
             </div>
@@ -311,14 +311,14 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
 
         {activeTab === 'recommended' && (
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
               <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Recommended for You</h2>
-                  <p className="text-sm text-gray-600 dark:text-slate-400">Based on your skills, major, and interests</p>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Recommended for You</h2>
+                  <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Based on your skills, major, and interests</p>
                 </div>
-                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="p-2 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                  <Sparkles className="w-5 h-5 text-white" />
                 </div>
               </div>
 
@@ -351,15 +351,15 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
               ) : (
                 <div className="grid grid-cols-1 gap-4">
                   {(recommendedInternships || []).map((rec: any) => (
-                    <div key={rec.internship.id} className="group border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 rounded-xl p-6 hover:shadow-xl hover:border-blue-500/30 transition-all duration-300">
+                    <div key={rec.internship.id} className="group border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                               {rec.internship.title}
                             </h3>
-                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 dark:bg-green-900/30 rounded-full border border-green-100 dark:border-green-900/50">
-                              <span className="text-[11px] font-black text-green-700 dark:text-green-400">{Math.round(rec.match_score)}% Match</span>
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-400 rounded-full border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                              <span className="text-[11px] font-black text-slate-900">{Math.round(rec.match_score)}% Match</span>
                             </div>
                           </div>
 
@@ -382,7 +382,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                             <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Why we recommend this:</p>
                             <div className="flex flex-wrap gap-2">
                               {(rec.matching_reasons || []).map((reason: string, i: number) => (
-                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-[11px] font-bold border border-blue-100 dark:border-blue-900/30">
+                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
                                   {reason}
                                 </span>
                               ))}
@@ -393,7 +393,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                         <div className="flex items-center gap-3 md:flex-col lg:flex-row">
                           <Link
                             to={`/internship/${rec.internship.id}`}
-                            className="flex-1 md:w-full lg:flex-1 px-6 py-2.5 bg-gray-900 dark:bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-gray-800 dark:hover:bg-blue-700 transition-all text-center shadow-lg shadow-blue-500/10"
+                            className="flex-1 md:w-full lg:flex-1 px-6 py-2.5 bg-slate-900 dark:bg-blue-600 text-white text-sm font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all text-center"
                           >
                             View Details
                           </Link>
@@ -408,26 +408,26 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         )}
 
         {activeTab === 'applications' && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">My Applications</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">My Applications</h2>
             {applications.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-slate-400 mb-4">You haven't applied to any internships yet.</p>
-                <Link to="/browse" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                <Link to="/browse" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold">
                   Browse Internships
                 </Link>
               </div>
             ) : (
               <div className="space-y-4">
                 {applications.map((app: any) => (
-                  <div key={app.id} className="border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 rounded-xl p-6 hover:shadow-md dark:hover:bg-slate-800 transition-all">
+                  <div key={app.id} className="border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{app.title}</h3>
-                        <p className="text-gray-600 dark:text-slate-400">{app.company_name || 'Company'}</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{app.title}</h3>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">{app.company_name || 'Company'}</p>
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(app.status)} dark:bg-opacity-20`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold border-[2px] border-slate-900 dark:border-white shadow-[2px_2px_0px_0px_#0f172a] ${getStatusColor(app.status)}`}>
                         {app.status}
                       </span>
                     </div>
@@ -445,13 +445,13 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         )}
 
         {activeTab === 'saved' && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Saved Internships</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Saved Internships</h2>
             {savedInternships.length === 0 ? (
               <div className="text-center py-12">
                 <BookOpen className="w-16 h-16 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-slate-400 mb-4">You haven't saved any internships yet.</p>
-                <Link to="/browse" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                <Link to="/browse" className="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold">
                   Browse Internships
                 </Link>
               </div>
@@ -461,10 +461,10 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   <Link
                     key={internship.id}
                     to={`/internship/${internship.id}`}
-                    className="border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 rounded-xl p-6 hover:shadow-md dark:hover:bg-slate-800 transition-all border border-transparent dark:hover:border-blue-500/20"
+                    className="border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
                   >
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{internship.title}</h3>
-                    <p className="text-gray-600 dark:text-slate-400">{internship.company}</p>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{internship.title}</h3>
+                    <p className="text-slate-600 dark:text-slate-400 font-medium">{internship.company}</p>
                   </Link>
                 ))}
               </div>
@@ -473,8 +473,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         )}
 
         {activeTab === 'profile' && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Profile Settings</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Profile Settings</h2>
             <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -505,14 +505,14 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
             }} className="space-y-6">
               <div className="flex items-center space-x-6 mb-8">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-white dark:border-slate-900 shadow-lg">
+                  <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
                     {user.profile_image_url ? (
                       <img src={user.profile_image_url} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
-                      <User className="w-12 h-12 text-gray-400 dark:text-slate-500" />
+                      <User className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
                   </div>
-                  <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
+                  <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-xl border-[2px] border-slate-900 cursor-pointer hover:bg-blue-700 transition-colors shadow-[2px_2px_0px_0px_#0f172a]">
                     <Camera className="w-4 h-4" />
                     <input type="file" id="profile_image_upload" name="profile_image_upload" className="hidden" accept="image/*" onChange={async (e) => {
                       if (e.target.files?.[0]) {
@@ -604,8 +604,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                 </div>
               </div>
 
-              <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
-                <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Online Presence</h4>
+              <div className="pt-6 border-t-[3px] border-slate-900 dark:border-white">
+                <h4 className="text-sm font-black text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Online Presence</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="relative">
                     <Github className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -623,7 +623,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
               </div>
 
               <div className="pt-4">
-                <button type="submit" className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-lg shadow-blue-500/20 font-bold">
+                <button type="submit" className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black uppercase tracking-tight">
                   Save All Changes
                 </button>
               </div>
@@ -685,9 +685,9 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 mb-6 border border-transparent dark:border-slate-800">
-          <div className="flex items-center space-x-4 mb-6 pb-6 border-b border-gray-200 dark:border-slate-800">
-            <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 mb-6">
+          <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
+            <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               {user.profile_image_url || user.logo_url ? (
                 <img src={user.profile_image_url || user.logo_url} alt={user.name} className="w-full h-full object-cover" />
               ) : (
@@ -695,8 +695,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
               )}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-gray-900 dark:text-white text-lg truncate">{user.companyName || user.name}</p>
-              <p className="text-sm text-gray-600 dark:text-slate-400 truncate">Company Portal</p>
+              <p className="font-black text-slate-900 dark:text-white text-lg truncate">{user.companyName || user.name}</p>
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 truncate">Company Portal</p>
             </div>
           </div>
 
@@ -711,24 +711,24 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 ${activeTab === tab.id
-                  ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm border border-blue-100 dark:border-blue-900/30'
-                  : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${activeTab === tab.id
+                  ? 'bg-blue-600 text-white border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] font-bold'
+                  : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-[3px] border-transparent font-medium'
                   }`}
               >
                 <tab.icon className="w-5 h-5" />
-                <span className="font-medium">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             ))}
           </nav>
 
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-800">
+          <div className="mt-6 pt-6 border-t-[3px] border-slate-900 dark:border-white">
             <button
               onClick={logout}
-              className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all duration-200 group"
+              className="w-full flex items-center space-x-3 px-4 py-3 text-white bg-rose-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all duration-200 group"
             >
               <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              <span className="font-medium">Log Out</span>
+              <span className="font-bold">Log Out</span>
             </button>
           </div>
         </div>
@@ -738,52 +738,52 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-blue-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Active Postings</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{postedInternships.length}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Active Postings</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{postedInternships.length}</p>
                   </div>
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-xl">
-                    <Briefcase className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <div className="p-3 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <Briefcase className="w-8 h-8 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-green-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{applications.length}</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Total Applications</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">{applications.length}</p>
                   </div>
-                  <div className="p-3 bg-green-100 dark:bg-green-900/40 rounded-xl">
-                    <Users className="w-8 h-8 text-green-600 dark:text-green-400" />
+                  <div className="p-3 bg-green-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <Users className="w-8 h-8 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/20 p-6 border border-transparent dark:border-slate-800 hover:border-yellow-500/30 transition-all">
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-600 dark:text-slate-400 text-sm mb-1 font-medium">Views This week</p>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">124</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Views This week</p>
+                    <p className="text-3xl font-black text-slate-900 dark:text-white">124</p>
                   </div>
-                  <div className="p-3 bg-yellow-100 dark:bg-yellow-900/40 rounded-xl">
-                    <BarChart className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  <div className="p-3 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <BarChart className="w-8 h-8 text-slate-900" />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg dark:shadow-slate-950/50 p-6 border border-transparent dark:border-slate-800">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Recent Postings</h2>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+              <h2 className="text-xl font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Recent Postings</h2>
               <div className="space-y-4">
                 {postedInternships.map((internship) => (
-                  <div key={internship.id} className="flex items-center justify-between p-4 border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/30 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
+                  <div key={internship.id} className="flex items-center justify-between p-4 border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/30 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all">
                     <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{internship.title}</h3>
-                      <p className="text-sm text-gray-600 dark:text-slate-400">{internship.applications} applications</p>
+                      <h3 className="font-bold text-slate-900 dark:text-white">{internship.title}</h3>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{internship.applications} applications</p>
                     </div>
                     <div className="text-right">
-                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-opacity-20 capitalize">
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-slate-900 border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] capitalize">
                         {internship.status}
                       </span>
                       <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">Posted on {new Date(internship.created_at).toLocaleDateString()}</p>
@@ -823,11 +823,11 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                         {applications.filter(a => a.internship_id === internship.id).length} Students Applied
                       </p>
                     </div>
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-opacity-20 capitalize">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-400 text-slate-900 border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] capitalize">
                       {internship.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between border-t border-gray-100 dark:border-slate-800 pt-4 mt-4">
+                  <div className="flex items-center justify-between border-t-[3px] border-slate-900 dark:border-white pt-4 mt-4">
                     <p className="text-sm text-gray-500">Posted on {new Date(internship.created_at).toLocaleDateString()}</p>
                     <div className="flex space-x-3">
                       <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">Edit</button>
@@ -861,8 +861,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
         )}
 
         {activeTab === 'applications' && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6 border border-transparent dark:border-slate-800">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Candidate Applications</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Candidate Applications</h2>
             {applications.length === 0 ? (
               <div className="text-center py-12">
                 <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -874,12 +874,11 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   <div
                     key={app.id}
                     onClick={() => setSelectedApplication(app)}
-                    className="flex items-center justify-between p-4 border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-800/20 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700/50 cursor-pointer transition-all hover:shadow-sm"
-                  >
+                    className="flex items-center justify-between p-4 border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/20 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] cursor-pointer transition-all">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white">{app.student_name || 'Unknown Student'}</h3>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${getStatusColor(app.status)} dark:bg-opacity-20`}>
+                        <h3 className="font-bold text-slate-900 dark:text-white">{app.student_name || 'Unknown Student'}</h3>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] ${getStatusColor(app.status)}`}>
                           {app.status}
                         </span>
                       </div>
@@ -1055,8 +1054,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
         )}
 
         {activeTab === 'profile' && (
-          <div className="bg-white dark:bg-slate-900 rounded-lg shadow-lg p-6 border border-transparent dark:border-slate-800">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Company Profile Settings</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Company Profile Settings</h2>
             <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
@@ -1073,14 +1072,14 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
             }} className="space-y-6">
               <div className="flex items-center space-x-6 mb-8">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gray-200 dark:bg-slate-800 rounded-full flex items-center justify-center overflow-hidden border-4 border-white dark:border-slate-900 shadow-lg">
+                  <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
                     {user.profile_image_url || user.logo_url ? (
                       <img src={user.profile_image_url || user.logo_url} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
-                      <Briefcase className="w-12 h-12 text-gray-400 dark:text-slate-500" />
+                      <Briefcase className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
                   </div>
-                  <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-full cursor-pointer hover:bg-blue-700 transition-colors shadow-lg">
+                  <label className="absolute bottom-0 right-0 p-2 bg-blue-600 text-white rounded-xl border-[2px] border-slate-900 cursor-pointer hover:bg-blue-700 transition-colors shadow-[2px_2px_0px_0px_#0f172a]">
                     <Camera className="w-4 h-4" />
                     <input type="file" className="hidden" accept="image/*" onChange={async (e) => {
                       if (e.target.files?.[0]) {
@@ -1104,7 +1103,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                 <label htmlFor="company_name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Company Name</label>
                 <input id="company_name" name="company_name" type="text" defaultValue={user.companyName || user.name} className="w-full px-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
               </div>
-              <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md font-medium">
+              <button type="submit" className="px-8 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black uppercase tracking-tight">
                 Save Changes
               </button>
             </form>
