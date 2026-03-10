@@ -60,6 +60,7 @@ function AppContent() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/points" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
+          <Route path="/points-store" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
         </Routes>
       </main>
       <Footer />
