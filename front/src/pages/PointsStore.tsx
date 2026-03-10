@@ -41,7 +41,7 @@ interface ServicePrice {
 }
 
 export function PointsStore() {
-  const { user } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const [activeTab, setActiveTab] = useState<'store' | 'earn' | 'history' | 'pricing' | 'purchases'>('store');
   const [balance, setBalance] = useState<PointsBalance | null>(null);
   const [packages, setPackages] = useState<PointsPackage[]>([]);
@@ -75,6 +75,8 @@ export function PointsStore() {
       setServices(pricingRes.services || []);
       setActivities(earnRes.activities || null);
       setMyPurchases(purchasesRes.requests || []);
+      // Sync navbar points badge with real balance
+      refreshUserData();
     } catch (err) {
       console.error('Failed to load points data:', err);
     } finally {
@@ -121,6 +123,7 @@ export function PointsStore() {
       ]);
       setActivities(earnRes.activities || null);
       setTransactions(txnRes.transactions || []);
+      refreshUserData();
     } catch (err: any) {
       alert(err?.message || 'Failed to claim daily reward');
     } finally {

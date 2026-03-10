@@ -106,6 +106,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         setSavedInternships(Array.isArray(saved) ? saved : []);
         setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
         setPointsBalance(balRes.balance ?? 0);
+        refreshUserData();
       } catch (err: any) {
         setRecommendedInternships([]);
         setRecommendError(
