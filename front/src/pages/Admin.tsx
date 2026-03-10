@@ -31,6 +31,8 @@ import {
   Package,
   ToggleLeft,
   ToggleRight,
+  ShoppingCart,
+  Clock,
 } from 'lucide-react';
 
 type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications' | 'points' | 'logs_security';
@@ -83,7 +85,9 @@ export function Admin() {
   const [packageForm, setPackageForm] = useState({ name: '', points: 0, price: 0, discount_percent: 0, description: '', is_active: true });
   const [showGrantModal, setShowGrantModal] = useState(false);
   const [grantForm, setGrantForm] = useState({ user_id: '', amount: 0, reason: '' });
-  const [pointsSubTab, setPointsSubTab] = useState<'stats' | 'packages' | 'pricing' | 'grant'>('stats');
+  const [pointsSubTab, setPointsSubTab] = useState<'stats' | 'packages' | 'pricing' | 'grant' | 'requests'>('stats');
+  const [purchaseRequests, setPurchaseRequests] = useState<any[]>([]);
+  const [purchaseFilter, setPurchaseFilter] = useState('pending');
 
   const handleUpdateApplicationStatus = async (id: number, status: string) => {
     try {
@@ -314,14 +318,16 @@ export function Admin() {
     if (activeSection !== 'points') return;
     const fetchPointsData = async () => {
       try {
-        const [statsRes, pkgRes, pricingRes] = await Promise.all([
+        const [statsRes, pkgRes, pricingRes, reqsRes] = await Promise.all([
           api.points.adminGetStats().catch(() => null),
           api.points.adminGetPackages().catch(() => ({ packages: [] })),
           api.points.adminGetPricing().catch(() => ({ services: [] })),
+          api.points.adminGetPurchaseRequests('pending').catch(() => ({ requests: [] })),
         ]);
         if (statsRes) setPointsStats(statsRes);
         setPackages(pkgRes?.packages || []);
         setServicePricing(pricingRes?.services || []);
+        setPurchaseRequests(reqsRes?.requests || []);
       } catch (err) {
         console.error('Failed to fetch points data:', err);
       }
@@ -755,6 +761,7 @@ export function Admin() {
                 { id: 'stats' as const, label: 'Statistics', icon: TrendingUp },
                 { id: 'packages' as const, label: 'Packages', icon: Package },
                 { id: 'pricing' as const, label: 'Service Pricing', icon: DollarSign },
+                { id: 'requests' as const, label: 'Purchase Requests', icon: ShoppingCart },
                 { id: 'grant' as const, label: 'Grant Points', icon: Gift },
               ]).map((tab) => {
                 const TabIcon = tab.icon;
@@ -928,6 +935,113 @@ export function Admin() {
                       ))}
                       {servicePricing.length === 0 && (
                         <tr><td colSpan={5} className="px-6 py-10 text-center text-gray-500 dark:text-slate-400">No service pricing configured.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Purchase Requests Sub-tab */}
+            {pointsSubTab === 'requests' && (
+              <div className="space-y-6">
+                {/* Filter tabs */}
+                <div className="flex gap-2">
+                  {['pending', 'approved', 'rejected', 'all'].map((f) => (
+                    <button
+                      key={f}
+                      onClick={async () => {
+                        setPurchaseFilter(f);
+                        try {
+                          const res = await api.points.adminGetPurchaseRequests(f);
+                          setPurchaseRequests(res?.requests || []);
+                        } catch { /* ignore */ }
+                      }}
+                      className={`px-4 py-2 text-sm font-medium rounded-lg capitalize transition-all ${
+                        purchaseFilter === f
+                          ? 'bg-blue-600 text-white shadow'
+                          : 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-200 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {f}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">ID</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Student</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Package</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Points</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-slate-800">
+                      {purchaseRequests.map((req) => (
+                        <tr key={req.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">#{req.id}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{req.user_name}</div>
+                            <div className="text-xs text-gray-500 dark:text-slate-400">{req.user_email}</div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">{req.package_name}</td>
+                          <td className="px-6 py-4 text-sm font-semibold text-amber-600 dark:text-amber-400">{req.points}</td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">${req.price}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              req.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                              : req.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
+                              {req.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">{new Date(req.created_at).toLocaleDateString()}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            {req.status === 'pending' ? (
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Approve ${req.points} pts for ${req.user_name}?`)) return;
+                                    try {
+                                      await api.points.adminApprovePurchase(req.id);
+                                      setPurchaseRequests(purchaseRequests.map(r => r.id === req.id ? { ...r, status: 'approved' } : r));
+                                      alert(`Approved! ${req.points} points credited.`);
+                                    } catch (err: any) { alert(err.message || 'Failed'); }
+                                  }}
+                                  className="px-3 py-1.5 text-xs font-bold bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                                >
+                                  <CheckCircle className="w-4 h-4 inline mr-1" />Approve
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    if (!window.confirm(`Reject purchase request from ${req.user_name}?`)) return;
+                                    try {
+                                      await api.points.adminRejectPurchase(req.id);
+                                      setPurchaseRequests(purchaseRequests.map(r => r.id === req.id ? { ...r, status: 'rejected' } : r));
+                                    } catch (err: any) { alert(err.message || 'Failed'); }
+                                  }}
+                                  className="px-3 py-1.5 text-xs font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
+                                >
+                                  <XCircle className="w-4 h-4 inline mr-1" />Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-400 dark:text-slate-500">
+                                {req.reviewed_at ? new Date(req.reviewed_at).toLocaleDateString() : '—'}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                      {purchaseRequests.length === 0 && (
+                        <tr><td colSpan={8} className="px-6 py-10 text-center text-gray-500 dark:text-slate-400">No {purchaseFilter} purchase requests.</td></tr>
                       )}
                     </tbody>
                   </table>

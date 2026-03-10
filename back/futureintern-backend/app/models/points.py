@@ -70,6 +70,43 @@ class PointsPackage(db.Model):
         }
 
 
+class PurchaseRequest(db.Model):
+    """Pending points purchase requests awaiting admin approval."""
+    __tablename__ = 'purchase_requests'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    package_id = db.Column(db.Integer, db.ForeignKey('points_packages.id', ondelete='SET NULL'), nullable=True)
+    package_name = db.Column(db.String(100), nullable=False)
+    points = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pending')  # pending, approved, rejected
+    admin_note = db.Column(db.String(255), nullable=True)
+    reviewed_by = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('purchase_requests', lazy='dynamic'))
+    package = db.relationship('PointsPackage', backref=db.backref('purchase_requests', lazy='dynamic'))
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'user_name': self.user.name if self.user else None,
+            'user_email': self.user.email if self.user else None,
+            'package_id': self.package_id,
+            'package_name': self.package_name,
+            'points': self.points,
+            'price': self.price,
+            'status': self.status,
+            'admin_note': self.admin_note,
+            'reviewed_by': self.reviewed_by,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'reviewed_at': self.reviewed_at.isoformat() if self.reviewed_at else None,
+        }
+
+
 class ServicePricing(db.Model):
     """Admin-configurable cost (in points) for each platform service."""
     __tablename__ = 'service_pricing'

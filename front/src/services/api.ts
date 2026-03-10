@@ -685,6 +685,28 @@ export const api = {
     adminGetStats: async () => {
       return apiRequest<any>('/admin/points/stats');
     },
+
+    // Purchase requests (student)
+    getMyPurchases: async () => {
+      return apiRequest<{ requests: any[] }>('/points/my-purchases');
+    },
+
+    // Purchase requests (admin)
+    adminGetPurchaseRequests: async (status: string = 'pending') => {
+      return apiRequest<{ requests: any[] }>(`/admin/purchase-requests?status=${status}`);
+    },
+    adminApprovePurchase: async (id: number, note?: string) => {
+      return apiRequest<any>(`/admin/purchase-requests/${id}/approve`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+      });
+    },
+    adminRejectPurchase: async (id: number, note?: string) => {
+      return apiRequest<any>(`/admin/purchase-requests/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ note }),
+      });
+    },
   },
 };
 

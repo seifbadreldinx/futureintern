@@ -6,7 +6,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import db
 from app.models.user import User
-from app.models.points import PointsTransaction, PointsPackage, ServicePricing
+from app.models.points import PointsTransaction, PointsPackage, ServicePricing, PurchaseRequest
 from app.utils.points import record_transaction, process_daily_login, get_earning_activities
 
 points_bp = Blueprint('points', __name__)
@@ -90,20 +90,33 @@ def purchase_package():
     if not package or not package.is_active:
         return jsonify({'error': 'Package not found or no longer available'}), 404
 
-    # In a production system, payment processing would happen here.
-    # For this implementation we simulate a successful payment.
-    txn = record_transaction(
-        user, package.points, 'purchase',
-        description=f'Purchased "{package.name}" ({package.points} pts)',
+    # Create a pending purchase request (admin must approve before points are credited)
+    purchase_req = PurchaseRequest(
+        user_id=user_id,
+        package_id=package.id,
+        package_name=package.name,
+        points=package.points,
+        price=package.effective_price(),
+        status='pending',
     )
+    db.session.add(purchase_req)
     db.session.commit()
 
     return jsonify({
-        'message': f'Successfully purchased {package.points} points!',
-        'package': package.to_dict(),
-        'new_balance': user.points,
-        'transaction': txn.to_dict(),
+        'message': 'Purchase request submitted! An admin will review and approve it shortly.',
+        'request': purchase_req.to_dict(),
     }), 200
+
+
+# ────────────────────────────────────────────────────────
+# GET /api/points/my-purchases  →  student's purchase requests
+# ────────────────────────────────────────────────────────
+@points_bp.route("/my-purchases", methods=["GET"])
+@jwt_required()
+def my_purchases():
+    user_id = int(get_jwt_identity())
+    requests = PurchaseRequest.query.filter_by(user_id=user_id).order_by(PurchaseRequest.created_at.desc()).all()
+    return jsonify({'requests': [r.to_dict() for r in requests]}), 200
 
 
 # ────────────────────────────────────────────────────────

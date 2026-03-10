@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle, Flame, Target, FileText, UserCheck, LogIn, Award, Star, Settings, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Coins, ShoppingBag, History, ArrowLeft, Sparkles, Gift, Zap, Crown, Loader2, CheckCircle, Flame, Target, FileText, UserCheck, LogIn, Award, Star, Settings, ArrowUpRight, ArrowDownRight, Clock, XCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
@@ -42,7 +42,7 @@ interface ServicePrice {
 
 export function PointsStore() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<'store' | 'earn' | 'history' | 'pricing'>('store');
+  const [activeTab, setActiveTab] = useState<'store' | 'earn' | 'history' | 'pricing' | 'purchases'>('store');
   const [balance, setBalance] = useState<PointsBalance | null>(null);
   const [packages, setPackages] = useState<PointsPackage[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -52,6 +52,7 @@ export function PointsStore() {
   const [purchasing, setPurchasing] = useState<number | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [myPurchases, setMyPurchases] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -60,18 +61,20 @@ export function PointsStore() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [balRes, storeRes, txnRes, pricingRes, earnRes] = await Promise.all([
+      const [balRes, storeRes, txnRes, pricingRes, earnRes, purchasesRes] = await Promise.all([
         api.points.getBalance(),
         api.points.getStore(),
         api.points.getTransactions(),
         api.points.getPricing(),
         api.points.getEarningActivities().catch(() => ({ activities: null })),
+        api.points.getMyPurchases().catch(() => ({ requests: [] })),
       ]);
       setBalance(balRes);
       setPackages(storeRes.packages || []);
       setTransactions(txnRes.transactions || []);
       setServices(pricingRes.services || []);
       setActivities(earnRes.activities || null);
+      setMyPurchases(purchasesRes.requests || []);
     } catch (err) {
       console.error('Failed to load points data:', err);
     } finally {
@@ -84,10 +87,10 @@ export function PointsStore() {
     setSuccessMsg(null);
     try {
       const res = await api.points.purchase(pkgId);
-      setSuccessMsg(res.message || 'Purchase successful!');
-      setBalance((prev) => prev ? { ...prev, balance: res.new_balance } : prev);
-      const txnRes = await api.points.getTransactions();
-      setTransactions(txnRes.transactions || []);
+      setSuccessMsg(res.message || 'Purchase request submitted! Awaiting admin approval.');
+      // Refresh purchases list
+      const purchasesRes = await api.points.getMyPurchases().catch(() => ({ requests: [] }));
+      setMyPurchases(purchasesRes.requests || []);
     } catch (err: any) {
       alert(err?.message || 'Purchase failed');
     } finally {
@@ -242,6 +245,7 @@ export function PointsStore() {
         <div className="flex space-x-1 bg-gray-100 dark:bg-slate-900 p-1 rounded-xl w-fit">
           {([
             { id: 'store' as const, label: 'Buy Points', icon: ShoppingBag },
+            { id: 'purchases' as const, label: 'My Purchases', icon: Clock },
             { id: 'earn' as const, label: 'Earn Points', icon: Target },
             { id: 'pricing' as const, label: 'Service Costs', icon: Coins },
             { id: 'history' as const, label: 'History', icon: History },
@@ -319,6 +323,63 @@ export function PointsStore() {
                 No packages available right now. Check back later!
               </div>
             )}
+          </div>
+        )}
+
+        {/* My Purchases Tab */}
+        {activeTab === 'purchases' && (
+          <div className="space-y-6">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-slate-800">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">My Purchase Requests</h2>
+                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">When you buy a package, it goes to admin for approval. Points are credited once approved.</p>
+              </div>
+              <div className="divide-y divide-gray-100 dark:divide-slate-800">
+                {myPurchases.map((req) => (
+                  <div key={req.id} className="flex items-center gap-4 p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <div className={`flex-shrink-0 p-3 rounded-xl ${
+                      req.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                      : req.status === 'approved' ? 'bg-green-100 dark:bg-green-900/30'
+                      : 'bg-red-100 dark:bg-red-900/30'
+                    }`}>
+                      {req.status === 'pending' ? <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                       : req.status === 'approved' ? <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                       : <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 dark:text-white">{req.package_name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${
+                          req.status === 'pending' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : req.status === 'approved' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        }`}>{req.status}</span>
+                        <span className="text-xs text-gray-400">
+                          {new Date(req.created_at).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                        </span>
+                      </div>
+                      {req.status === 'pending' && (
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Awaiting admin approval</p>
+                      )}
+                      {req.admin_note && (
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Note: {req.admin_note}</p>
+                      )}
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-lg font-bold text-amber-600 dark:text-amber-400">{req.points} pts</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">${req.price}</p>
+                    </div>
+                  </div>
+                ))}
+                {myPurchases.length === 0 && (
+                  <div className="p-12 text-center text-gray-500 dark:text-slate-400">
+                    <ShoppingBag className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="font-medium">No purchase requests yet</p>
+                    <p className="text-sm mt-1">Buy a package from the store to get started</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 

@@ -924,3 +924,105 @@ def points_stats():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+# ========== Purchase Request Management ==========
+
+@admin_bp.route("/purchase-requests", methods=["GET"])
+@jwt_required()
+@role_required('admin')
+def list_purchase_requests():
+    """List purchase requests with optional status filter - Admin only"""
+    try:
+        from app.models.points import PurchaseRequest
+        status = request.args.get('status', 'pending', type=str)
+
+        query = PurchaseRequest.query
+        if status != 'all':
+            query = query.filter_by(status=status)
+        query = query.order_by(PurchaseRequest.created_at.desc())
+        reqs = query.all()
+
+        return jsonify({'requests': [r.to_dict() for r in reqs]}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/purchase-requests/<int:req_id>/approve", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def approve_purchase_request(req_id):
+    """Approve a pending purchase request and credit points - Admin only"""
+    try:
+        from app.models.points import PurchaseRequest
+        from app.utils.points import record_transaction
+        from datetime import datetime
+
+        pr = db.session.get(PurchaseRequest, req_id)
+        if not pr:
+            return jsonify({'error': 'Purchase request not found'}), 404
+        if pr.status != 'pending':
+            return jsonify({'error': f'Request already {pr.status}'}), 400
+
+        admin_id = int(get_jwt_identity())
+        data = request.get_json() or {}
+
+        # Credit points to the user
+        target_user = db.session.get(User, pr.user_id)
+        if not target_user:
+            return jsonify({'error': 'User not found'}), 404
+
+        record_transaction(
+            target_user, pr.points, 'purchase',
+            description=f'Purchased "{pr.package_name}" ({pr.points} pts) — approved by admin',
+        )
+
+        # Mark request as approved
+        pr.status = 'approved'
+        pr.reviewed_by = admin_id
+        pr.reviewed_at = datetime.utcnow()
+        pr.admin_note = data.get('note', '')
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Approved! {pr.points} points credited to {target_user.name}.',
+            'request': pr.to_dict(),
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@admin_bp.route("/purchase-requests/<int:req_id>/reject", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def reject_purchase_request(req_id):
+    """Reject a pending purchase request - Admin only"""
+    try:
+        from app.models.points import PurchaseRequest
+        from datetime import datetime
+
+        pr = db.session.get(PurchaseRequest, req_id)
+        if not pr:
+            return jsonify({'error': 'Purchase request not found'}), 404
+        if pr.status != 'pending':
+            return jsonify({'error': f'Request already {pr.status}'}), 400
+
+        admin_id = int(get_jwt_identity())
+        data = request.get_json() or {}
+
+        pr.status = 'rejected'
+        pr.reviewed_by = admin_id
+        pr.reviewed_at = datetime.utcnow()
+        pr.admin_note = data.get('note', '')
+
+        db.session.commit()
+
+        return jsonify({
+            'message': 'Purchase request rejected.',
+            'request': pr.to_dict(),
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

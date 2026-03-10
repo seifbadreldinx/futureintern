@@ -14,7 +14,7 @@ from app.models.audit_log import AuditLog  # noqa: F401
 # Import CV models so SQLAlchemy creates the tables
 from app.models.cv import CV, CVSection  # noqa: F401
 # Import points system models so SQLAlchemy creates the tables
-from app.models.points import PointsTransaction, PointsPackage, ServicePricing  # noqa: F401
+from app.models.points import PointsTransaction, PointsPackage, ServicePricing, PurchaseRequest  # noqa: F401
 # Import security models so SQLAlchemy creates the tables
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
 from app.models.two_factor import TwoFactorCode  # noqa: F401
