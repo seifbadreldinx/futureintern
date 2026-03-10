@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
   LayoutDashboard,
@@ -35,7 +36,7 @@ import {
   Clock,
 } from 'lucide-react';
 
-type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications' | 'points' | 'logs_security';
+type AdminSection = 'dashboard' | 'users' | 'companies' | 'internships' | 'applications' | 'points' | 'logs_security';
 
 interface StatCard {
   title: string;
@@ -61,6 +62,7 @@ export function Admin() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -88,6 +90,17 @@ export function Admin() {
   const [pointsSubTab, setPointsSubTab] = useState<'stats' | 'packages' | 'pricing' | 'grant' | 'requests'>('stats');
   const [purchaseRequests, setPurchaseRequests] = useState<any[]>([]);
   const [purchaseFilter, setPurchaseFilter] = useState('pending');
+
+  // Companies management
+  const [companies, setCompanies] = useState<any[]>([]);
+
+  // Edit user modal
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
+  const [editUserForm, setEditUserForm] = useState<any>({ full_name: '', email: '', role: '', company_name: '', university: '', major: '', phone: '' });
+
+  // View user detail
+  const [viewingUser, setViewingUser] = useState<any>(null);
 
   const handleUpdateApplicationStatus = async (id: number, status: string) => {
     try {
@@ -133,6 +146,54 @@ export function Admin() {
       setUsers(users.filter(u => u.id !== id));
     } catch (error) {
       console.error('Failed to delete user:', error);
+    }
+  };
+
+  const handleViewUser = (user: any) => {
+    setViewingUser(user);
+  };
+
+  const handleEditUser = (user: any) => {
+    setEditingUser(user);
+    setEditUserForm({
+      full_name: user.full_name || '',
+      email: user.email || '',
+      role: user.role || 'student',
+      company_name: user.company_name || '',
+      university: user.university || '',
+      major: user.major || '',
+      phone: user.phone || '',
+    });
+    setShowEditUserModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const updated = await api.admin.updateUser(editingUser.id, editUserForm);
+      setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...updated } : u));
+      setShowEditUserModal(false);
+      alert('User updated successfully!');
+    } catch (error: any) {
+      console.error('Failed to update user:', error);
+      alert(error.message || 'Failed to update user');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleVerifyCompany = async (companyId: number) => {
+    try {
+      await api.admin.verifyCompany(companyId);
+      setCompanies(companies.map(c => c.id === companyId ? { ...c, is_verified: true } : c));
+      // Also update stats
+      const stats = await api.admin.getStats().catch(() => null);
+      if (stats) setStatsData(stats);
+      alert('Company verified successfully!');
+    } catch (error: any) {
+      console.error('Failed to verify company:', error);
+      alert(error.message || 'Failed to verify company');
     }
   };
 
@@ -264,16 +325,18 @@ export function Admin() {
     const fetchBaseData = async () => {
       setIsLoading(true);
       try {
-        // Fetch stats, interns, apps
-        const [stats, internsList, appsList] = await Promise.all([
+        // Fetch stats, interns, apps, companies
+        const [stats, internsList, appsList, companiesList] = await Promise.all([
           api.admin.getStats().catch(err => { console.error('Stats error:', err); return null; }),
           api.admin.listInternships().catch(err => { console.error('Internships error:', err); return []; }),
           api.admin.listApplications().catch(err => { console.error('Applications error:', err); return []; }),
+          api.admin.listCompanies().catch(err => { console.error('Companies error:', err); return []; }),
         ]);
 
         setStatsData(stats);
         setInternships(Array.isArray(internsList) ? internsList : internsList?.internships || []);
         setApplications(Array.isArray(appsList) ? appsList : appsList?.applications || []);
+        setCompanies(Array.isArray(companiesList) ? companiesList : []);
 
         // Fetch logs and sec stats separately to not block main data
         api.admin.listAuditLogs()
@@ -385,6 +448,7 @@ export function Admin() {
   const menuItems = [
     { id: 'dashboard' as AdminSection, label: 'Dashboard', icon: LayoutDashboard },
     { id: 'users' as AdminSection, label: 'Users', icon: Users },
+    { id: 'companies' as AdminSection, label: 'Companies', icon: Building2 },
     { id: 'internships' as AdminSection, label: 'Internships', icon: Briefcase },
     { id: 'applications' as AdminSection, label: 'Applications', icon: FileText },
     { id: 'points' as AdminSection, label: 'Points System', icon: Coins },
@@ -433,7 +497,7 @@ export function Admin() {
               <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Users</h3>
-                  <Link to="#" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</Link>
+                  <button onClick={() => setActiveSection('users')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
                 </div>
                 <div className="space-y-3">
                   {users.slice(0, 4).map((user) => (
@@ -459,7 +523,7 @@ export function Admin() {
               <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Recent Internships</h3>
-                  <Link to="#" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View all</Link>
+                  <button onClick={() => setActiveSection('internships')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
                 </div>
                 <div className="space-y-3">
                   {internships.slice(0, 4).map((internship) => (
@@ -579,10 +643,10 @@ export function Admin() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{new Date(user.created_at).toLocaleDateString()}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end gap-2">
-                            <button className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <button onClick={() => handleViewUser(user)} className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                               <Eye className="w-4 h-4" />
                             </button>
-                            <button className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                            <button onClick={() => handleEditUser(user)} className="text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
@@ -668,6 +732,76 @@ export function Admin() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        );
+
+      case 'companies':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Company Management</h2>
+              <span className="text-sm text-gray-500 dark:text-slate-400">{companies.length} companies</span>
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm dark:shadow-slate-950/20 border border-gray-200 dark:border-slate-800 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Company</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Industry</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Location</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Joined</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
+                    {companies.map((company) => (
+                      <tr key={company.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">#{company.id}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{company.company_name}</div>
+                            <div className="text-sm text-gray-500 dark:text-slate-400">{company.email}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{company.industry || '—'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{company.location || '—'}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${company.is_verified ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'}`}>
+                            {company.is_verified ? 'Verified' : 'Pending'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">
+                          {company.created_at ? new Date(company.created_at).toLocaleDateString() : '—'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end gap-2">
+                            {!company.is_verified && (
+                              <button
+                                onClick={() => handleVerifyCompany(company.id)}
+                                className="px-3 py-1 text-xs font-semibold text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors flex items-center gap-1"
+                              >
+                                <CheckCircle className="w-3 h-3" />
+                                Verify
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteUser(company.id)}
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
@@ -1156,7 +1290,7 @@ export function Admin() {
                     <History className="w-5 h-5 text-gray-400" />
                     System Audit Logs
                   </h3>
-                  <button className="text-sm text-blue-600 hover:underline">Refresh</button>
+                  <button onClick={() => api.admin.listAuditLogs().then(setAuditLogs).catch(() => {})} className="text-sm text-blue-600 hover:underline">Refresh</button>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left">
@@ -1259,7 +1393,10 @@ export function Admin() {
               >
                 User Dashboard
               </button>
-              <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors">
+              <button
+                onClick={() => { logout(); navigate('/login'); }}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
+              >
                 <LogOut className="w-4 h-4" />
                 Logout
               </button>
@@ -1688,6 +1825,106 @@ export function Admin() {
                       {editingPackage ? 'Save Changes' : 'Create Package'}
                     </>
                   )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* View User Detail Modal */}
+      {viewingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Eye className="w-5 h-5 text-blue-600" />
+                User Details
+              </h3>
+              <button onClick={() => setViewingUser(null)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6 space-y-3">
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">ID</span><span className="text-sm font-medium text-gray-900 dark:text-white">#{viewingUser.id}</span></div>
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Name</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.full_name}</span></div>
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Email</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.email}</span></div>
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Role</span><span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400">{viewingUser.role}</span></div>
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Status</span><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(viewingUser.is_active ? 'Active' : 'Inactive')}`}>{viewingUser.is_active ? 'Active' : 'Inactive'}</span></div>
+              {viewingUser.company_name && <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Company</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.company_name}</span></div>}
+              {viewingUser.is_verified !== null && viewingUser.role === 'company' && <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Verified</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.is_verified ? 'Yes' : 'No'}</span></div>}
+              <div className="flex justify-between"><span className="text-sm text-gray-500 dark:text-slate-400">Joined</span><span className="text-sm font-medium text-gray-900 dark:text-white">{viewingUser.created_at ? new Date(viewingUser.created_at).toLocaleDateString() : '—'}</span></div>
+              <div className="pt-4 flex gap-3">
+                <button onClick={() => { setViewingUser(null); handleEditUser(viewingUser); }} className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                  <Edit className="w-4 h-4" />
+                  Edit User
+                </button>
+                <button onClick={() => setViewingUser(null)} className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all">
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && editingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Edit className="w-5 h-5 text-blue-600" />
+                Edit User
+              </h3>
+              <button onClick={() => setShowEditUserModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateUser} className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Full Name</label>
+                <input type="text" required value={editUserForm.full_name} onChange={(e) => setEditUserForm({ ...editUserForm, full_name: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Email</label>
+                <input type="email" required value={editUserForm.email} onChange={(e) => setEditUserForm({ ...editUserForm, email: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Role</label>
+                <select value={editUserForm.role} onChange={(e) => setEditUserForm({ ...editUserForm, role: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600">
+                  <option value="student">Student</option>
+                  <option value="company">Company</option>
+                </select>
+              </div>
+              {editUserForm.role === 'company' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Company Name</label>
+                  <input type="text" value={editUserForm.company_name} onChange={(e) => setEditUserForm({ ...editUserForm, company_name: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                </div>
+              )}
+              {editUserForm.role === 'student' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">University</label>
+                    <input type="text" value={editUserForm.university} onChange={(e) => setEditUserForm({ ...editUserForm, university: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Major</label>
+                    <input type="text" value={editUserForm.major} onChange={(e) => setEditUserForm({ ...editUserForm, major: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Phone</label>
+                <input type="text" value={editUserForm.phone} onChange={(e) => setEditUserForm({ ...editUserForm, phone: e.target.value })} className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600" />
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button type="button" onClick={() => setShowEditUserModal(false)} className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSubmitting} className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2">
+                  {isSubmitting ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <><CheckCircle className="w-4 h-4" />Save Changes</>}
                 </button>
               </div>
             </form>

@@ -530,6 +530,13 @@ export const api = {
       });
     },
 
+    updateUser: async (userId: number, data: any) => {
+      return apiRequest<any>(`/admin/users/${userId}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+
     // Internship management
     listInternships: async () => {
       return apiRequest<any>('/admin/internships');

@@ -268,6 +268,70 @@ def delete_user(user_id):
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
+@admin_bp.route("/users/<int:user_id>", methods=["PUT"])
+@jwt_required()
+@role_required('admin')
+def update_user(user_id):
+    """Update a user - Admin only"""
+    try:
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        if user.role == 'admin':
+            return jsonify({'error': 'Cannot edit admin users'}), 403
+
+        data = request.get_json()
+
+        if 'full_name' in data:
+            user.name = data['full_name']
+        if 'email' in data:
+            existing = User.query.filter(User.email == data['email'], User.id != user_id).first()
+            if existing:
+                return jsonify({'error': 'Email already in use'}), 400
+            user.email = data['email']
+        if 'role' in data and data['role'] in ('student', 'company'):
+            user.role = data['role']
+        if 'company_name' in data:
+            user.company_name = data['company_name']
+        if 'university' in data:
+            user.university = data['university']
+        if 'major' in data:
+            user.major = data['major']
+        if 'phone' in data:
+            user.phone = data['phone']
+        if 'is_verified' in data and user.role == 'company':
+            user.is_verified = bool(data['is_verified'])
+
+        db.session.commit()
+
+        try:
+            from flask_jwt_extended import get_jwt_identity
+            from app.utils.logger import log_audit
+            log_audit('admin_update_user', resource='user', resource_id=user_id,
+                      user_id=int(get_jwt_identity()))
+        except Exception:
+            pass
+
+        return jsonify({
+            'id': user.id,
+            'full_name': user.name,
+            'email': user.email,
+            'role': user.role,
+            'is_active': True,
+            'is_verified': user.is_verified if user.role == 'company' else None,
+            'company_name': user.company_name if user.role == 'company' else None,
+            'university': user.university if user.role == 'student' else None,
+            'major': user.major if user.role == 'student' else None,
+            'phone': user.phone,
+            'created_at': user.created_at.isoformat() if user.created_at else None,
+            'message': 'User updated successfully'
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 @admin_bp.route("/users", methods=["POST"])
 @jwt_required()
 @role_required('admin')
