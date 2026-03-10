@@ -3,7 +3,7 @@ Admin Dashboard APIs - Task 5.2
 Provides statistics and management endpoints for administrators
 """
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.utils.auth import role_required
 from app.models.user import User
 from app.models.intern import Internship
