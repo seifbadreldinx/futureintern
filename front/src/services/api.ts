@@ -144,11 +144,55 @@ export const api = {
       return loginResponse || registerResponse;
     },
 
+    // Register company
+    registerCompany: async (data: {
+      name: string;
+      email: string;
+      password: string;
+      company_name: string;
+    }) => {
+      const registerResponse = await apiRequest<{ user: any; message: string }>('/auth/register/company', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          company_name: data.company_name,
+        }),
+      });
+
+      // Auto-login after registration
+      let loginResponse;
+      try {
+        loginResponse = await api.auth.login(data.email, data.password);
+      } catch {
+        return registerResponse;
+      }
+
+      return loginResponse || registerResponse;
+    },
+
     // Login
     login: async (email: string, password: string) => {
-      const data = await apiRequest<{ access_token: string; user: any }>('/auth/login', {
+      const data = await apiRequest<{ access_token?: string; user?: any; requires_2fa?: boolean; user_id?: number; message?: string }>('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
+      });
+
+      if (data.access_token) {
+        saveAuthToken(data.access_token);
+      }
+      if ((data as any).refresh_token) {
+        saveRefreshToken((data as any).refresh_token);
+      }
+      return data;
+    },
+
+    // Verify 2FA code after login
+    verify2fa: async (userId: number, code: string) => {
+      const data = await apiRequest<{ access_token: string; user: any }>('/auth/verify-2fa', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: userId, code }),
       });
 
       if (data.access_token) {

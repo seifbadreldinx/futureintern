@@ -22,20 +22,25 @@ interface AuthUser {
   linkedin_url?: string;
   portfolio_url?: string;
   interests?: string[];
+  two_factor_enabled?: boolean;
   [key: string]: any;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
+  isAuthenticated: boolean;
   logout: () => void;
+  updateUser: (data: Partial<AuthUser>) => void;
   refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
   loading: true,
+  isAuthenticated: false,
   logout: () => { },
+  updateUser: () => { },
   refreshUserData: async () => { },
 });
 
@@ -85,12 +90,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.replace('/login');
   }, []);
 
+  const updateUser = useCallback((data: Partial<AuthUser>) => {
+    setUser(prev => prev ? { ...prev, ...data } : null);
+  }, []);
+
   const refreshUserData = useCallback(async () => {
     await fetchUser();
   }, [fetchUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout, refreshUserData }}>
+    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, logout, updateUser, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

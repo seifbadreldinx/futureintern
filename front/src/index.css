@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
 
 /* Custom animations for modern, professional feel */
 @keyframes fadeInUp {
@@ -288,4 +296,145 @@ html {
 
 .step-enter-up {
   animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* ===== New styles from frontend team ===== */
+
+/* Theme Colors */
+:root {
+  --primary: #f43f5e;
+  --primary-hover: #e11d48;
+  --accent: #2563eb;
+  --vibrant-yellow: #f59e0b;
+  --slate-900: #0f172a;
+  --slate-800: #1e293b;
+  --slate-50: #f8fafc;
+}
+
+/* Staggered Reveal Animations */
+@keyframes revealUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal-up {
+  opacity: 0;
+}
+
+.reveal-up.active {
+  animation: revealUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+.delay-500 { animation-delay: 500ms; }
+
+/* Premium Friendly Backgrounds */
+.friendly-bg {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 15s ease infinite;
+}
+
+.dark .friendly-bg {
+  background: linear-gradient(135deg, #1e1b4b 0%, #2e1065 50%, #4c0519 100%);
+  background-size: 400% 400%;
+}
+
+.friendly-unified-bg {
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(350, 89%, 96%, 1) 0, transparent 40%),
+    radial-gradient(at 100% 0%, hsla(45, 93%, 95%, 1) 0, transparent 40%),
+    radial-gradient(at 50% 50%, hsla(220, 90%, 97%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(350, 89%, 96%, 1) 0, transparent 40%),
+    radial-gradient(at 0% 100%, hsla(190, 90%, 96%, 1) 0, transparent 40%);
+}
+
+.dark .friendly-unified-bg {
+  background-color: #020617;
+  background-image:
+    radial-gradient(at 0% 0%, hsla(350, 45%, 15%, 1) 0, transparent 40%),
+    radial-gradient(at 100% 0%, hsla(45, 45%, 15%, 1) 0, transparent 40%),
+    radial-gradient(at 50% 50%, hsla(220, 45%, 15%, 1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(350, 45%, 15%, 1) 0, transparent 40%),
+    radial-gradient(at 0% 100%, hsla(190, 45%, 15%, 1) 0, transparent 40%);
+}
+
+/* Dark mode glass effect */
+.dark .glass-effect {
+  background: #0f172a;
+  border: 4px solid #f8fafc;
+  box-shadow: 10px 10px 0px 0px var(--primary);
+}
+
+/* Friendly theme backgrounds */
+.friendly-light-bg {
+  background: radial-gradient(circle at top right, #eef2ff, #ffffff, #fff7ed);
+}
+
+.friendly-indigo-bg {
+  background: radial-gradient(circle at top right, #eef2ff, #ffffff, #e0e7ff);
+}
+
+.friendly-rose-bg {
+  background: radial-gradient(circle at top right, #fff1f2, #ffffff, #ffe4e6);
+}
+
+.friendly-amber-bg {
+  background: radial-gradient(circle at top right, #fffbeb, #ffffff, #fef3c7);
+}
+
+.dark .friendly-light-bg {
+  background: radial-gradient(circle at top right, #0f172a, #020617, #1e1b4b);
+}
+
+.dark .friendly-indigo-bg {
+  background: radial-gradient(circle at top right, #1e1b4b, #020617, #0f172a);
+}
+
+.dark .friendly-rose-bg {
+  background: radial-gradient(circle at top right, #450a0a, #020617, #0f172a);
+}
+
+.dark .friendly-amber-bg {
+  background: radial-gradient(circle at top right, #451a03, #020617, #0f172a);
+}
+
+/* Floating Nav Glassmorphism */
+.floating-nav {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 10px 15px -3px rgba(0, 0, 0, 0.05),
+    inset 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.dark .floating-nav {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 10px 25px -5px rgba(0, 0, 0, 0.3),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+}
+
+/* Scroll indicator animation */
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s infinite;
 }
