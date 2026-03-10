@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { resolveLogoUrl } from '../utils/logoUrl';
 import { CreateInternship } from './CreateInternship';
 import { api } from '../services/api';
 import { Loader2 } from 'lucide-react';
@@ -165,8 +166,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 mb-6">
           <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
             <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
-              {user.profile_image_url ? (
-                <img src={user.profile_image_url} alt={user.name} className="w-full h-full object-cover" />
+              {user.profile_image ? (
+                <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <User className="w-8 h-8 text-white" />
               )}
@@ -506,8 +507,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
               <div className="flex items-center space-x-6 mb-8">
                 <div className="relative">
                   <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
-                    {user.profile_image_url ? (
-                      <img src={user.profile_image_url} alt={user.name} className="w-full h-full object-cover" />
+                    {user.profile_image ? (
+                      <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
@@ -688,8 +689,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 mb-6">
           <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
             <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
-              {user.profile_image_url || user.logo_url ? (
-                <img src={user.profile_image_url || user.logo_url} alt={user.name} className="w-full h-full object-cover" />
+              {user.profile_image ? (
+                <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <PlusCircle className="w-8 h-8 text-white" />
               )}
@@ -1073,8 +1074,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
               <div className="flex items-center space-x-6 mb-8">
                 <div className="relative">
                   <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
-                    {user.profile_image_url || user.logo_url ? (
-                      <img src={user.profile_image_url || user.logo_url} alt={user.name} className="w-full h-full object-cover" />
+                    {user.profile_image ? (
+                      <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <Briefcase className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
