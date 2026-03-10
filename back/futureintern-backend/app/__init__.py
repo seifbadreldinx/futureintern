@@ -98,15 +98,45 @@ def create_app():
     # تهيئة قاعدة البيانات
     db.init_app(app)
     
-    # Create all database tables if they don't exist (for PostgreSQL production)
-    # Create all database tables if they don't exist
-    # Commented out to prevent startup hang if DB is slow
-    # with app.app_context():
-    #     try:
-    #         db.create_all()
-    #         print("✅ Database tables verified/created successfully")
-    #     except Exception as e:
-    #         print(f"⚠️ Warning: Could not create tables: {e}")
+    # Create all database tables if they don't exist and run column migrations
+    with app.app_context():
+        try:
+            db.create_all()
+            print("✅ Database tables verified/created successfully")
+        except Exception as e:
+            print(f"⚠️ Warning: Could not create tables: {e}")
+
+        # Add missing columns to existing tables (safe for both SQLite and PostgreSQL)
+        try:
+            import sqlalchemy as sa
+            with db.engine.connect() as conn:
+                # Detect database dialect
+                dialect = db.engine.dialect.name  # 'sqlite' or 'postgresql'
+
+                # Get existing columns in users table
+                if dialect == 'sqlite':
+                    result = conn.execute(sa.text("PRAGMA table_info(users)"))
+                    existing_columns = {row[1] for row in result.fetchall()}
+                else:
+                    result = conn.execute(sa.text(
+                        "SELECT column_name FROM information_schema.columns "
+                        "WHERE table_name = 'users'"
+                    ))
+                    existing_columns = {row[0] for row in result.fetchall()}
+
+                # Migrations: column_name -> ALTER TABLE SQL
+                migrations = {
+                    'points': "ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0 NOT NULL",
+                }
+
+                for col, sql in migrations.items():
+                    if col not in existing_columns:
+                        print(f"🔧 Migration: adding column '{col}' to users table...")
+                        conn.execute(sa.text(sql))
+                        conn.commit()
+                        print(f"✅ Column '{col}' added.")
+        except Exception as e:
+            print(f"⚠️ Column migration skipped: {e}")
     
     # تهيئة CORS (للسماح بطلبات من المتصفح)
     # Allow frontend origin from environment variable or default to wildcard for development
