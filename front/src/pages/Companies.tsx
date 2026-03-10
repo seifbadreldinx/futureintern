@@ -59,7 +59,7 @@ export function Companies() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 pt-24 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rose-500 mx-auto mb-4"></div>
           <p className="text-slate-600 dark:text-slate-400 font-bold">Loading companies...</p>
@@ -69,7 +69,7 @@ export function Companies() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950 pt-24">
       <div className="border-b-4 border-slate-900 dark:border-white bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="inline-block px-4 py-1 bg-blue-600 text-white text-xs font-black uppercase tracking-wider rounded-full border-[3px] border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] mb-4">COMPANIES</div>

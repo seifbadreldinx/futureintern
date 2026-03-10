@@ -6,15 +6,22 @@ import { api } from '../services/api';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { resolveLogoUrl } from '../utils/logoUrl';
 
+const fallbackInternships = [
+  { id: 1, title: 'Software Engineer Intern', company: { name: 'TechCorp' }, location: 'San Francisco, CA', type: 'Full-time' },
+  { id: 2, title: 'Product Design Intern', company: { name: 'DesignHub' }, location: 'New York, NY', type: 'Part-time' },
+  { id: 3, title: 'Marketing Intern', company: { name: 'GrowthLabs' }, location: 'Remote', type: 'Remote' },
+  { id: 4, title: 'Data Analyst Intern', company: { name: 'DataWorks' }, location: 'Austin, TX', type: 'Full-time' },
+];
+
 export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
   const sectionRef = useScrollReveal();
-  const [internships, setInternships] = useState<any[]>([]);
+  const [internships, setInternships] = useState<any[]>(fallbackInternships);
 
   useEffect(() => {
     (async () => {
       try {
         const res = await api.internships.getAll();
-        if (res.internships) {
+        if (res.internships && res.internships.length > 0) {
           setInternships(res.internships.slice(0, 4));
         }
       } catch (error) {
@@ -22,8 +29,6 @@ export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
       }
     })();
   }, []);
-
-  if (internships.length === 0) return null;
 
   const getBadgeStyle = (type: string) => {
     switch (type) {

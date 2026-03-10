@@ -33,6 +33,8 @@ import {
   ToggleRight,
   ShoppingCart,
   Clock,
+  Star,
+  MapPin,
 } from 'lucide-react';
 
 type AdminSection = 'dashboard' | 'users' | 'companies' | 'internships' | 'applications' | 'points' | 'logs_security';
@@ -520,7 +522,42 @@ export function Admin() {
               ))}
             </div>
 
-            {/* Dashboard data grid */}
+            {/* Featured Internships */}
+            {internships.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                    <Star className="w-5 h-5 text-amber-400" />
+                    Featured Internships
+                  </h3>
+                  <button onClick={() => setActiveSection('internships')} className="text-sm text-blue-600 dark:text-blue-400 hover:underline cursor-pointer">View all</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {internships.slice(0, 4).map((internship) => (
+                    <div
+                      key={internship.id}
+                      onClick={() => navigate(`/internship/${internship.id}`)}
+                      className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all cursor-pointer group"
+                    >
+                      <div className="w-12 h-12 bg-slate-900 dark:bg-slate-700 rounded-xl flex items-center justify-center mb-4 border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#f43f5e] group-hover:rotate-3 transition-transform">
+                        <span className="text-white font-black text-lg">{(internship.company_name || 'C').charAt(0)}</span>
+                      </div>
+                      <h4 className="text-base font-black text-slate-900 dark:text-white mb-1 line-clamp-1 uppercase tracking-tight group-hover:text-blue-600 transition-colors">
+                        {internship.title}
+                      </h4>
+                      <p className="text-xs font-bold text-rose-500 uppercase tracking-widest mb-2">{internship.company_name}</p>
+                      <div className="flex items-center text-slate-500 dark:text-slate-400 text-xs font-bold mb-3">
+                        <MapPin className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                        {internship.location || 'Remote'}
+                      </div>
+                      <span className={`inline-block px-3 py-1 rounded-lg text-xs font-bold ${getStatusBadge(internship.status || 'Active')}`}>
+                        {internship.status || 'Active'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Recent Tables */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1403,10 +1440,10 @@ export function Admin() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-24">
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r-4 border-slate-900 dark:border-white min-h-screen sticky top-0">
+        <aside className="w-64 bg-white dark:bg-slate-900 border-r-4 border-slate-900 dark:border-white min-h-screen sticky top-24">
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;

@@ -88,7 +88,7 @@ export function BrowseInternships() {
   const hasActiveFilters = searchQuery || locationFilter || typeFilter;
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950">
+    <div className="min-h-screen bg-white dark:bg-slate-950 pt-24">
       <div className="border-b-4 border-slate-900 dark:border-white bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="inline-block px-4 py-1 bg-rose-500 text-white text-xs font-black uppercase tracking-wider rounded-full border-[3px] border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] mb-4">BROWSE</div>
