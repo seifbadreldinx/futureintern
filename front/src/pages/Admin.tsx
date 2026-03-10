@@ -461,7 +461,40 @@ export function Admin() {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h2>
-              <button className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-slate-800 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-slate-700 transition-colors shadow-lg">
+              <button
+                onClick={() => {
+                  const rows = [
+                    ['FutureIntern Admin Report'],
+                    ['Generated', new Date().toLocaleString()],
+                    [],
+                    ['Metric', 'Value'],
+                    ['Total Users', statsData?.total_users ?? 0],
+                    ['Active Internships', statsData?.total_internships ?? 0],
+                    ['Applications', statsData?.total_applications ?? 0],
+                    ['Pending Verifications', statsData?.pending_verifications ?? 0],
+                    [],
+                    ['Users'],
+                    ['Name', 'Email', 'Role', 'Joined'],
+                    ...users.map((u: any) => [u.name, u.email, u.role, u.created_at ? new Date(u.created_at).toLocaleDateString() : '']),
+                    [],
+                    ['Internships'],
+                    ['Title', 'Company', 'Location', 'Status'],
+                    ...internships.map((i: any) => [i.title, i.company_name || '', i.location || '', i.status || '']),
+                    [],
+                    ['Applications'],
+                    ['Applicant', 'Internship', 'Status', 'Date'],
+                    ...applications.map((a: any) => [a.user_name || a.applicant_name || '', a.internship_title || '', a.status || '', a.created_at ? new Date(a.created_at).toLocaleDateString() : '']),
+                  ];
+                  const csvContent = rows.map(r => r.map((c: any) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+                  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const link = document.createElement('a');
+                  link.href = URL.createObjectURL(blob);
+                  link.download = `admin-report-${new Date().toISOString().slice(0, 10)}.csv`;
+                  link.click();
+                  URL.revokeObjectURL(link.href);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-900 dark:bg-slate-800 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-slate-700 transition-colors shadow-lg cursor-pointer"
+              >
                 <Download className="w-4 h-4" />
                 Export Report
               </button>
