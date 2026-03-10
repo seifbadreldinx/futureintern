@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 import {
   LayoutDashboard,
   Users,
   Briefcase,
   FileText,
-  LogOut,
   Search,
   Edit,
   Trash2,
@@ -63,7 +61,6 @@ export function Admin() {
   const [isLoading, setIsLoading] = useState(true);
   const [isFetchingUsers, setIsFetchingUsers] = useState(false);
   const navigate = useNavigate();
-  const { logout } = useAuth();
 
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1374,41 +1371,9 @@ export function Admin() {
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 sticky top-0 z-40">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-4">
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">Admin Panel</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                View Site
-              </button>
-              <button
-                onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                User Dashboard
-              </button>
-              <button
-                onClick={() => { logout(); navigate('/login'); }}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 min-h-[calc(100vh-4rem)] sticky top-16">
+        <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 min-h-screen sticky top-0">
           <nav className="p-4 space-y-2">
             {menuItems.map((item) => {
               const Icon = item.icon;
