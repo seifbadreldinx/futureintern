@@ -23,16 +23,15 @@ def get_recommendations():
         if not student:
             return jsonify({'error': 'Student not found'}), 404
             
-        # Check Points Balance
-        if student.points < 10:
+        # Check Points Balance and charge via utility
+        from app.utils.points import check_and_charge
+        from app.models import db
+        success, msg, cost = check_and_charge(student, 'ai_recommendations')
+        if not success:
             return jsonify({
                 'error': 'Insufficient points',
-                'message': 'You need at least 10 points to use AI Recommendations. Please interact more with the platform to earn points!'
-            }), 402 # Payment Required
-            
-        # Deduct Points
-        from app.models import db
-        student.points -= 10
+                'message': msg
+            }), 402  # Payment Required
         db.session.commit()
 
         # 2️⃣ Get all active internships

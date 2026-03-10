@@ -70,6 +70,8 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [recommendError, setRecommendError] = useState<string | null>(null);
   const [pointsBalance, setPointsBalance] = useState<number>(user?.points ?? 0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
 
   // Check for daily reward toast from login
@@ -94,24 +96,17 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
-      setRecommendError(null);
       try {
-        const [apps, saved, recommended, balRes] = await Promise.all([
+        const [apps, saved, balRes] = await Promise.all([
           api.applications.myApplications(),
           api.internships.listSaved(),
-          api.internships.listRecommendations(),
           api.points.getBalance().catch(() => ({ balance: 0 })),
         ]);
         setApplications(Array.isArray(apps) ? apps : []);
         setSavedInternships(Array.isArray(saved) ? saved : []);
-        setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
         setPointsBalance(balRes.balance ?? 0);
         refreshUserData();
       } catch (err: any) {
-        setRecommendedInternships([]);
-        setRecommendError(
-          err?.message || 'Could not load recommendations. Please try again later.'
-        );
         console.error('Error fetching student dashboard data:', err);
       } finally {
         setIsLoading(false);
@@ -119,7 +114,30 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
     };
 
     fetchData();
-  }, [user]);
+  }, [user?.id]);
+
+  // Load recommendations only when user clicks the tab (costs points)
+  const loadRecommendations = async () => {
+    if (recommendationsLoaded || isLoadingRecommendations) return;
+    setIsLoadingRecommendations(true);
+    setRecommendError(null);
+    try {
+      const recommended = await api.internships.listRecommendations();
+      setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
+      setRecommendationsLoaded(true);
+      // Refresh balance after charge
+      const balRes = await api.points.getBalance().catch(() => ({ balance: 0 }));
+      setPointsBalance(balRes.balance ?? 0);
+      refreshUserData();
+    } catch (err: any) {
+      setRecommendedInternships([]);
+      setRecommendError(
+        err?.message || 'Could not load recommendations. Please try again later.'
+      );
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -304,7 +322,23 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
                 </div>
               </div>
 
-              {recommendError ? (
+              {!recommendationsLoaded && !isLoadingRecommendations && !recommendError ? (
+                <div className="text-center py-12">
+                  <Sparkles className="w-16 h-16 text-blue-200 dark:text-blue-900 mx-auto mb-4" />
+                  <p className="text-gray-600 dark:text-slate-400 mb-4">AI recommendations use 10 points per request.</p>
+                  <button
+                    onClick={loadRecommendations}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    Get AI Recommendations
+                  </button>
+                </div>
+              ) : isLoadingRecommendations ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-600 dark:text-slate-400">Finding your best matches...</p>
+                </div>
+              ) : recommendError ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-16 h-16 text-gray-300 dark:text-slate-700 mx-auto mb-4" />
                   <p className="text-red-600 dark:text-red-400">{recommendError}</p>
@@ -638,7 +672,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
     };
 
     fetchData();
-  }, [user]);
+  }, [user?.id]);
 
   if (isLoading) {
     return (
