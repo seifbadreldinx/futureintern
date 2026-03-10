@@ -25,9 +25,15 @@ import {
   Lock,
   ShieldCheck,
   Terminal,
+  Coins,
+  Gift,
+  DollarSign,
+  Package,
+  ToggleLeft,
+  ToggleRight,
 } from 'lucide-react';
 
-type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications' | 'logs_security';
+type AdminSection = 'dashboard' | 'users' | 'internships' | 'applications' | 'points' | 'logs_security';
 
 interface StatCard {
   title: string;
@@ -67,6 +73,17 @@ export function Admin() {
   const [showEditInternshipModal, setShowEditInternshipModal] = useState(false);
   const [editingInternship, setEditingInternship] = useState<any>(null);
   const [editInternshipForm, setEditInternshipForm] = useState<any>({});
+
+  // Points management state
+  const [pointsStats, setPointsStats] = useState<any>(null);
+  const [packages, setPackages] = useState<any[]>([]);
+  const [servicePricing, setServicePricing] = useState<any[]>([]);
+  const [showPackageModal, setShowPackageModal] = useState(false);
+  const [editingPackage, setEditingPackage] = useState<any>(null);
+  const [packageForm, setPackageForm] = useState({ name: '', points: 0, price: 0, discount_percent: 0, description: '', is_active: true });
+  const [showGrantModal, setShowGrantModal] = useState(false);
+  const [grantForm, setGrantForm] = useState({ user_id: '', amount: 0, reason: '' });
+  const [pointsSubTab, setPointsSubTab] = useState<'stats' | 'packages' | 'pricing' | 'grant'>('stats');
 
   const handleUpdateApplicationStatus = async (id: number, status: string) => {
     try {
@@ -162,6 +179,83 @@ export function Admin() {
     }
   };
 
+  // ========== Points Handlers ==========
+  const openCreatePackage = () => {
+    setEditingPackage(null);
+    setPackageForm({ name: '', points: 0, price: 0, discount_percent: 0, description: '', is_active: true });
+    setShowPackageModal(true);
+  };
+
+  const openEditPackage = (pkg: any) => {
+    setEditingPackage(pkg);
+    setPackageForm({
+      name: pkg.name,
+      points: pkg.points,
+      price: pkg.price,
+      discount_percent: pkg.discount_percent || 0,
+      description: pkg.description || '',
+      is_active: pkg.is_active,
+    });
+    setShowPackageModal(true);
+  };
+
+  const handleSavePackage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (editingPackage) {
+        const res = await api.points.adminUpdatePackage(editingPackage.id, packageForm);
+        setPackages(packages.map(p => p.id === editingPackage.id ? res.package : p));
+      } else {
+        const res = await api.points.adminCreatePackage(packageForm);
+        setPackages([...packages, res.package]);
+      }
+      setShowPackageModal(false);
+      alert(editingPackage ? 'Package updated!' : 'Package created!');
+    } catch (error: any) {
+      alert(error.message || 'Failed to save package');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeletePackage = async (id: number) => {
+    if (!window.confirm('Delete this package?')) return;
+    try {
+      await api.points.adminDeletePackage(id);
+      setPackages(packages.filter(p => p.id !== id));
+    } catch (error: any) {
+      alert(error.message || 'Failed to delete package');
+    }
+  };
+
+  const handleTogglePricing = async (pricing: any, field: string, value: any) => {
+    try {
+      const res = await api.points.adminUpdatePricing(pricing.id, { [field]: value });
+      setServicePricing(servicePricing.map(s => s.id === pricing.id ? res.service : s));
+    } catch (error: any) {
+      alert(error.message || 'Failed to update pricing');
+    }
+  };
+
+  const handleGrantPoints = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await api.points.adminGrantPoints(Number(grantForm.user_id), grantForm.amount, grantForm.reason);
+      alert(res.message || 'Points granted!');
+      setShowGrantModal(false);
+      setGrantForm({ user_id: '', amount: 0, reason: '' });
+      // Refresh stats
+      const statsRes = await api.points.adminGetStats().catch(() => null);
+      if (statsRes) setPointsStats(statsRes);
+    } catch (error: any) {
+      alert(error.message || 'Failed to grant points');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     const fetchBaseData = async () => {
       setIsLoading(true);
@@ -215,6 +309,26 @@ export function Admin() {
     return () => clearTimeout(timeoutId);
   }, [userSearchQuery, userSearchType]);
 
+  // Fetch points data when Points section is active
+  useEffect(() => {
+    if (activeSection !== 'points') return;
+    const fetchPointsData = async () => {
+      try {
+        const [statsRes, pkgRes, pricingRes] = await Promise.all([
+          api.points.adminGetStats().catch(() => null),
+          api.points.adminGetPackages().catch(() => ({ packages: [] })),
+          api.points.adminGetPricing().catch(() => ({ services: [] })),
+        ]);
+        if (statsRes) setPointsStats(statsRes);
+        setPackages(pkgRes?.packages || []);
+        setServicePricing(pricingRes?.services || []);
+      } catch (err) {
+        console.error('Failed to fetch points data:', err);
+      }
+    };
+    fetchPointsData();
+  }, [activeSection]);
+
   const stats: StatCard[] = [
     {
       title: 'Total Users',
@@ -267,6 +381,7 @@ export function Admin() {
     { id: 'users' as AdminSection, label: 'Users', icon: Users },
     { id: 'internships' as AdminSection, label: 'Internships', icon: Briefcase },
     { id: 'applications' as AdminSection, label: 'Applications', icon: FileText },
+    { id: 'points' as AdminSection, label: 'Points System', icon: Coins },
     { id: 'logs_security' as AdminSection, label: 'Logs & Security', icon: Shield },
   ];
 
@@ -624,6 +739,265 @@ export function Admin() {
                 </table>
               </div>
             </div>
+          </div>
+        );
+
+      case 'points':
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Points System Management</h2>
+            </div>
+
+            {/* Sub-tabs */}
+            <div className="flex gap-1 bg-gray-100 dark:bg-slate-800 p-1 rounded-xl border border-gray-200 dark:border-slate-700 w-fit">
+              {([
+                { id: 'stats' as const, label: 'Statistics', icon: TrendingUp },
+                { id: 'packages' as const, label: 'Packages', icon: Package },
+                { id: 'pricing' as const, label: 'Service Pricing', icon: DollarSign },
+                { id: 'grant' as const, label: 'Grant Points', icon: Gift },
+              ]).map((tab) => {
+                const TabIcon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setPointsSubTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all ${
+                      pointsSubTab === tab.id
+                        ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm'
+                        : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                    }`}
+                  >
+                    <TabIcon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Stats Sub-tab */}
+            {pointsSubTab === 'stats' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {[
+                    { title: 'Points in Circulation', value: pointsStats?.total_points_in_circulation ?? '—', icon: <Coins className="w-6 h-6" />, color: 'bg-amber-500' },
+                    { title: 'Total Purchases', value: pointsStats?.total_purchases ?? '—', icon: <DollarSign className="w-6 h-6" />, color: 'bg-green-500' },
+                    { title: 'Total Purchased Points', value: pointsStats?.total_purchased_points ?? '—', icon: <TrendingUp className="w-6 h-6" />, color: 'bg-blue-500' },
+                    { title: 'Active Packages', value: pointsStats?.active_packages ?? '—', icon: <Package className="w-6 h-6" />, color: 'bg-purple-500' },
+                  ].map((stat, idx) => (
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <div className={`${stat.color} p-3 rounded-lg text-white`}>{stat.icon}</div>
+                        <div>
+                          <p className="text-sm text-gray-500 dark:text-slate-400">{stat.title}</p>
+                          <p className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { title: 'Service Charges', value: pointsStats?.total_service_charges ?? '—', sub: `${pointsStats?.total_spent_points ?? 0} pts spent` },
+                    { title: 'Admin Grants', value: pointsStats?.total_admin_grants ?? '—', sub: 'Total grant operations' },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm">
+                      <p className="text-sm text-gray-500 dark:text-slate-400">{item.title}</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{item.value}</p>
+                      <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">{item.sub}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Packages Sub-tab */}
+            {pointsSubTab === 'packages' && (
+              <div className="space-y-6">
+                <div className="flex justify-end">
+                  <button
+                    onClick={openCreatePackage}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Package
+                  </button>
+                </div>
+
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Name</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Points</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Price ($)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Discount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Status</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-slate-800">
+                      {packages.map((pkg) => (
+                        <tr key={pkg.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{pkg.name}</div>
+                            {pkg.description && <div className="text-xs text-gray-500 dark:text-slate-400">{pkg.description}</div>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-amber-600 dark:text-amber-400">{pkg.points}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">${pkg.price}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-slate-400">{pkg.discount_percent > 0 ? `${pkg.discount_percent}%` : '—'}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${pkg.is_active ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-500'}`}>
+                              {pkg.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <div className="flex justify-end gap-2">
+                              <button onClick={() => openEditPackage(pkg)} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"><Edit className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeletePackage(pkg.id)} className="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                      {packages.length === 0 && (
+                        <tr><td colSpan={6} className="px-6 py-10 text-center text-gray-500 dark:text-slate-400">No packages found. Create one to get started.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Pricing Sub-tab */}
+            {pointsSubTab === 'pricing' && (
+              <div className="space-y-6">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-200 dark:border-slate-800">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Service</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Cost (pts)</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">First Free</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Active</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase">Update Cost</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 dark:divide-slate-800">
+                      {servicePricing.map((svc) => (
+                        <tr key={svc.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{svc.display_name || svc.service_key}</div>
+                            {svc.description && <div className="text-xs text-gray-500 dark:text-slate-400">{svc.description}</div>}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <input
+                              type="number"
+                              min={0}
+                              value={svc.points_cost}
+                              onChange={(e) => {
+                                const newVal = parseInt(e.target.value) || 0;
+                                setServicePricing(servicePricing.map(s => s.id === svc.id ? { ...s, points_cost: newVal } : s));
+                              }}
+                              onBlur={(e) => handleTogglePricing(svc, 'points_cost', parseInt(e.target.value) || 0)}
+                              className="w-20 px-2 py-1 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button onClick={() => handleTogglePricing(svc, 'first_time_free', !svc.first_time_free)} className="transition-colors">
+                              {svc.first_time_free
+                                ? <ToggleRight className="w-8 h-8 text-green-500" />
+                                : <ToggleLeft className="w-8 h-8 text-gray-400 dark:text-slate-600" />}
+                            </button>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button onClick={() => handleTogglePricing(svc, 'is_active', !svc.is_active)} className="transition-colors">
+                              {svc.is_active
+                                ? <ToggleRight className="w-8 h-8 text-green-500" />
+                                : <ToggleLeft className="w-8 h-8 text-gray-400 dark:text-slate-600" />}
+                            </button>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <button
+                              onClick={() => handleTogglePricing(svc, 'points_cost', svc.points_cost)}
+                              className="px-3 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                            >
+                              Save
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {servicePricing.length === 0 && (
+                        <tr><td colSpan={5} className="px-6 py-10 text-center text-gray-500 dark:text-slate-400">No service pricing configured.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Grant Points Sub-tab */}
+            {pointsSubTab === 'grant' && (
+              <div className="space-y-6">
+                <div className="max-w-lg">
+                  <div className="bg-white dark:bg-slate-900 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm p-6">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-amber-500" />
+                      Grant Points to User
+                    </h3>
+                    <form onSubmit={handleGrantPoints} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">User ID</label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          value={grantForm.user_id}
+                          onChange={(e) => setGrantForm({ ...grantForm, user_id: e.target.value })}
+                          placeholder="Enter user ID"
+                          className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Points Amount</label>
+                        <input
+                          type="number"
+                          required
+                          min={1}
+                          value={grantForm.amount || ''}
+                          onChange={(e) => setGrantForm({ ...grantForm, amount: parseInt(e.target.value) || 0 })}
+                          placeholder="e.g. 100"
+                          className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Reason (optional)</label>
+                        <input
+                          type="text"
+                          value={grantForm.reason}
+                          onChange={(e) => setGrantForm({ ...grantForm, reason: e.target.value })}
+                          placeholder="e.g. Contest reward"
+                          className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full px-4 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-50 shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+                      >
+                        {isSubmitting ? (
+                          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <Coins className="w-4 h-4" />
+                            Grant Points
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -1089,6 +1463,115 @@ export function Admin() {
                     <>
                       <CheckCircle className="w-4 h-4" />
                       Save Changes
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Package Create/Edit Modal */}
+      {showPackageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-slate-800 overflow-hidden">
+            <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/50">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Package className="w-5 h-5 text-amber-500" />
+                {editingPackage ? 'Edit Package' : 'New Package'}
+              </h3>
+              <button onClick={() => setShowPackageModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors p-1">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <form onSubmit={handleSavePackage} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Package Name</label>
+                <input
+                  type="text"
+                  required
+                  value={packageForm.name}
+                  onChange={(e) => setPackageForm({ ...packageForm, name: e.target.value })}
+                  placeholder="e.g. Starter Pack"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Points</label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    value={packageForm.points || ''}
+                    onChange={(e) => setPackageForm({ ...packageForm, points: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Price ($)</label>
+                  <input
+                    type="number"
+                    required
+                    min={0}
+                    step={0.01}
+                    value={packageForm.price || ''}
+                    onChange={(e) => setPackageForm({ ...packageForm, price: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Discount %</label>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={packageForm.discount_percent || ''}
+                  onChange={(e) => setPackageForm({ ...packageForm, discount_percent: parseFloat(e.target.value) || 0 })}
+                  placeholder="0"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-1">Description (optional)</label>
+                <input
+                  type="text"
+                  value={packageForm.description}
+                  onChange={(e) => setPackageForm({ ...packageForm, description: e.target.value })}
+                  placeholder="Short description"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={packageForm.is_active}
+                  onChange={(e) => setPackageForm({ ...packageForm, is_active: e.target.checked })}
+                  className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Active</label>
+              </div>
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowPackageModal(false)}
+                  className="flex-1 px-4 py-2 bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-300 font-semibold rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4" />
+                      {editingPackage ? 'Save Changes' : 'Create Package'}
                     </>
                   )}
                 </button>
