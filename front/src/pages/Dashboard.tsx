@@ -68,7 +68,7 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [savedInternships, setSavedInternships] = useState<any[]>([]);
   const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
   const [recommendError, setRecommendError] = useState<string | null>(null);
-  const [pointsBalance, setPointsBalance] = useState<number>(0);
+  const [pointsBalance, setPointsBalance] = useState<number>(user?.points ?? 0);
   const [isLoading, setIsLoading] = useState(true);
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
 
