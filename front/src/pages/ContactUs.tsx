@@ -10,7 +10,7 @@ export function ContactUs() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero Section */}
       <section
         ref={heroRef.elementRef}
@@ -22,10 +22,10 @@ export function ContactUs() {
         </div>
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 animate-fade-in-up drop-shadow-lg">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-6 animate-fade-in-up drop-shadow-lg">
             Get in Touch
           </h1>
-          <p className="text-lg sm:text-xl text-gray-700 mb-8 animate-fade-in-up animation-delay-200 drop-shadow-md">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-8 animate-fade-in-up animation-delay-200 font-medium">
             We're here to help! Reach out to us through any of the channels below.
           </p>
         </div>
@@ -39,19 +39,19 @@ export function ContactUs() {
         <div className="max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Email Card */}
-            <div className="glass-effect rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[5px_5px_0px_0px_#0f172a] transition-all">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-gray-900 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-rose-500 rounded-2xl flex items-center justify-center mb-6 border-[3px] border-slate-900">
                   <Mail className="w-8 h-8 text-white" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">Email Us</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">Email Us</h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-6">
                   Send us an email and we'll get back to you as soon as possible.
                 </p>
                 <a
                   href="mailto:mohamedsaad@gmail.com"
                   onClick={handleEmailClick}
-                  className="flex items-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                  className="flex items-center space-x-2 px-6 py-3 bg-rose-500 text-white rounded-2xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                 >
                   <Mail className="w-5 h-5" />
                   <span className="font-medium">mohamedsaad@gmail.com</span>
@@ -60,9 +60,9 @@ export function ContactUs() {
             </div>
 
             {/* WhatsApp Card */}
-            <div className="glass-effect rounded-2xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-200">
+            <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[5px_5px_0px_0px_#0f172a] transition-all">
               <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                <div className="w-16 h-16 bg-green-600 rounded-2xl flex items-center justify-center mb-6 border-[3px] border-slate-900">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -76,15 +76,15 @@ export function ContactUs() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">WhatsApp</h3>
-                <p className="text-gray-600 mb-6">
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-3">WhatsApp</h3>
+                <p className="text-slate-600 dark:text-slate-400 mb-6">
                   Chat with us on WhatsApp for instant support and quick responses.
                 </p>
                 <a
                   href="https://wa.me/201102930350"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+                  className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-2xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -105,13 +105,13 @@ export function ContactUs() {
           </div>
 
           {/* Additional Info */}
-          <div className="mt-12 glass-effect rounded-2xl p-8 shadow-lg border border-gray-200">
+          <div className="mt-12 bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)]">
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">Response Time</h3>
-              <p className="text-gray-600 mb-4">
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-4">Response Time</h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
                 We typically respond to emails within 24-48 hours during business days.
               </p>
-              <p className="text-gray-600">
+              <p className="text-slate-600 dark:text-slate-400">
                 For urgent matters, please use WhatsApp for faster assistance.
               </p>
             </div>

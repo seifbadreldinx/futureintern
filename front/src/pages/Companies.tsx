@@ -59,23 +59,24 @@ export function Companies() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading companies...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rose-500 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-bold">Loading companies...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="border-b-4 border-slate-900 dark:border-white bg-white dark:bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <div className="inline-block px-4 py-1 bg-blue-600 text-white text-xs font-black uppercase tracking-wider rounded-full border-[3px] border-slate-900 shadow-[3px_3px_0px_0px_#0f172a] mb-4">COMPANIES</div>
+          <h1 className="text-3xl sm:text-4xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-4">
             Top Companies
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-slate-600 dark:text-slate-400 font-medium">
             Discover opportunities at leading companies across various industries.
           </p>
         </div>
@@ -84,17 +85,17 @@ export function Companies() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {companies.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-600">No companies found.</p>
+            <p className="text-slate-600 dark:text-slate-400 font-bold">No companies found.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {companies.map((company) => (
               <div
                 key={company.id}
-                className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow"
+                className="bg-white dark:bg-slate-900 border-4 border-slate-900 dark:border-white rounded-[2rem] p-6 shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[3px] hover:translate-y-[3px] hover:shadow-[5px_5px_0px_0px_#0f172a] dark:hover:shadow-[5px_5px_0px_0px_rgba(255,255,255,0.2)] transition-all"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg flex items-center justify-center overflow-hidden border border-gray-200 relative shadow-sm">
+                  <div className="w-16 h-16 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-[3px] border-slate-900 dark:border-white relative">
                     {company.profile_image ? (
                       <img
                         src={(() => {
@@ -119,8 +120,8 @@ export function Companies() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-100">
-                        <span className="text-2xl font-bold text-blue-600">
+                      <div className="w-full h-full flex items-center justify-center bg-amber-400">
+                        <span className="text-2xl font-black text-slate-900">
                           {(company.company_name || company.name || 'C').charAt(0).toUpperCase()}
                         </span>
                       </div>
@@ -128,30 +129,30 @@ export function Companies() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
                   {company.company_name || company.name}
                 </h3>
-                <p className="text-gray-600 text-sm mb-4">
+                <p className="text-slate-600 dark:text-slate-400 text-sm mb-4">
                   Join our team and make an impact in the industry.
                 </p>
 
                 <div className="space-y-2 mb-4">
                   {company.company_location && (
-                    <div className="flex items-center text-gray-600 text-sm">
+                    <div className="flex items-center text-slate-600 dark:text-slate-400 text-sm">
                       <MapPin className="w-4 h-4 mr-2" />
                       {company.company_location}
                     </div>
                   )}
                 </div>
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t-[3px] border-slate-900 dark:border-white">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm font-bold text-slate-600 dark:text-slate-400">
                       {company.internship_count || 0} open internship{company.internship_count !== 1 ? 's' : ''}
                     </span>
                     <Link
                       to={`/browse?company=${encodeURIComponent(company.company_name || company.name)}`}
-                      className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+                      className="text-rose-600 dark:text-rose-400 hover:text-rose-700 font-black text-sm"
                     >
                       View Openings →
                     </Link>

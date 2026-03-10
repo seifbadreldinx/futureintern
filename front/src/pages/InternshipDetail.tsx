@@ -89,22 +89,22 @@ export function InternshipDetail() {
   const getBadgeColor = (type: string) => {
     switch (type) {
       case 'Full-time':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-blue-600 text-white border-[2px] border-slate-900';
       case 'Part-time':
-        return 'bg-green-100 text-green-700';
+        return 'bg-amber-400 text-slate-900 border-[2px] border-slate-900';
       case 'Remote':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-rose-500 text-white border-[2px] border-slate-900';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-slate-200 text-slate-700 border-[2px] border-slate-900';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading internship...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-rose-500 mx-auto mb-4"></div>
+          <p className="text-slate-600 dark:text-slate-400 font-bold">Loading internship...</p>
         </div>
       </div>
     );
@@ -112,11 +112,11 @@ export function InternshipDetail() {
 
   if (!internship) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Internship not found</h2>
-          <p className="text-gray-600 mb-6">The internship you are looking for does not exist or has been removed.</p>
-          <Link to="/browse" className="text-blue-600 hover:text-blue-700 font-medium">
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-4">Internship not found</h2>
+          <p className="text-slate-600 dark:text-slate-400 mb-6">The internship you are looking for does not exist or has been removed.</p>
+          <Link to="/browse" className="text-rose-600 dark:text-rose-400 hover:text-rose-700 font-bold">
             Browse all internships
           </Link>
         </div>
@@ -125,12 +125,12 @@ export function InternshipDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <div className="border-b-4 border-slate-900 dark:border-white bg-white dark:bg-slate-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className="flex items-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-4 transition-colors font-bold"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
             Back
@@ -139,10 +139,10 @@ export function InternshipDetail() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-8 mb-6">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-start space-x-4">
-              <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center overflow-hidden border border-gray-100 relative shadow-sm">
+              <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-[3px] border-slate-900 dark:border-white relative">
                 {internship.company?.profile_image ? (
                   <img
                     src={resolveLogoUrl(internship.company.profile_image)}
@@ -155,10 +155,10 @@ export function InternshipDetail() {
                 )}
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">{internship.title}</h1>
-                <p className="text-xl text-gray-600 mb-4">{internship.company?.name || internship.company || 'Unknown Company'}</p>
+                <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">{internship.title}</h1>
+                <p className="text-xl text-slate-600 dark:text-slate-400 mb-4 font-bold">{internship.company?.name || internship.company || 'Unknown Company'}</p>
                 <div className="flex flex-wrap gap-3">
-                  <div className="flex items-center text-gray-600">
+                  <div className="flex items-center text-slate-600 dark:text-slate-400">
                     <MapPin className="w-5 h-5 mr-2" />
                     {internship.location}
                   </div>
@@ -170,38 +170,38 @@ export function InternshipDetail() {
             </div>
           </div>
 
-          <div className="border-t border-gray-200 pt-6">
+          <div className="border-t-[3px] border-slate-900 dark:border-white pt-6">
             {!user && (
               <button
                 onClick={handleApply}
-                className="w-full sm:w-auto px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition-colors font-medium flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-8 py-3 bg-slate-900 text-white rounded-2xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold flex items-center justify-center gap-2"
               >
                 <Send className="w-5 h-5" />
                 Login to Apply
               </button>
             )}
             {user && user.role === 'student' && (
-              <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center gap-2">
+              <button onClick={handleApply} className="w-full sm:w-auto px-8 py-3 bg-rose-500 text-white rounded-2xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold flex items-center justify-center gap-2">
                 <Send className="w-5 h-5" />
                 Apply Now
               </button>
             )}
             {user?.role === 'company' && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-700">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border-[3px] border-blue-600 rounded-2xl p-4 text-sm text-blue-700 dark:text-blue-300 font-bold">
                 Companies cannot apply to internships. You can only post internships for students to apply to.
               </div>
             )}
             {user?.role === 'admin' && (
-              <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-sm text-purple-700">
+              <div className="bg-purple-50 dark:bg-purple-900/20 border-[3px] border-purple-600 rounded-2xl p-4 text-sm text-purple-700 dark:text-purple-300 font-bold">
                 You are logged in as an <strong>Admin</strong>. Admins cannot apply for internships, but you can manage them from the admin panel.
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">About the Role</h2>
-          <div className="prose max-w-none text-gray-700 space-y-4">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] p-8 mb-6">
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-4">About the Role</h2>
+          <div className="prose max-w-none text-slate-700 dark:text-slate-400 space-y-4">
             <p>
               We are looking for a motivated {internship.title} to join our team at {internship.company?.name || internship.company || internship.company_name || 'the company'}.
               This is an excellent opportunity to gain hands-on experience in a fast-paced environment
@@ -215,60 +215,60 @@ export function InternshipDetail() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Briefcase className="w-5 h-5 mr-2 text-blue-600" />
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 flex items-center">
+              <Briefcase className="w-5 h-5 mr-2 text-rose-500" />
               Responsibilities
             </h3>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-slate-700 dark:text-slate-400">
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-rose-500 mr-2 font-bold">•</span>
                 <span>Assist with day-to-day tasks and projects</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-rose-500 mr-2 font-bold">•</span>
                 <span>Collaborate with team members on assignments</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-rose-500 mr-2 font-bold">•</span>
                 <span>Participate in team meetings and discussions</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-rose-500 mr-2 font-bold">•</span>
                 <span>Learn and apply industry best practices</span>
               </li>
             </ul>
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+          <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] p-6">
+            <h3 className="text-lg font-black text-slate-900 dark:text-white mb-4 flex items-center">
               <Calendar className="w-5 h-5 mr-2 text-blue-600" />
               Requirements
             </h3>
-            <ul className="space-y-2 text-gray-700">
+            <ul className="space-y-2 text-slate-700 dark:text-slate-400">
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-blue-600 mr-2 font-bold">•</span>
                 <span>Currently enrolled in a relevant degree program</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-blue-600 mr-2 font-bold">•</span>
                 <span>Strong communication and teamwork skills</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-blue-600 mr-2 font-bold">•</span>
                 <span>Passion for learning and professional growth</span>
               </li>
               <li className="flex items-start">
-                <span className="text-blue-600 mr-2">•</span>
+                <span className="text-blue-600 mr-2 font-bold">•</span>
                 <span>Basic knowledge in relevant field</span>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">About {internship.company?.name || internship.company || internship.company_name || 'Company'}</h2>
-          <p className="text-gray-700 leading-relaxed">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-8">
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-4">About {internship.company?.name || internship.company || internship.company_name || 'Company'}</h2>
+          <p className="text-slate-700 dark:text-slate-400 leading-relaxed">
             {internship.company?.name || internship.company || internship.company_name || 'The company'} is a leading company in the industry, committed to innovation and excellence.
             We provide a supportive environment where interns can learn, grow, and make meaningful contributions
             to our team. Join us and be part of something great!

@@ -107,7 +107,7 @@ export function GetHelp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-white dark:bg-slate-950">
       {/* Hero Section */}
       <section
         ref={heroRef.elementRef}
@@ -122,10 +122,10 @@ export function GetHelp() {
           <div className="flex justify-center mb-6">
             <HelpCircle className="w-16 h-16 text-gray-900" />
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 animate-fade-in-up drop-shadow-lg">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-6 animate-fade-in-up drop-shadow-lg">
             Get Help
           </h1>
-          <p className="text-lg sm:text-xl text-gray-700 mb-8 animate-fade-in-up animation-delay-200 drop-shadow-md">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-8 animate-fade-in-up animation-delay-200 font-medium">
             Find answers to the most frequently asked questions
           </p>
         </div>
@@ -148,7 +148,7 @@ export function GetHelp() {
                 placeholder="Search for questions..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all"
+                className="w-full pl-10 pr-4 py-3 border-[3px] border-slate-900 dark:border-white rounded-2xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] transition-all"
               />
             </div>
 
@@ -157,9 +157,9 @@ export function GetHelp() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${selectedCategory === category
-                      ? 'bg-gray-900 text-white shadow-md'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:border-gray-900 hover:bg-gray-50'
+                  className={`px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-200 ${selectedCategory === category
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]'
+                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-[3px] border-slate-900 dark:border-white hover:bg-slate-50 dark:hover:bg-slate-700'
                     }`}
                 >
                   {category}
@@ -174,19 +174,19 @@ export function GetHelp() {
               filteredFaqs.map((faq, index) => (
                 <div
                   key={index}
-                  className="glass-effect rounded-xl border border-gray-200 overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-white overflow-hidden shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] transition-all duration-300"
                 >
                   <button
                     onClick={() => toggleFAQ(index)}
-                    className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
+                    className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     <div className="flex-1 pr-4">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        <span className="text-xs font-black uppercase tracking-wider text-white bg-rose-500 px-2 py-1 rounded-lg border-[2px] border-slate-900">
                           {faq.category}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
+                      <h3 className="text-lg font-black text-slate-900 dark:text-white">{faq.question}</h3>
                     </div>
                     <div className="flex-shrink-0">
                       {openIndex === index ? (
@@ -197,30 +197,30 @@ export function GetHelp() {
                     </div>
                   </button>
                   {openIndex === index && (
-                    <div className="px-6 pb-5 pt-0 border-t border-gray-200 bg-gray-50">
-                      <p className="text-gray-700 leading-relaxed mt-4">{faq.answer}</p>
+                    <div className="px-6 pb-5 pt-0 border-t-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800">
+                      <p className="text-slate-700 dark:text-slate-400 leading-relaxed mt-4">{faq.answer}</p>
                     </div>
                   )}
                 </div>
               ))
             ) : (
-              <div className="glass-effect rounded-xl p-8 text-center border border-gray-200">
-                <p className="text-gray-600">No questions found matching your search. Try a different search term or category.</p>
+              <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-8 text-center border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a]">
+                <p className="text-slate-600 dark:text-slate-400 font-bold">No questions found matching your search. Try a different search term or category.</p>
               </div>
             )}
           </div>
 
           {/* Still Need Help Section */}
-          <div className="mt-12 glass-effect rounded-2xl p-8 shadow-lg border border-gray-200 text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Still need help?</h3>
-            <p className="text-gray-600 mb-6">
+          <div className="mt-12 bg-white dark:bg-slate-900 rounded-[2rem] p-8 border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] text-center">
+            <h3 className="text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-white mb-4">Still need help?</h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-6 font-medium">
               Can't find what you're looking for? Our support team is here to help!
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-rose-500 text-white rounded-2xl border-[3px] border-slate-900 shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
             >
-              <span className="font-medium">Contact Us</span>
+              <span className="font-bold">Contact Us</span>
             </a>
           </div>
         </div>
