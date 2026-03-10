@@ -27,6 +27,7 @@ export function Navbar() {
 
   const navLinks = [
     { to: '/browse', label: 'Internships' },
+    { to: '/companies', label: 'Companies' },
     { to: '/#resources', label: 'Resources' },
     { to: '/about', label: 'About' },
     { to: '/contact', label: 'Contact' },

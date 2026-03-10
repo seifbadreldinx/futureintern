@@ -63,42 +63,48 @@ export function Login() {
   };
 
   return (
-    <div className="min-h-screen friendly-unified-bg relative overflow-hidden flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
-      {/* Organic Glows */}
-      <div className="absolute top-0 right-0 w-[80%] h-[120%] bg-indigo-500/10 dark:bg-indigo-500/20 blur-[130px] rounded-full -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
-      <div className="absolute bottom-0 left-10 w-[60%] h-[80%] bg-rose-500/5 dark:bg-rose-500/10 blur-[120px] rounded-full translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
+    <div className="min-h-screen bg-white dark:bg-slate-950 relative overflow-hidden flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
+      {/* Geometric Decorations */}
+      <div className="absolute top-20 left-10 w-16 h-16 bg-blue-600 border-4 border-slate-900 rounded-full animate-float pointer-events-none"></div>
+      <div className="absolute top-1/3 right-16 w-12 h-12 bg-amber-400 border-4 border-slate-900 rotate-12 animate-float animation-delay-300 pointer-events-none"></div>
+      <div className="absolute bottom-32 left-1/4 w-14 h-14 bg-rose-500 border-4 border-slate-900 rounded-2xl -rotate-12 animate-float animation-delay-500 pointer-events-none"></div>
+
+      {/* Dot Pattern */}
+      <div className="absolute inset-0 opacity-[0.03]">
+        <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(#0f172a 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }}></div>
+      </div>
 
       <div className="max-w-md w-full space-y-8 relative z-10">
         <div className="text-center">
-          <div className="flex justify-center items-center space-x-3 mb-6">
-            <div className="p-2.5 bg-gray-900 dark:bg-white rounded-[1rem] shadow-lg transform hover:scale-110 transition-transform duration-500">
-              <GraduationCap className="w-7 h-7 text-white dark:text-indigo-700" />
+          <Link to="/" className="inline-flex items-center space-x-3 mb-8 group">
+            <div className="p-2.5 bg-slate-900 dark:bg-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#f43f5e] transform group-hover:rotate-3 transition-transform">
+              <GraduationCap className="w-7 h-7 text-white dark:text-slate-900" />
             </div>
-            <span className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
-              FutureIntern
+            <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter uppercase">
+              Future<span className="text-rose-500">Intern</span>
             </span>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
-            {requires2fa ? 'Securing Your Session' : 'Welcome'}
+          </Link>
+          <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+            {requires2fa ? 'Verify Access' : 'Welcome Back'}
           </h2>
-          <p className="text-base text-gray-500 dark:text-indigo-100/60 font-medium">
+          <p className="text-lg text-slate-600 dark:text-slate-400 font-bold">
             {requires2fa ? 'Enter the 6-digit code sent to your email' : 'Sign in to continue your journey'}
           </p>
         </div>
 
         <form
-          className="mt-10 space-y-6 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl p-10 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-white/10 transition-all duration-500"
+          className="mt-10 space-y-6 bg-white dark:bg-slate-900 p-10 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition-all"
           onSubmit={handleSubmit}
         >
           {!requires2fa ? (
             <div className="space-y-5">
               <div>
-                <label htmlFor="email" className="block text-[11px] font-semibold text-gray-400 dark:text-indigo-200/40 uppercase tracking-wider mb-2.5 ml-1">
+                <label htmlFor="email" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">
                   Email address
                 </label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-50 dark:bg-white/5 rounded-xl flex items-center justify-center transition-colors group-focus-within:bg-indigo-50 dark:group-focus-within:bg-indigo-900/20">
-                    <Mail className="w-5 h-5 text-gray-400 group-focus-within:text-indigo-600 dark:group-focus-within:text-indigo-400" />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-blue-600" />
                   </div>
                   <input
                     id="email"
@@ -108,19 +114,19 @@ export function Login() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-16 pr-5 py-4 bg-white/50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-indigo-200/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/50 transition-all font-medium text-base shadow-sm"
+                    className="w-full pl-16 pr-5 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all font-bold text-base"
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-[11px] font-semibold text-gray-400 dark:text-indigo-200/40 uppercase tracking-wider mb-2.5 ml-1">
+                <label htmlFor="password" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">
                   Password
                 </label>
                 <div className="relative group">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-gray-50 dark:bg-white/5 rounded-xl flex items-center justify-center transition-colors group-focus-within:bg-rose-50 dark:group-focus-within:bg-rose-900/20">
-                    <Lock className="w-5 h-5 text-gray-400 group-focus-within:text-rose-600 dark:group-focus-within:text-rose-400" />
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center">
+                    <Lock className="w-5 h-5 text-rose-500" />
                   </div>
                   <input
                     id="password"
@@ -130,7 +136,7 @@ export function Login() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-16 pr-5 py-4 bg-white/50 dark:bg-slate-950/40 border border-gray-100 dark:border-white/5 rounded-xl text-gray-900 dark:text-white placeholder-gray-300 dark:placeholder-indigo-200/20 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all font-medium text-base shadow-sm"
+                    className="w-full pl-16 pr-5 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#f43f5e] transition-all font-bold text-base"
                     placeholder="••••••••"
                   />
                 </div>
@@ -142,33 +148,31 @@ export function Login() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-indigo-600 dark:text-indigo-400 border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 rounded cursor-pointer focus:ring-indigo-500/20"
+                    className="h-5 w-5 text-rose-500 border-[2px] border-slate-900 dark:border-white rounded cursor-pointer focus:ring-rose-500"
                   />
-                  <label htmlFor="remember-me" className="ml-2.5 block text-[11px] text-gray-600 dark:text-indigo-100/60 font-semibold uppercase tracking-wider cursor-pointer group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <label htmlFor="remember-me" className="ml-2.5 block text-sm text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider cursor-pointer">
                     Remember Me
                   </label>
                 </div>
 
-                <div className="text-sm">
-                  <Link to="/forgot-password" className="text-[11px] font-semibold text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-wider">
-                    Forgot Password?
-                  </Link>
-                </div>
+                <Link to="/forgot-password" className="text-sm font-bold text-rose-500 hover:text-rose-600 transition-all uppercase tracking-wider">
+                  Forgot?
+                </Link>
               </div>
             </div>
           ) : (
             <div className="space-y-5">
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl">
-                  <Smartphone className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-2xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                  <Smartphone className="w-12 h-12 text-blue-600" />
                 </div>
               </div>
               <div>
-                <label htmlFor="2fa-code" className="block text-sm font-bold text-gray-700 dark:text-slate-300 mb-2">
+                <label htmlFor="2fa-code" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2">
                   Authentication Code
                 </label>
                 <div className="relative group">
-                  <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-blue-600 dark:group-focus-within:text-blue-400 transition-colors" />
+                  <Shield className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     id="2fa-code"
                     type="text"
@@ -176,12 +180,12 @@ export function Login() {
                     maxLength={6}
                     value={twoFactorCode}
                     onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, ''))}
-                    className="w-full pl-10 pr-4 py-4 bg-white/50 dark:bg-slate-950/50 border border-gray-200 dark:border-slate-800 rounded-xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent transition-all duration-200 text-center tracking-[0.5em] text-xl font-bold"
+                    className="w-full pl-10 pr-4 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all text-center tracking-[0.5em] text-xl font-black"
                     placeholder="000000"
                     autoFocus
                   />
                 </div>
-                <p className="mt-3 text-xs text-center text-gray-500 dark:text-slate-400">
+                <p className="mt-3 text-xs text-center text-slate-500 dark:text-slate-400 font-bold">
                   Check your email for the verification code.
                 </p>
               </div>
@@ -192,7 +196,7 @@ export function Login() {
                   setTwoFactorCode('');
                   setError('');
                 }}
-                className="w-full text-sm font-bold text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
+                className="w-full text-sm font-black text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-wider"
               >
                 Back to Login
               </button>
@@ -200,7 +204,7 @@ export function Login() {
           )}
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
+            <div className="bg-rose-50 dark:bg-rose-900/20 border-[3px] border-rose-500 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-xl text-sm font-bold">
               {error}
             </div>
           )}
@@ -209,21 +213,21 @@ export function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center py-4 px-6 bg-gray-900 dark:bg-white text-white dark:text-indigo-700 rounded-xl transition-all font-bold text-base shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                <span>{requires2fa ? 'Verify Access' : 'Sign in'}</span>
+                <span>{requires2fa ? 'Verify Access' : 'Sign In'}</span>
               )}
             </button>
           </div>
 
           {!requires2fa && (
-            <div className="text-center pt-5">
-              <p className="text-sm font-semibold text-gray-500 dark:text-indigo-100/40">
+            <div className="text-center pt-5 border-t-[3px] border-slate-900 dark:border-white">
+              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 pt-5">
                 Don't have an account?{' '}
-                <Link to="/signup" className="text-indigo-600 dark:text-indigo-400 hover:underline underline-offset-8 decoration-2 font-bold transition-all">
+                <Link to="/signup" className="text-rose-500 font-black hover:text-rose-600 transition-all uppercase tracking-tight">
                   Create Account
                 </Link>
               </p>

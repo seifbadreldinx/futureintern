@@ -50,7 +50,7 @@ export function InternshipDetail() {
       const message = err instanceof Error ? err.message : 'Unable to apply at this time.';
       alert(`Failed to apply: ${message}`);
     }
-  }, [internship, user, id, navigate, isAuthenticated]);
+  }, [internship, user, id, navigate]);
 
   // Auto-trigger apply if user just returned from login with ?autoApply=true
   useEffect(() => {
@@ -84,7 +84,7 @@ export function InternshipDetail() {
         setLoading(false);
       }
     })();
-  }, [id, isAuthenticated]);
+  }, [id]);
 
   const getBadgeColor = (type: string) => {
     switch (type) {
