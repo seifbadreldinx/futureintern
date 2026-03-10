@@ -236,49 +236,49 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Total Applications</p>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all overflow-hidden">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-bold uppercase tracking-wider">Total Applications</p>
                     <p className="text-3xl font-black text-slate-900 dark:text-white">{applications.length}</p>
                   </div>
-                  <div className="p-3 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
-                    <FileText className="w-8 h-8 text-white" />
+                  <div className="p-2.5 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
+                    <FileText className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Saved Internships</p>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all overflow-hidden">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-bold uppercase tracking-wider">Saved Internships</p>
                     <p className="text-3xl font-black text-slate-900 dark:text-white">{savedInternships.length}</p>
                   </div>
-                  <div className="p-3 bg-green-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
-                    <BookOpen className="w-8 h-8 text-white" />
+                  <div className="p-2.5 bg-green-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
+                    <BookOpen className="w-6 h-6 text-white" />
                   </div>
                 </div>
               </div>
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Under Review</p>
+              <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all overflow-hidden">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-bold uppercase tracking-wider">Under Review</p>
                     <p className="text-3xl font-black text-slate-900 dark:text-white">
                       {applications.filter((a) => a.status === 'Under Review').length}
                     </p>
                   </div>
-                  <div className="p-3 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
-                    <Briefcase className="w-8 h-8 text-slate-900" />
+                  <div className="p-2.5 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
+                    <Briefcase className="w-6 h-6 text-slate-900" />
                   </div>
                 </div>
               </div>
-              <Link to="/points" className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all block">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-slate-600 dark:text-slate-400 text-sm mb-1 font-bold uppercase tracking-wider">Points Balance</p>
+              <Link to="/points" className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all block overflow-hidden">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-slate-600 dark:text-slate-400 text-xs mb-1 font-bold uppercase tracking-wider">Points Balance</p>
                     <p className="text-3xl font-black text-slate-900 dark:text-white">{pointsBalance}</p>
                   </div>
-                  <div className="p-3 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
-                    <Coins className="w-8 h-8 text-slate-900" />
+                  <div className="p-2.5 bg-amber-400 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a] shrink-0">
+                    <Coins className="w-6 h-6 text-slate-900" />
                   </div>
                 </div>
               </Link>
