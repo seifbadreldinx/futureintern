@@ -5,20 +5,19 @@ from app.models import db
 from app.models.user import User
 from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from datetime import timedelta
-from itsdangerous import URLSafeTimedSerializer
 from app.utils.validators import validate_email, validate_password, sanitize_string
 from app.utils.rate_limiter import rate_limit_auth
 from app.utils.logger import log_audit
 
 auth_bp = Blueprint("auth", __name__)
 
-def get_serializer():
-    return URLSafeTimedSerializer(current_app.config['JWT_SECRET_KEY'])
-
 @auth_bp.route("/forgot-password", methods=["POST"])
 @rate_limit_auth
 def forgot_password():
     try:
+        from app.models.password_reset import PasswordResetToken
+        from app.utils.email import send_password_reset_email
+
         data = request.get_json()
         email = sanitize_string(data.get('email', ''), max_length=120)
         
@@ -32,45 +31,28 @@ def forgot_password():
         if not user:
             # Don't reveal user existence
             return jsonify({'message': 'If your email is registered, you will receive a reset link.'}), 200
-            
-        s = get_serializer()
-        token = s.dumps(user.email, salt='recover-key')
-        
-        # Generate reset link
-        # Adjust for frontend URL if running separately (e.g. localhost:5173)
-        frontend_url = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])[0]
-        reset_link = f"{frontend_url}/reset-password?token={token}"
-        
-        # Send Email
-        from flask_mail import Message
-        from app import mail
-        
-        msg = Message("Reset Your Password - FutureIntern",
-                      recipients=[email])
-        msg.body = f"""Hello,
 
-You requested a password reset for your FutureIntern account.
-Please click the link below to reset your password:
+        # Create single-use token (invalidates previous tokens for this user)
+        raw_token, _record = PasswordResetToken.create_for_user(user.id)
+        db.session.commit()
 
-{reset_link}
+        # Send email (graceful fallback if SMTP is down)
+        success, _err = send_password_reset_email(user, raw_token)
+        if not success:
+            current_app.logger.warning('Password reset email failed for user %s', user.id)
 
-If you did not request this, please ignore this email.
-The link will expire in 1 hour.
-
-Best regards,
-FutureIntern Team
-"""
-        mail.send(msg)
-        
         return jsonify({'message': 'If your email is registered, you will receive a reset link.'}), 200
         
     except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @auth_bp.route("/reset-password", methods=["POST"])
 @rate_limit_auth
 def reset_password():
     try:
+        from app.models.password_reset import PasswordResetToken
+
         data = request.get_json()
         token = data.get('token')
         password = data.get('password')
@@ -82,18 +64,20 @@ def reset_password():
         is_valid, error_msg = validate_password(password)
         if not is_valid:
             return jsonify({'error': error_msg}), 400
-            
-        s = get_serializer()
-        try:
-            email = s.loads(token, salt='recover-key', max_age=3600) # 1 hour expiration
-        except Exception:
+
+        # Look up by hash
+        token_hash = PasswordResetToken.hash_token(token)
+        record = PasswordResetToken.query.filter_by(token_hash=token_hash).first()
+
+        if not record or not record.is_valid():
             return jsonify({'error': 'Invalid or expired token'}), 400
-            
-        user = User.query.filter_by(email=email).first()
+
+        user = db.session.get(User, record.user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
             
         user.set_password(password)
+        record.mark_used()
         db.session.commit()
         log_audit('password_reset', resource='user', resource_id=user.id, user_id=user.id)
         
@@ -106,6 +90,79 @@ def reset_password():
 @auth_bp.route("/")
 def index():
     return jsonify({"message": "Auth API - Endpoints: /register, /login, /refresh"})
+
+
+# ========== Email Verification ==========
+
+@auth_bp.route("/verify-email", methods=["POST"])
+def verify_email():
+    """Verify a user's email address using the token from the verification email."""
+    try:
+        from app.models.email_verification import EmailVerificationToken
+
+        data = request.get_json() or {}
+        raw_token = data.get('token', '').strip()
+
+        if not raw_token:
+            return jsonify({'error': 'Verification token is required'}), 400
+
+        token_hash = EmailVerificationToken.hash_token(raw_token)
+        record = EmailVerificationToken.query.filter_by(token_hash=token_hash).first()
+
+        if not record or not record.is_valid():
+            return jsonify({'error': 'Invalid or expired verification link'}), 400
+
+        user = db.session.get(User, record.user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        user.email_verified = True
+        record.mark_used()
+        db.session.commit()
+
+        log_audit('email_verified', resource='user', resource_id=user.id, user_id=user.id)
+        return jsonify({'message': 'Email verified successfully. You can now log in.'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@auth_bp.route("/resend-verification", methods=["POST"])
+@rate_limit_auth
+def resend_verification():
+    """Resend the email verification link. Rate-limited to prevent abuse."""
+    try:
+        from app.models.email_verification import EmailVerificationToken
+        from app.utils.email import send_verification_email
+
+        data = request.get_json() or {}
+        email = sanitize_string(data.get('email', ''), max_length=120)
+
+        if not email:
+            return jsonify({'error': 'Email is required'}), 400
+
+        if not validate_email(email):
+            return jsonify({'error': 'Invalid email format'}), 400
+
+        # Don't reveal user existence (same message regardless)
+        user = User.query.filter_by(email=email).first()
+        if not user or user.email_verified:
+            return jsonify({'message': 'If the email is registered and unverified, a new link has been sent.'}), 200
+
+        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
+        db.session.commit()
+
+        success, _err = send_verification_email(user, raw_token)
+        if not success:
+            current_app.logger.warning('Resend verification email failed for user %s', user.id)
+
+        return jsonify({'message': 'If the email is registered and unverified, a new link has been sent.'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
 
 # ========== Task 2.2: Register API ==========
 
@@ -185,7 +242,8 @@ def register_student():
             role='student',
             university=university,
             major=major,
-            points=0
+            points=0,
+            email_verified=False,
         )
         user.set_password(data['password'])  # Hash password
         
@@ -194,13 +252,25 @@ def register_student():
 
         from app.utils.points import grant_signup_bonus
         grant_signup_bonus(user, bonus=50)
+
+        # Send verification email (graceful fallback)
+        from app.models.email_verification import EmailVerificationToken
+        from app.utils.email import send_verification_email
+        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
         db.session.commit()
+
+        email_sent = True
+        success, _err = send_verification_email(user, raw_token)
+        if not success:
+            email_sent = False
+            current_app.logger.warning('Verification email failed for user %s', user.id)
 
         log_audit('register_student', resource='user', resource_id=user.id, user_id=user.id)
 
         return jsonify({
-            'message': 'Student registered successfully',
-            'user': user.to_dict()
+            'message': 'Student registered successfully. Please check your email to verify your account.',
+            'user': user.to_dict(),
+            'email_sent': email_sent,
         }), 201
         
     except Exception as e:
@@ -242,18 +312,32 @@ def register_company():
             name=name,
             email=email,
             role='company',
-            company_name=company_name
+            company_name=company_name,
+            email_verified=False,
         )
         user.set_password(data['password'])  # Hash password
         
         db.session.add(user)
+        db.session.flush()
+
+        # Send verification email (graceful fallback)
+        from app.models.email_verification import EmailVerificationToken
+        from app.utils.email import send_verification_email
+        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
         db.session.commit()
+
+        email_sent = True
+        success, _err = send_verification_email(user, raw_token)
+        if not success:
+            email_sent = False
+            current_app.logger.warning('Verification email failed for user %s', user.id)
 
         log_audit('register_company', resource='user', resource_id=user.id, user_id=user.id)
 
         return jsonify({
-            'message': 'Company registered successfully',
-            'user': user.to_dict()
+            'message': 'Company registered successfully. Please check your email to verify your account.',
+            'user': user.to_dict(),
+            'email_sent': email_sent,
         }), 201
         
     except Exception as e:
@@ -338,6 +422,14 @@ def login():
         user.failed_login_attempts = 0
         user.locked_until = None
         db.session.commit()
+
+        # ── Email verification check (local accounts only) ──
+        if user.auth_provider == 'local' and not user.email_verified:
+            return jsonify({
+                'error': 'Please verify your email address before logging in.',
+                'needs_verification': True,
+                'email': user.email,
+            }), 403
 
         # ── 2FA check ──
         if user.two_factor_enabled:
@@ -578,12 +670,19 @@ def google_auth():
         if not user:
             user = User.query.filter_by(email=email).first()
 
+        # Validate audience claim to prevent token substitution
+        expected_client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
+        token_aud = google_data.get('aud', '')
+        if expected_client_id and token_aud != expected_client_id:
+            return jsonify({'error': 'Invalid Google token audience'}), 401
+
         if user:
             # Existing user — link Google account if not already linked
             if not user.google_id:
                 user.google_id = google_id
                 user.auth_provider = 'google'
-                db.session.commit()
+            user.email_verified = True  # Google verifies email
+            db.session.commit()
         else:
             # New user — create account automatically with signup bonus
             user = User(
@@ -592,6 +691,7 @@ def google_auth():
                 role='student',
                 google_id=google_id,
                 auth_provider='google',
+                email_verified=True,  # Google verifies email
                 points=0
             )
             db.session.add(user)

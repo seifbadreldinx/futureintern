@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, Shield, Smartphone, Loader2 } from 'lucide-react';
+import { GraduationCap, Mail, Lock, Shield, Smartphone, Loader2, Send } from 'lucide-react';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { api } from '../services/api';
 
 export function Login() {
@@ -9,6 +10,10 @@ export function Login() {
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [requires2fa, setRequires2fa] = useState(false);
   const [twoFactorData, setTwoFactorData] = useState<{ userId: number } | null>(null);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const location = useLocation();
@@ -54,8 +59,47 @@ export function Login() {
           window.location.href = redirectTo;
         }
       }
+    } catch (err: any) {
+      // Handle email verification required (403)
+      if (err?.message?.includes('verify your email')) {
+        setNeedsVerification(true);
+        setVerificationEmail(email);
+        setError('');
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+        setError(errorMessage);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    try {
+      const data = await api.auth.resendVerification(verificationEmail);
+      setResendMessage(data.message || 'Verification email sent!');
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Login failed. Please try again.';
+      setResendMessage('Failed to resend. Please try again later.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+    setLoading(true);
+    setError('');
+    try {
+      const response = await api.auth.googleLogin(credentialResponse.credential);
+      if (response.user?.role === 'admin') {
+        window.location.href = '/admin';
+      } else {
+        window.location.href = redirectTo;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Google login failed.';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -209,6 +253,24 @@ export function Login() {
             </div>
           )}
 
+          {needsVerification && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border-[3px] border-amber-500 text-amber-700 dark:text-amber-300 px-4 py-4 rounded-xl text-sm font-bold space-y-3">
+              <p>Please verify your email address before logging in. Check your inbox for a verification link.</p>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-lg font-black text-xs uppercase tracking-wider hover:bg-amber-600 transition-colors disabled:opacity-50"
+              >
+                {resendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                Resend Verification Email
+              </button>
+              {resendMessage && (
+                <p className="text-xs text-amber-600 dark:text-amber-400">{resendMessage}</p>
+              )}
+            </div>
+          )}
+
           <div>
             <button
               type="submit"
@@ -224,14 +286,40 @@ export function Login() {
           </div>
 
           {!requires2fa && (
-            <div className="text-center pt-5 border-t-[3px] border-slate-900 dark:border-white">
-              <p className="text-sm font-bold text-slate-600 dark:text-slate-400 pt-5">
-                Don't have an account?{' '}
-                <Link to="/signup" className="text-rose-500 font-black hover:text-rose-600 transition-all uppercase tracking-tight">
-                  Create Account
-                </Link>
-              </p>
-            </div>
+            <>
+              {/* Google OAuth */}
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t-[3px] border-slate-200 dark:border-slate-700"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white dark:bg-slate-900 font-black text-slate-400 uppercase tracking-wider text-xs">
+                    or continue with
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => setError('Google sign-in failed. Please try again.')}
+                  theme="outline"
+                  size="large"
+                  width="100%"
+                  text="signin_with"
+                  shape="rectangular"
+                />
+              </div>
+
+              <div className="text-center pt-5 border-t-[3px] border-slate-900 dark:border-white">
+                <p className="text-sm font-bold text-slate-600 dark:text-slate-400 pt-5">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="text-rose-500 font-black hover:text-rose-600 transition-all uppercase tracking-tight">
+                    Create Account
+                  </Link>
+                </p>
+              </div>
+            </>
           )}
         </form>
       </div>

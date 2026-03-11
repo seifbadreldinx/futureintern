@@ -40,6 +40,9 @@ class User(db.Model):
     last_login_date = db.Column(db.Date, nullable=True)
     login_streak = db.Column(db.Integer, default=0)
 
+    # Email verification
+    email_verified = db.Column(db.Boolean, default=False)
+
     # Security fields
     failed_login_attempts = db.Column(db.Integer, default=0)
     locked_until = db.Column(db.DateTime, nullable=True)      # null = not locked
@@ -70,6 +73,7 @@ class User(db.Model):
             'points': self.points,
             'profile_image': self.profile_image,
             'auth_provider': self.auth_provider,
+            'email_verified': self.email_verified,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
         

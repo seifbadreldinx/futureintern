@@ -3,6 +3,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 // Lazy load pages and heavy components for performance
 const Chatbot = lazy(() => import('./components/Chatbot').then(m => ({ default: m.Chatbot })));
@@ -11,6 +12,7 @@ const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login }
 const SignUp = lazy(() => import('./pages/SignUp').then(m => ({ default: m.SignUp })));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword').then(m => ({ default: m.ForgotPassword })));
 const ResetPassword = lazy(() => import('./pages/ResetPassword').then(m => ({ default: m.ResetPassword })));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail').then(m => ({ default: m.VerifyEmail })));
 const BrowseInternships = lazy(() => import('./pages/BrowseInternships').then(m => ({ default: m.BrowseInternships })));
 const InternshipDetail = lazy(() => import('./pages/InternshipDetail').then(m => ({ default: m.InternshipDetail })));
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -54,6 +56,7 @@ function AppContent() {
             <Route path="/signup" element={<SignUp />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/browse" element={<BrowseInternships />} />
             <Route path="/internship/:id" element={<InternshipDetail />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -83,8 +86,11 @@ function AppContent() {
   );
 }
 
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+
 function App() {
   return (
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
     <Router>
       <AuthProvider>
         <ThemeProvider>
@@ -94,6 +100,7 @@ function App() {
         </ThemeProvider>
       </AuthProvider>
     </Router>
+    </GoogleOAuthProvider>
   );
 }
 

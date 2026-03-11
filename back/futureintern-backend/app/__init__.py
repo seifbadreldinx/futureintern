@@ -18,6 +18,9 @@ from app.models.points import PointsTransaction, PointsPackage, ServicePricing, 
 # Import security models so SQLAlchemy creates the tables
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
 from app.models.two_factor import TwoFactorCode  # noqa: F401
+# Import auth token models so SQLAlchemy creates the tables
+from app.models.password_reset import PasswordResetToken  # noqa: F401
+from app.models.email_verification import EmailVerificationToken  # noqa: F401
 
 def add_security_headers(response):
     """Add security headers to all responses"""
@@ -129,6 +132,8 @@ def create_app():
                     'points': "ALTER TABLE users ADD COLUMN points INTEGER DEFAULT 0 NOT NULL",
                     'last_login_date': "ALTER TABLE users ADD COLUMN last_login_date DATE",
                     'login_streak': "ALTER TABLE users ADD COLUMN login_streak INTEGER DEFAULT 0",
+                    # Default TRUE so existing users are not locked out
+                    'email_verified': "ALTER TABLE users ADD COLUMN email_verified BOOLEAN DEFAULT 1",
                 }
 
                 for col, sql in migrations.items():

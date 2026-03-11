@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GraduationCap, Mail, Lock, User, BookOpen, Heart, Upload, FileText, X, ChevronRight, ChevronLeft, Check, Eye, EyeOff, Building2, Globe, Briefcase } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, BookOpen, Heart, Upload, FileText, X, ChevronRight, ChevronLeft, Check, Eye, EyeOff, Building2, Globe, Briefcase, CheckCircle, Loader2, Send } from 'lucide-react';
+import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
 import { api } from '../services/api';
 
 const INTEREST_OPTIONS = [
@@ -97,6 +98,11 @@ export function SignUp() {
   const [submitError, setSubmitError] = useState('');
   const [loading, setLoading] = useState(false);
   const [cvLater, setCvLater] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  const [emailSent, setEmailSent] = useState(true);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMessage, setResendMessage] = useState('');
   const navigate = useNavigate();
 
   const handleUserTypeChange = (type: UserType) => {
@@ -237,8 +243,9 @@ export function SignUp() {
     setLoading(true);
 
     try {
+      let response: any;
       if (formData.userType === 'student') {
-        await api.auth.registerStudent({
+        response = await api.auth.registerStudent({
           name: formData.name,
           email: formData.email,
           password: formData.password,
@@ -248,7 +255,7 @@ export function SignUp() {
           cv: formData.cv || undefined,
         });
       } else {
-        await api.auth.registerCompany({
+        response = await api.auth.registerCompany({
           name: formData.companyName,
           email: formData.email,
           password: formData.password,
@@ -259,9 +266,40 @@ export function SignUp() {
           try { await api.users.uploadCV(formData.logo); } catch { /* logo upload is best-effort */ }
         }
       }
-      navigate('/dashboard');
+      // Show "check your email" screen
+      setRegisteredEmail(formData.email);
+      setEmailSent(response?.email_sent !== false);
+      setRegistrationComplete(true);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+      setSubmitError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendMessage('');
+    try {
+      const data = await api.auth.resendVerification(registeredEmail);
+      setResendMessage(data.message || 'Verification email sent!');
+    } catch {
+      setResendMessage('Failed to resend. Please try again later.');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const handleGoogleSignUp = async (credentialResponse: CredentialResponse) => {
+    if (!credentialResponse.credential) return;
+    setLoading(true);
+    setSubmitError('');
+    try {
+      await api.auth.googleLogin(credentialResponse.credential);
+      navigate('/dashboard');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Google sign-up failed.';
       setSubmitError(errorMessage);
     } finally {
       setLoading(false);
@@ -293,10 +331,62 @@ export function SignUp() {
               Future<span className="text-rose-500">Intern</span>
             </span>
           </Link>
-          <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">Create Account</h2>
-          <p className="text-lg text-slate-600 dark:text-slate-400 font-bold">Start your journey to find the perfect internship</p>
+          <h2 className="text-4xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+            {registrationComplete ? 'Check Your Email' : 'Create Account'}
+          </h2>
+          <p className="text-lg text-slate-600 dark:text-slate-400 font-bold">
+            {registrationComplete ? 'One more step to get started' : 'Start your journey to find the perfect internship'}
+          </p>
         </div>
 
+        {registrationComplete ? (
+          <div className="bg-white dark:bg-slate-900 p-10 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)]">
+            <div className="text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="p-4 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                  <CheckCircle className="w-16 h-16 text-emerald-600" />
+                </div>
+              </div>
+              <div>
+                <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+                  Registration Successful!
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 font-bold">
+                  We've sent a verification link to <span className="text-rose-500">{registeredEmail}</span>.
+                  Please check your inbox and click the link to verify your account.
+                </p>
+              </div>
+
+              {!emailSent && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border-[3px] border-amber-500 text-amber-700 dark:text-amber-300 px-4 py-3 rounded-xl text-sm font-bold">
+                  We had trouble sending the verification email. Please use the button below to resend it.
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={resendLoading}
+                  className="w-full inline-flex items-center justify-center gap-2 py-4 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#f43f5e] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#f43f5e] transition-all font-black text-base uppercase tracking-tighter disabled:opacity-50"
+                >
+                  {resendLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+                  Resend Verification Email
+                </button>
+                {resendMessage && (
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-bold">{resendMessage}</p>
+                )}
+                <Link
+                  to="/login"
+                  className="w-full inline-flex items-center justify-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-base uppercase tracking-tighter"
+                >
+                  Go to Login
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Progress Bar */}
         <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[6px_6px_0px_0px_#0f172a] dark:shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)]">
           <div className="flex items-center justify-between mb-8">
@@ -690,12 +780,38 @@ export function SignUp() {
           )}
 
           <div className="text-center mt-10 pt-8 border-t-[3px] border-slate-900 dark:border-white">
+            {/* Google OAuth */}
+            <div className="relative py-4 mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t-[3px] border-slate-200 dark:border-slate-700"></div>
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-white dark:bg-slate-900 font-black text-slate-400 uppercase tracking-wider text-xs">
+                  or sign up with
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center mb-6">
+              <GoogleLogin
+                onSuccess={handleGoogleSignUp}
+                onError={() => setSubmitError('Google sign-up failed. Please try again.')}
+                theme="outline"
+                size="large"
+                width="100%"
+                text="signup_with"
+                shape="rectangular"
+              />
+            </div>
+
             <p className="text-sm font-bold text-slate-600 dark:text-slate-400">
               Already have an account?{' '}
               <Link to="/login" className="text-rose-500 font-black hover:text-rose-600 transition-all uppercase tracking-tight">Sign in</Link>
             </p>
           </div>
         </form>
+        </>
+        )}
       </div>
     </div>
   );

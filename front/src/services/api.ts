@@ -260,6 +260,43 @@ export const api = {
       });
     },
 
+    // Verify Email (after registration)
+    verifyEmail: async (token: string) => {
+      return apiRequest<{ message: string }>('/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      });
+    },
+
+    // Resend Verification Email
+    resendVerification: async (email: string) => {
+      return apiRequest<{ message: string }>('/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    },
+
+    // Google OAuth Login/Register
+    googleLogin: async (credential: string) => {
+      const data = await apiRequest<{
+        access_token: string;
+        refresh_token: string;
+        user: any;
+        message: string;
+      }>('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ credential }),
+      });
+
+      if (data.access_token) {
+        saveAuthToken(data.access_token);
+      }
+      if (data.refresh_token) {
+        saveRefreshToken(data.refresh_token);
+      }
+      return data;
+    },
+
     // Update profile (alias for users.updateProfile, used by Dashboard)
     updateProfile: async (data: any) => {
       return apiRequest<any>('/users/profile', {
