@@ -26,6 +26,7 @@ def test_email():
         from flask_mail import Message
         from app import mail
         from flask import current_app
+        import socket
 
         data = request.get_json() or {}
         recipient = data.get('email', '')
@@ -46,11 +47,15 @@ def test_email():
             recipients=[recipient],
             body='This is a test email from FutureIntern. If you received this, SMTP is working correctly.',
         )
+        old_timeout = socket.getdefaulttimeout()
         try:
+            socket.setdefaulttimeout(30)
             mail.send(msg)
             return jsonify({'success': True, 'config': cfg}), 200
         except Exception as e:
-            return jsonify({'success': False, 'error': str(e), 'config': cfg}), 500
+            return jsonify({'success': False, 'error': str(e), 'type': type(e).__name__, 'config': cfg}), 500
+        finally:
+            socket.setdefaulttimeout(old_timeout)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

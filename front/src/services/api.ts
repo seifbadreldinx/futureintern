@@ -810,7 +810,7 @@ export const api = {
       return apiRequest<any>('/admin/test-email', {
         method: 'POST',
         body: JSON.stringify({ email }),
-        _timeout: 30000,
+        _timeout: 60000,
       } as any);
     },
   },

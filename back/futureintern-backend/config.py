@@ -36,6 +36,7 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
+    MAIL_TIMEOUT = 30  # seconds – prevent SMTP hangs
 
     # Security Configuration
     # Maximum file upload size (5MB)
