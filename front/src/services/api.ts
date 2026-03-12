@@ -128,7 +128,8 @@ export const api = {
           major: data.major,
           interests: data.interests,
         }),
-      });
+        _timeout: 30000,
+      } as any);
 
       // After registration, automatically login to get access token
       // This allows CV upload and immediate access to dashboard
@@ -170,7 +171,8 @@ export const api = {
           password: data.password,
           company_name: data.company_name,
         }),
-      });
+        _timeout: 30000,
+      } as any);
 
       // Auto-login after registration
       let loginResponse;
@@ -260,7 +262,8 @@ export const api = {
       return apiRequest<{ message: string }>('/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email }),
-      });
+        _timeout: 30000,
+      } as any);
     },
 
     // Reset Password
@@ -284,7 +287,8 @@ export const api = {
       return apiRequest<{ message: string }>('/auth/resend-verification', {
         method: 'POST',
         body: JSON.stringify({ email }),
-      });
+        _timeout: 30000,
+      } as any);
     },
 
     // Google OAuth Login/Register

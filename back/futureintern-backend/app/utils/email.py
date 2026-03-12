@@ -10,13 +10,18 @@ from flask import current_app
 
 def _send(msg):
     """Send a ``flask_mail.Message`` and return ``(ok, error)``."""
+    import socket
+    old_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(10)  # fail fast if SMTP port is blocked
         from app import mail
         mail.send(msg)
         return True, None
     except Exception as exc:
         current_app.logger.warning('Email send failed: %s', exc)
         return False, str(exc)
+    finally:
+        socket.setdefaulttimeout(old_timeout)
 
 
 def send_verification_email(user, raw_token: str):
