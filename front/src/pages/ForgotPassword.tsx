@@ -18,7 +18,14 @@ export function ForgotPassword() {
             await api.auth.forgotPassword(email);
             setSubmitted(true);
         } catch (err: any) {
-            setError(err.message || 'Failed to send reset link. Please try again.');
+            const msg = err?.message || '';
+            if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
+                setError('Cannot reach the server. Please check your connection and try again.');
+            } else if (msg.includes('timed out')) {
+                setError('Server is waking up — please try again in a few seconds.');
+            } else {
+                setError(msg || 'Failed to send reset link. Please try again.');
+            }
         } finally {
             setLoading(false);
         }

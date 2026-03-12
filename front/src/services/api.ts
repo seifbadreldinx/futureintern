@@ -53,6 +53,9 @@ const apiRequest = async <T>(
   const url = `${API_BASE_URL}${endpoint}`;
   let response;
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+
   try {
     response = await fetch(url, {
       ...options,
@@ -61,13 +64,19 @@ const apiRequest = async <T>(
         ...headers,
       },
       mode: 'cors',
+      signal: controller.signal,
     });
-  } catch (err) {
-    // Network errors (e.g., server down, CORS blocked) end up here
+  } catch (err: any) {
+    // Network errors (e.g., server down, CORS blocked, timeout) end up here
     console.error('Network or fetch error', { url, error: err });
+    if (err?.name === 'AbortError') {
+      throw new Error('Request timed out. The server may be waking up — please try again in a moment.');
+    }
     throw new Error(
       err instanceof Error && err.message ? `NetworkError: ${err.message}` : 'NetworkError: Failed to fetch'
     );
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   // Handle non-JSON responses
