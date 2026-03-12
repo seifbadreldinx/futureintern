@@ -36,8 +36,10 @@ const getRefreshToken = (): string | null => {
 // Generic API request function
 const apiRequest = async <T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit & { _timeout?: number } = {}
 ): Promise<T> => {
+  const { _timeout = 12000, ...options_ } = options as RequestInit & { _timeout?: number };
+  options = options_;
   const token = getAuthToken();
 
   const headers: Record<string, string> = {
@@ -54,7 +56,7 @@ const apiRequest = async <T>(
   let response;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 12000); // 12s timeout
+  const timeoutId = setTimeout(() => controller.abort(), _timeout);
 
   try {
     response = await fetch(url, {
@@ -808,7 +810,8 @@ export const api = {
       return apiRequest<any>('/admin/test-email', {
         method: 'POST',
         body: JSON.stringify({ email }),
-      });
+        _timeout: 30000,
+      } as any);
     },
   },
 };
