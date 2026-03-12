@@ -23,7 +23,7 @@ def index():
 def test_email():
     """Send a test email to diagnose email configuration - Admin only"""
     try:
-        from app.utils.email import _send_via_resend, _send_via_smtp
+        from app.utils.email import _send_via_brevo, _send_via_resend, _send_via_smtp
         from flask_mail import Message
         from flask import current_app
         import socket
@@ -34,19 +34,24 @@ def test_email():
             return jsonify({'error': 'email field required'}), 400
 
         cfg = {
+            'BREVO_API_KEY_SET': bool(current_app.config.get('BREVO_API_KEY')),
+            'BREVO_SENDER_EMAIL': current_app.config.get('BREVO_SENDER_EMAIL'),
             'RESEND_API_KEY_SET': bool(current_app.config.get('RESEND_API_KEY')),
             'RESEND_FROM': current_app.config.get('RESEND_FROM', 'onboarding@resend.dev'),
             'MAIL_SERVER': current_app.config.get('MAIL_SERVER'),
             'MAIL_PORT': current_app.config.get('MAIL_PORT'),
-            'MAIL_USE_TLS': current_app.config.get('MAIL_USE_TLS'),
             'MAIL_USE_SSL': current_app.config.get('MAIL_USE_SSL'),
             'MAIL_USERNAME': current_app.config.get('MAIL_USERNAME'),
             'MAIL_PASSWORD_SET': bool(current_app.config.get('MAIL_PASSWORD')),
         }
 
         subject = 'FutureIntern — Test Email'
-        html = '<p>This is a test email from FutureIntern. SMTP/Resend is working correctly.</p>'
+        html = '<p>This is a test email from FutureIntern. Email delivery is working correctly.</p>'
         text = 'This is a test email from FutureIntern. Email delivery is working correctly.'
+
+        if current_app.config.get('BREVO_API_KEY'):
+            ok, err = _send_via_brevo(recipient, subject, html, text)
+            return jsonify({'success': ok, 'provider': 'brevo', 'error': err, 'config': cfg}), (200 if ok else 500)
 
         if current_app.config.get('RESEND_API_KEY'):
             ok, err = _send_via_resend(recipient, subject, html, text)
@@ -59,7 +64,7 @@ def test_email():
             ok, err = _send_via_smtp(msg)
         finally:
             socket.setdefaulttimeout(old_timeout)
-        return jsonify({'success': ok, 'provider': 'smtp', 'error': err, 'type': type(err).__name__ if err else None, 'config': cfg}), (200 if ok else 500)
+        return jsonify({'success': ok, 'provider': 'smtp', 'error': err, 'config': cfg}), (200 if ok else 500)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

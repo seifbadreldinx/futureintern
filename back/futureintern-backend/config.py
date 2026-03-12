@@ -43,6 +43,11 @@ class Config:
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
     RESEND_FROM = os.environ.get('RESEND_FROM', 'FutureIntern <onboarding@resend.dev>')
 
+    # Brevo / Sendinblue (preferred — no domain verification needed, just verify sender email)
+    BREVO_API_KEY = os.environ.get('BREVO_API_KEY')
+    BREVO_SENDER_EMAIL = os.environ.get('BREVO_SENDER_EMAIL', os.environ.get('MAIL_USERNAME', ''))
+    BREVO_SENDER_NAME = os.environ.get('BREVO_SENDER_NAME', 'FutureIntern')
+
     # Security Configuration
     # Maximum file upload size (5MB)
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024

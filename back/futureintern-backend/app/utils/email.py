@@ -1,5 +1,5 @@
 """
-Email helpers — supports Resend (HTTP API, works on Railway) with Flask-Mail fallback.
+Email helpers — supports Brevo, Resend (HTTP APIs, work on Railway) with Flask-Mail fallback.
 
 Every send function returns ``(success: bool, error: str | None)`` so
 callers can decide how to handle SMTP failures (graceful fallback).
@@ -13,6 +13,31 @@ def _get_frontend_url():
     origins = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])
     valid_origins = [o for o in origins if o and o != '*']
     return valid_origins[0] if valid_origins else 'http://localhost:5173'
+
+
+def _send_via_brevo(to_email: str, subject: str, html: str, text: str):
+    """Send via Brevo (formerly Sendinblue) HTTP API. Returns (ok, error)."""
+    api_key = current_app.config.get('BREVO_API_KEY') or ''
+    sender_email = current_app.config.get('BREVO_SENDER_EMAIL', '')
+    sender_name = current_app.config.get('BREVO_SENDER_NAME', 'FutureIntern')
+    try:
+        resp = http_requests.post(
+            'https://api.brevo.com/v3/smtp/email',
+            headers={'api-key': api_key, 'Content-Type': 'application/json'},
+            json={
+                'sender': {'name': sender_name, 'email': sender_email},
+                'to': [{'email': to_email}],
+                'subject': subject,
+                'htmlContent': html,
+                'textContent': text,
+            },
+            timeout=15,
+        )
+        if resp.status_code in (200, 201):
+            return True, None
+        return False, f'Brevo error {resp.status_code}: {resp.text}'
+    except Exception as exc:
+        return False, str(exc)
 
 
 def _send_via_resend(to_email: str, subject: str, html: str, text: str):
@@ -50,7 +75,12 @@ def _send_via_smtp(msg):
 
 
 def _send(to_email: str, subject: str, html: str, text: str, flask_mail_msg=None):
-    """Try Resend first (if API key configured), fall back to SMTP."""
+    """Try Brevo, then Resend, then SMTP."""
+    if current_app.config.get('BREVO_API_KEY'):
+        ok, err = _send_via_brevo(to_email, subject, html, text)
+        if ok:
+            return True, None
+        current_app.logger.warning('Brevo failed: %s — trying next provider', err)
     if current_app.config.get('RESEND_API_KEY'):
         ok, err = _send_via_resend(to_email, subject, html, text)
         if ok:
