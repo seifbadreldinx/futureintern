@@ -593,7 +593,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   <label htmlFor="interests" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Top 3 Interests</label>
                   <div className="relative">
                     <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input id="interests" name="interests" type="text" defaultValue={user.interests?.join(', ')} placeholder="AI, UI/UX, Backend (Select exactly 3)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="interests" name="interests" type="text" defaultValue={Array.isArray(user.interests) ? user.interests.join(', ') : (user.interests || '')} placeholder="AI, UI/UX, Backend (Select exactly 3)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                   <p className="text-[10px] text-gray-500 mt-1 italic">Note: Separate with commas. Exactly 3 required for matching.</p>
                 </div>
@@ -616,14 +616,14 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   <label htmlFor="skills" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Technical Skills</label>
                   <div className="relative">
                     <Award className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input id="skills" name="skills" type="text" defaultValue={user.skills?.join(', ')} placeholder="React, Python, SQL (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="skills" name="skills" type="text" defaultValue={Array.isArray(user.skills) ? user.skills.join(', ') : (user.skills || '')} placeholder="React, Python, SQL (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
                 <div>
                   <label htmlFor="preferred_locations" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2 font-medium">Preferred Locations</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <input id="preferred_locations" name="preferred_locations" type="text" defaultValue={user.preferred_locations?.join(', ')} placeholder="Egypt, Remote (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
+                    <input id="preferred_locations" name="preferred_locations" type="text" defaultValue={Array.isArray(user.preferred_locations) ? user.preferred_locations.join(', ') : (user.location || '')} placeholder="Egypt, Remote (comma-separated)" className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-950 border border-gray-300 dark:border-slate-800 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" />
                   </div>
                 </div>
               </div>
