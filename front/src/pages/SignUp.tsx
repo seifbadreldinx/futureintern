@@ -195,6 +195,9 @@ export function SignUp() {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
     if (!formData.password) newErrors.password = 'Password is required';
     else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters long';
+    else if (!/[a-zA-Z]/.test(formData.password)) newErrors.password = 'Password must contain at least one letter';
+    else if (!/\d/.test(formData.password)) newErrors.password = 'Password must contain at least one number';
+    else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) newErrors.password = 'Password must contain at least one special character (!@#$%^&*(),.?":{}';
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     setErrors(newErrors);
@@ -272,13 +275,7 @@ export function SignUp() {
       setRegistrationComplete(true);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
-      const lowerMsg = errorMessage.toLowerCase();
-      if (lowerMsg.includes('password')) {
-        setCurrentStep(1);
-        setErrors({ password: errorMessage });
-      } else {
-        setSubmitError(errorMessage);
-      }
+      setSubmitError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -519,6 +516,20 @@ export function SignUp() {
                     </button>
                   </div>
                   {errors.password && <p className="mt-2 text-xs font-bold text-red-600 dark:text-red-400 flex items-center"><X className="w-3 h-3 mr-1" /> {errors.password}</p>}
+                  {formData.password && (
+                    <ul className="mt-2 space-y-1">
+                      {[
+                        { ok: formData.password.length >= 8, label: 'At least 8 characters' },
+                        { ok: /[a-zA-Z]/.test(formData.password), label: 'At least one letter' },
+                        { ok: /\d/.test(formData.password), label: 'At least one number' },
+                        { ok: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password), label: 'At least one special character' },
+                      ].map(({ ok, label }) => (
+                        <li key={label} className={`flex items-center gap-1 text-xs font-bold ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                          {ok ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />} {label}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">Confirm password</label>
