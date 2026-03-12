@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { GraduationCap, Mail, Lock, Shield, Smartphone, Loader2, Send } from 'lucide-react';
+import { useGoogleLogin } from '@react-oauth/google';
 import { api } from '../services/api';
 
 export function Login() {
@@ -86,52 +87,27 @@ export function Login() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-    const redirectUri = `${window.location.origin}/login`;
-    const scope = 'openid email profile';
-    const state = encodeURIComponent(redirectTo);
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: redirectUri,
-      response_type: 'token',
-      scope,
-      prompt: 'login',
-      max_age: '0',
-      state,
-    });
-    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
-  };
-
-  // Handle Google OAuth redirect callback (access_token in URL hash)
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token')) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const state = params.get('state');
-      const returnTo = state ? decodeURIComponent(state) : '/dashboard';
-      if (accessToken) {
-        setLoading(true);
-        setError('');
-        // Clear the hash from the URL
-        window.history.replaceState(null, '', window.location.pathname + window.location.search);
-        api.auth.googleLogin(accessToken)
-          .then((response) => {
-            if (response.user?.role === 'admin') {
-              window.location.href = '/admin';
-            } else {
-              window.location.href = returnTo;
-            }
-          })
-          .catch((err) => {
-            const errorMessage = err instanceof Error ? err.message : 'Google login failed.';
-            setError(errorMessage);
-            setLoading(false);
-          });
+  const googleLogin = useGoogleLogin({
+    prompt: 'select_account',
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setError('');
+      try {
+        const response = await api.auth.googleLogin(tokenResponse.access_token);
+        if (response.user?.role === 'admin') {
+          window.location.href = '/admin';
+        } else {
+          window.location.href = redirectTo;
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Google login failed.';
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
       }
-    }
-  }, []);
+    },
+    onError: () => setError('Google sign-in failed. Please try again.'),
+  });
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-950 relative overflow-hidden flex items-center justify-center py-20 px-4 sm:px-6 lg:px-8">
@@ -329,7 +305,7 @@ export function Login() {
               <div className="flex justify-center">
                 <button
                   type="button"
-                  onClick={handleGoogleLogin}
+                  onClick={() => googleLogin()}
                   disabled={loading}
                   className="w-full flex items-center justify-center gap-3 py-4 px-6 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 dark:text-white"
                 >
