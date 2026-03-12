@@ -645,22 +645,34 @@ def google_auth():
     try:
         data = request.get_json()
         google_token = data.get('credential')
+        google_access_token = data.get('access_token')
 
-        if not google_token:
-            return jsonify({'error': 'Google credential is required'}), 400
+        if not google_token and not google_access_token:
+            return jsonify({'error': 'Google credential or access_token is required'}), 400
 
-        # Verify the token with Google
-        google_response = http_requests.get(
-            f'https://oauth2.googleapis.com/tokeninfo?id_token={google_token}'
-        )
-
-        if google_response.status_code != 200:
-            return jsonify({'error': 'Invalid Google token'}), 401
-
-        google_data = google_response.json()
-        google_id = google_data.get('sub')
-        email = google_data.get('email')
-        name = google_data.get('name', email.split('@')[0])
+        if google_access_token:
+            # Verify via Google userinfo endpoint (implicit flow)
+            google_response = http_requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={'Authorization': f'Bearer {google_access_token}'}
+            )
+            if google_response.status_code != 200:
+                return jsonify({'error': 'Invalid Google access token'}), 401
+            google_data = google_response.json()
+            google_id = google_data.get('sub')
+            email = google_data.get('email')
+            name = google_data.get('name', email.split('@')[0] if email else 'User')
+        else:
+            # Verify the id_token with Google
+            google_response = http_requests.get(
+                f'https://oauth2.googleapis.com/tokeninfo?id_token={google_token}'
+            )
+            if google_response.status_code != 200:
+                return jsonify({'error': 'Invalid Google token'}), 401
+            google_data = google_response.json()
+            google_id = google_data.get('sub')
+            email = google_data.get('email')
+            name = google_data.get('name', email.split('@')[0] if email else 'User')
 
         if not google_id or not email:
             return jsonify({'error': 'Could not retrieve Google account info'}), 400
@@ -670,11 +682,12 @@ def google_auth():
         if not user:
             user = User.query.filter_by(email=email).first()
 
-        # Validate audience claim to prevent token substitution
-        expected_client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
-        token_aud = google_data.get('aud', '')
-        if expected_client_id and token_aud != expected_client_id:
-            return jsonify({'error': 'Invalid Google token audience'}), 401
+        # Validate audience claim to prevent token substitution (id_token only)
+        if google_token:
+            expected_client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
+            token_aud = google_data.get('aud', '')
+            if expected_client_id and token_aud != expected_client_id:
+                return jsonify({'error': 'Invalid Google token audience'}), 401
 
         if user:
             # Existing user — link Google account if not already linked
@@ -685,9 +698,12 @@ def google_auth():
             db.session.commit()
         else:
             # New user — create account automatically with signup bonus
+            from werkzeug.security import generate_password_hash
+            import secrets
             user = User(
                 name=name,
                 email=email,
+                password_hash=generate_password_hash(secrets.token_urlsafe(32)),
                 role='student',
                 google_id=google_id,
                 auth_provider='google',

@@ -277,7 +277,7 @@ export const api = {
     },
 
     // Google OAuth Login/Register
-    googleLogin: async (credential: string) => {
+    googleLogin: async (accessToken: string) => {
       const data = await apiRequest<{
         access_token: string;
         refresh_token: string;
@@ -285,7 +285,7 @@ export const api = {
         message: string;
       }>('/auth/google', {
         method: 'POST',
-        body: JSON.stringify({ credential }),
+        body: JSON.stringify({ access_token: accessToken }),
       });
 
       if (data.access_token) {
