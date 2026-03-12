@@ -83,13 +83,22 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   useEffect(() => {
     if (activeTab === 'profile' && focusField && !focusApplied.current) {
       focusApplied.current = true;
-      setTimeout(() => {
+      // Wait for the profile tab to fully render before scrolling
+      const tryFocus = (attemptsLeft: number) => {
         const el = document.getElementById(focusField) as HTMLElement | null;
         if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
           el.focus();
+          // Add a temporary highlight ring so the field is obvious
+          el.classList.add('ring-4', 'ring-indigo-500', 'ring-offset-2');
+          setTimeout(() => {
+            el.classList.remove('ring-4', 'ring-indigo-500', 'ring-offset-2');
+          }, 2500);
+        } else if (attemptsLeft > 0) {
+          setTimeout(() => tryFocus(attemptsLeft - 1), 150);
         }
-      }, 100);
+      };
+      setTimeout(() => tryFocus(5), 200);
     }
   }, [activeTab, focusField]);
 
@@ -499,21 +508,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
               const formData = new FormData(e.currentTarget);
 
               // Helper to parse comma separated strings into arrays
-              const parseList = (val: any) => val ? val.split(',').map((s: string) => s.trim()).filter(Boolean) : [];
+              const parseList = (val: any) => val ? val.split(',').map((s: string) => s.trim()).filter(Boolean).join(', ') : '';
 
               try {
                 await api.auth.updateProfile({
-                  full_name: formData.get('full_name'),
-                  university_name: formData.get('university_name'),
+                  name: formData.get('full_name'),
+                  university: formData.get('university_name'),
                   major: formData.get('major'),
                   bio: formData.get('bio'),
-                  phone_number: formData.get('phone_number'),
-                  graduation_date: formData.get('graduation_date') || null,
+                  phone: formData.get('phone_number'),
                   skills: parseList(formData.get('skills')),
-                  preferred_locations: parseList(formData.get('preferred_locations')),
-                  github_url: formData.get('github_url'),
-                  linkedin_url: formData.get('linkedin_url'),
-                  portfolio_url: formData.get('portfolio_url'),
+                  location: parseList(formData.get('preferred_locations')),
                   interests: parseList(formData.get('interests')),
                 });
                 await refreshUserData();
