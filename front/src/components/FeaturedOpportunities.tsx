@@ -6,16 +6,9 @@ import { api } from '../services/api';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 import { resolveLogoUrl } from '../utils/logoUrl';
 
-const fallbackInternships = [
-  { id: 1, title: 'Software Engineer Intern', company: { name: 'TechCorp' }, location: 'San Francisco, CA', type: 'Full-time' },
-  { id: 2, title: 'Product Design Intern', company: { name: 'DesignHub' }, location: 'New York, NY', type: 'Part-time' },
-  { id: 3, title: 'Marketing Intern', company: { name: 'GrowthLabs' }, location: 'Remote', type: 'Remote' },
-  { id: 4, title: 'Data Analyst Intern', company: { name: 'DataWorks' }, location: 'Austin, TX', type: 'Full-time' },
-];
-
 export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
   const sectionRef = useScrollReveal();
-  const [internships, setInternships] = useState<any[]>(fallbackInternships);
+  const [internships, setInternships] = useState<any[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -76,6 +69,11 @@ export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
           </Link>
         </div>
 
+        {internships.length === 0 ? (
+          <div className="col-span-full text-center py-16">
+            <p className="text-slate-500 dark:text-slate-400 font-bold text-lg uppercase tracking-wider">No internships available yet — check back soon!</p>
+          </div>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {internships.map((internship, index) => (
             <Link
@@ -119,6 +117,7 @@ export const FeaturedOpportunities = memo(function FeaturedOpportunities() {
             </Link>
           ))}
         </div>
+        )}
       </div>
     </section>
   );
