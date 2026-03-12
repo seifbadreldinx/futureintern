@@ -227,7 +227,8 @@ def list_all_users():
                 'is_active': True,  # Default to True, adjust based on your User model
                 'is_verified': user.is_verified if user.role == 'company' else None,
                 'created_at': user.created_at.isoformat() if hasattr(user, 'created_at') and user.created_at else None,
-                'company_name': user.company_name if user.role == 'company' else None
+                'company_name': user.company_name if user.role == 'company' else None,
+                'points': user.points or 0
             }
             for user in users
         ]), 200
@@ -928,14 +929,19 @@ def grant_points():
             return jsonify({'error': 'user_id and amount are required'}), 400
 
         amount = int(amount)
-        if amount <= 0:
-            return jsonify({'error': 'Amount must be positive'}), 400
+        if amount == 0:
+            return jsonify({'error': 'Amount cannot be zero'}), 400
 
         target_user = db.session.get(User, int(target_user_id))
         if not target_user:
             return jsonify({'error': 'User not found'}), 404
 
+        # Prevent negative balance on deduction
+        if amount < 0 and (target_user.points or 0) + amount < 0:
+            return jsonify({'error': f'Insufficient balance. User has {target_user.points or 0} points.'}), 400
+
         admin_id = int(get_jwt_identity())
+        action = 'Granted' if amount > 0 else 'Deducted'
         record_transaction(
             target_user, amount, 'admin_grant',
             description=f'{reason} (by admin #{admin_id})',
@@ -943,7 +949,7 @@ def grant_points():
         db.session.commit()
 
         return jsonify({
-            'message': f'Granted {amount} points to {target_user.name}',
+            'message': f'{action} {abs(amount)} points {"to" if amount > 0 else "from"} {target_user.name}',
             'new_balance': target_user.points,
         }), 200
     except Exception as e:

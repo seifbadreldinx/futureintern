@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { resolveLogoUrl } from '../utils/logoUrl';
@@ -9,7 +9,10 @@ import { Loader2 } from 'lucide-react';
 
 export function Dashboard() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState('overview');
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'overview';
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const focusField = searchParams.get('focus') || '';
   const navigate = useNavigate();
 
   // Redirect admin users to the dedicated Admin Panel
@@ -56,15 +59,16 @@ export function Dashboard() {
         {user.role === 'company' ? (
           <CompanyDashboard activeTab={activeTab} setActiveTab={setActiveTab} user={user} logout={logout} />
         ) : (
-          <StudentDashboard activeTab={activeTab} setActiveTab={setActiveTab} user={user} logout={logout} />
+          <StudentDashboard activeTab={activeTab} setActiveTab={setActiveTab} focusField={focusField} user={user} logout={logout} />
         )}
       </div>
     </div>
   );
 }
 
-function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
+function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }: any) {
   const { refreshUserData } = useAuth();
+  const focusApplied = useRef(false);
   const [applications, setApplications] = useState<any[]>([]);
   const [savedInternships, setSavedInternships] = useState<any[]>([]);
   const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
@@ -74,6 +78,20 @@ function StudentDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
+
+  // Auto-focus a profile field when navigated from the profile completion card
+  useEffect(() => {
+    if (activeTab === 'profile' && focusField && !focusApplied.current) {
+      focusApplied.current = true;
+      setTimeout(() => {
+        const el = document.getElementById(focusField) as HTMLElement | null;
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.focus();
+        }
+      }, 100);
+    }
+  }, [activeTab, focusField]);
 
   // Check for daily reward toast from login
   useEffect(() => {

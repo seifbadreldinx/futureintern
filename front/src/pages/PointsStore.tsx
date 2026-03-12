@@ -484,29 +484,48 @@ export function PointsStore() {
                 </div>
               </div>
               <div className="p-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {Object.entries(activities.profile_completion.fields as Record<string, boolean>).map(([field, filled]) => (
-                    <div key={field} className={`flex items-center gap-2 p-3 rounded-lg border ${
-                      filled
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                        : 'bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700'
-                    }`}>
-                      {filled ? (
-                        <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-slate-600 flex-shrink-0" />
-                      )}
-                      <span className={`text-sm font-medium capitalize ${filled ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-slate-400'}`}>
-                        {field}
-                      </span>
-                      {!filled && (
-                        <span className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">+{activities.profile_completion.points_per_field}</span>
-                      )}
+                {(() => {
+                  const fieldToId: Record<string, string> = {
+                    bio: 'bio',
+                    interests: 'interests',
+                    location: 'preferred_locations',
+                    major: 'major',
+                    skills: 'skills',
+                    university: 'university_name',
+                  };
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {Object.entries(activities.profile_completion.fields as Record<string, boolean>).map(([field, filled]) => {
+                        const inputId = fieldToId[field] || field;
+                        return (
+                          <Link
+                            key={field}
+                            to={`/dashboard?tab=profile&focus=${inputId}`}
+                            className={`flex items-center gap-2 p-3 rounded-lg border transition-all hover:shadow-md hover:-translate-y-0.5 ${
+                              filled
+                                ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                                : 'bg-gray-50 dark:bg-slate-800/50 border-gray-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600'
+                            }`}
+                          >
+                            {filled ? (
+                              <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            ) : (
+                              <div className="w-4 h-4 rounded-full border-2 border-gray-300 dark:border-slate-600 flex-shrink-0" />
+                            )}
+                            <span className={`text-sm font-medium capitalize ${filled ? 'text-green-700 dark:text-green-400' : 'text-gray-600 dark:text-slate-400'}`}>
+                              {field}
+                            </span>
+                            {!filled && (
+                              <span className="ml-auto text-xs font-bold text-indigo-600 dark:text-indigo-400">+{activities.profile_completion.points_per_field}</span>
+                            )}
+                          </Link>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
                 {activities.profile_completion.percentage < 100 && (
-                  <Link to="/dashboard" className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:underline">
+                  <Link to="/dashboard?tab=profile" className="mt-4 inline-block text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:underline">
                     Complete your profile →
                   </Link>
                 )}
