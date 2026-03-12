@@ -88,7 +88,7 @@ export function Login() {
   };
 
   const googleLogin = useGoogleLogin({
-    prompt: 'select_account',
+    prompt: 'login',
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       setError('');
