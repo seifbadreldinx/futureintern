@@ -26,7 +26,9 @@ def send_verification_email(user, raw_token: str):
     """
     from flask_mail import Message
 
-    frontend_url = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])[0]
+    origins = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])
+    valid_origins = [o for o in origins if o and o != '*']
+    frontend_url = valid_origins[0] if valid_origins else 'http://localhost:5173'
     verify_link = f"{frontend_url}/verify-email?token={raw_token}"
 
     msg = Message(
@@ -65,7 +67,10 @@ def send_password_reset_email(user, raw_token: str):
     """
     from flask_mail import Message
 
-    frontend_url = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])[0]
+    origins = current_app.config.get('CORS_ORIGINS', ['http://localhost:5173'])
+    # Filter out wildcard '*' which can't be used as a URL
+    valid_origins = [o for o in origins if o and o != '*']
+    frontend_url = valid_origins[0] if valid_origins else 'http://localhost:5173'
     reset_link = f"{frontend_url}/reset-password?token={raw_token}"
 
     msg = Message(

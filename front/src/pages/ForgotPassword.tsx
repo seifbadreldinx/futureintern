@@ -23,6 +23,8 @@ export function ForgotPassword() {
                 setError('Cannot reach the server. Please check your connection and try again.');
             } else if (msg.includes('timed out')) {
                 setError('Server is waking up — please try again in a few seconds.');
+            } else if (msg.includes('Failed to send reset email')) {
+                setError('Email service is not configured on the server. Please contact support.');
             } else {
                 setError(msg || 'Failed to send reset link. Please try again.');
             }
