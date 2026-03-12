@@ -39,6 +39,10 @@ class Config:
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
     MAIL_TIMEOUT = 30  # seconds – prevent SMTP hangs
 
+    # Resend (HTTP email API — works on Railway where SMTP is blocked)
+    RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
+    RESEND_FROM = os.environ.get('RESEND_FROM', 'FutureIntern <onboarding@resend.dev>')
+
     # Security Configuration
     # Maximum file upload size (5MB)
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
