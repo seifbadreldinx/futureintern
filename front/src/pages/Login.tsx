@@ -305,7 +305,7 @@ export function Login() {
                   onError={() => setError('Google sign-in failed. Please try again.')}
                   theme="outline"
                   size="large"
-                  width="100%"
+                  width={400}
                   text="signin_with"
                   shape="rectangular"
                 />

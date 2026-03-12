@@ -798,7 +798,7 @@ export function SignUp() {
                 onError={() => setSubmitError('Google sign-up failed. Please try again.')}
                 theme="outline"
                 size="large"
-                width="100%"
+                width={400}
                 text="signup_with"
                 shape="rectangular"
               />
