@@ -65,7 +65,6 @@ def check_and_charge(user, service_key):
 
 def grant_signup_bonus(user, bonus=50):
     """Grant the signup bonus points to a newly registered user."""
-    user.points = bonus
     record_transaction(
         user, bonus, 'signup_bonus',
         description='Welcome bonus on registration',

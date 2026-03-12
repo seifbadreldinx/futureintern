@@ -88,7 +88,7 @@ export function Login() {
   };
 
   const googleLogin = useGoogleLogin({
-    prompt: 'login',
+    prompt: 'consent',
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       setError('');
