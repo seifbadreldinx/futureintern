@@ -804,6 +804,12 @@ export const api = {
         body: JSON.stringify({ note }),
       });
     },
+    testEmail: async (email: string) => {
+      return apiRequest<any>('/admin/test-email', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    },
   },
 };
 

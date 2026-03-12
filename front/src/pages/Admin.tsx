@@ -1372,6 +1372,9 @@ export function Admin() {
               </div>
             </div>
 
+            {/* Email SMTP Test Card */}
+            <EmailTestCard />
+
             {/* Security Top Stats */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
@@ -2011,6 +2014,57 @@ export function Admin() {
           </div>
         </div>
       , document.body)}
+    </div>
+  );
+}
+
+function EmailTestCard() {
+  const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+
+  const handleTest = async () => {
+    if (!email) return;
+    setLoading(true);
+    setResult(null);
+    try {
+      const res = await api.points.testEmail(email);
+      setResult({ success: true, data: res });
+    } catch (err: any) {
+      setResult({ success: false, error: err.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+      <h3 className="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4 flex items-center gap-2">
+        <Terminal className="w-5 h-5" /> SMTP Email Test
+      </h3>
+      <div className="flex gap-3">
+        <input
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          placeholder="Send test email to..."
+          className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white focus:outline-none font-bold"
+        />
+        <button
+          onClick={handleTest}
+          disabled={loading || !email}
+          className="px-6 py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-[3px] border-slate-900 dark:border-white rounded-xl font-black shadow-[4px_4px_0px_0px_#f43f5e] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#f43f5e] transition-all disabled:opacity-50"
+        >
+          {loading ? 'Sending...' : 'Send Test'}
+        </button>
+      </div>
+      {result && (
+        <div className={`mt-4 p-4 rounded-xl border-[3px] text-sm font-mono whitespace-pre-wrap break-all ${result.success ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300' : 'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300'}`}>
+          {result.success
+            ? `✅ Sent!\n${JSON.stringify(result.data, null, 2)}`
+            : `❌ Failed:\n${result.error}`}
+        </div>
+      )}
     </div>
   );
 }

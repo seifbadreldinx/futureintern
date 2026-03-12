@@ -17,6 +17,43 @@ admin_bp = Blueprint('admin', __name__)
 def index():
     return jsonify({"message": "Admin API"})
 
+@admin_bp.route("/test-email", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def test_email():
+    """Send a test email to diagnose SMTP configuration - Admin only"""
+    try:
+        from flask_mail import Message
+        from app import mail
+        from flask import current_app
+
+        data = request.get_json() or {}
+        recipient = data.get('email', '')
+        if not recipient:
+            return jsonify({'error': 'email field required'}), 400
+
+        cfg = {
+            'MAIL_SERVER': current_app.config.get('MAIL_SERVER'),
+            'MAIL_PORT': current_app.config.get('MAIL_PORT'),
+            'MAIL_USE_TLS': current_app.config.get('MAIL_USE_TLS'),
+            'MAIL_USERNAME': current_app.config.get('MAIL_USERNAME'),
+            'MAIL_PASSWORD_SET': bool(current_app.config.get('MAIL_PASSWORD')),
+            'MAIL_DEFAULT_SENDER': current_app.config.get('MAIL_DEFAULT_SENDER'),
+        }
+
+        msg = Message(
+            subject='FutureIntern — Test Email',
+            recipients=[recipient],
+            body='This is a test email from FutureIntern. If you received this, SMTP is working correctly.',
+        )
+        try:
+            mail.send(msg)
+            return jsonify({'success': True, 'config': cfg}), 200
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e), 'config': cfg}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @admin_bp.route("/stats", methods=["GET"])
 @jwt_required()
 @role_required('admin')
