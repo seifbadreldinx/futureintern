@@ -194,7 +194,7 @@ export function SignUp() {
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
     if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters long';
     if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
     else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
     setErrors(newErrors);
@@ -272,7 +272,13 @@ export function SignUp() {
       setRegistrationComplete(true);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Registration failed. Please try again.';
-      setSubmitError(errorMessage);
+      const lowerMsg = errorMessage.toLowerCase();
+      if (lowerMsg.includes('password')) {
+        setCurrentStep(1);
+        setErrors({ password: errorMessage });
+      } else {
+        setSubmitError(errorMessage);
+      }
     } finally {
       setLoading(false);
     }
