@@ -516,20 +516,18 @@ export function SignUp() {
                     </button>
                   </div>
                   {errors.password && <p className="mt-2 text-xs font-bold text-red-600 dark:text-red-400 flex items-center"><X className="w-3 h-3 mr-1" /> {errors.password}</p>}
-                  {formData.password && (
-                    <ul className="mt-2 space-y-1">
-                      {[
-                        { ok: formData.password.length >= 8, label: 'At least 8 characters' },
-                        { ok: /[a-zA-Z]/.test(formData.password), label: 'At least one letter' },
-                        { ok: /\d/.test(formData.password), label: 'At least one number' },
-                        { ok: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password), label: 'At least one special character' },
-                      ].map(({ ok, label }) => (
-                        <li key={label} className={`flex items-center gap-1 text-xs font-bold ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
-                          {ok ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />} {label}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <ul className="mt-2 space-y-1">
+                    {[
+                      { ok: formData.password.length >= 8, label: 'At least 8 characters' },
+                      { ok: /[a-zA-Z]/.test(formData.password), label: 'At least one letter' },
+                      { ok: /\d/.test(formData.password), label: 'At least one number' },
+                      { ok: /[!@#$%^&*(),.?":{}|<>]/.test(formData.password), label: 'At least one special character' },
+                    ].map(({ ok, label }) => (
+                      <li key={label} className={`flex items-center gap-1 text-xs font-bold ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                        {ok ? <Check className="w-3 h-3" /> : <X className="w-3 h-3" />} {label}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div>
                   <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">Confirm password</label>
