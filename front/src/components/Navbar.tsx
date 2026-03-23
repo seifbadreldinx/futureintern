@@ -63,7 +63,7 @@ export function Navbar() {
 
         {/* Right side */}
         <div className="flex items-center space-x-4">
-          <div className="hidden sm:block scale-90">
+          <div className="scale-90">
             <ThemeToggle />
           </div>
 
@@ -132,6 +132,10 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Theme</span>
+              <ThemeToggle />
+            </div>
             <div className="pt-4 border-t-4 border-slate-900 dark:border-white space-y-3">
               {isAuth ? (
                 <>
