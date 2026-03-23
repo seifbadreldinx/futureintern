@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { GraduationCap, Mail, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
+import { GraduationCap, Mail, ArrowLeft, CheckCircle, Loader2, UserX } from 'lucide-react';
 import { api } from '../services/api';
 
 export function ForgotPassword() {
     const [email, setEmail] = useState('');
     const [submitted, setSubmitted] = useState(false);
+    const [notRegistered, setNotRegistered] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -13,18 +14,20 @@ export function ForgotPassword() {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setNotRegistered(false);
 
         try {
             await api.auth.forgotPassword(email);
             setSubmitted(true);
         } catch (err: any) {
             const msg = err?.message || '';
-            if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
+            const body = err?.body || {};
+            if (body?.not_registered || msg.includes('No account found')) {
+                setNotRegistered(true);
+            } else if (msg.includes('NetworkError') || msg.includes('Failed to fetch')) {
                 setError('Cannot reach the server. Please check your connection and try again.');
             } else if (msg.includes('timed out')) {
                 setError('Server is waking up — please try again in a few seconds.');
-            } else if (msg.includes('Failed to send reset email')) {
-                setError('Email service is not configured on the server. Please contact support.');
             } else {
                 setError(msg || 'Failed to send reset link. Please try again.');
             }
@@ -62,9 +65,8 @@ export function ForgotPassword() {
                         Enter your email and we'll send you a reset link
                     </p>
                 </div>
-
                 <div className="bg-white dark:bg-slate-900 p-10 rounded-[2rem] border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] transition-all">
-                    {!submitted ? (
+                    {!submitted && !notRegistered ? (
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {error && (
                                 <div className="bg-rose-50 dark:bg-rose-900/20 border-[3px] border-rose-500 text-rose-700 dark:text-rose-300 px-4 py-3 rounded-xl text-sm font-bold">
@@ -102,7 +104,34 @@ export function ForgotPassword() {
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Send Reset Link'}
                             </button>
                         </form>
+                    ) : notRegistered ? (
+                        /* ── Account not found ── */
+                        <div className="text-center space-y-5">
+                            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 border-[3px] border-slate-900 dark:border-white rounded-2xl flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_#ffffff]">
+                                <UserX className="w-8 h-8 text-amber-500" />
+                            </div>
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter">
+                                Account Not Found
+                            </h3>
+                            <p className="text-slate-600 dark:text-slate-400 font-bold">
+                                No account is registered with{' '}
+                                <span className="font-black text-slate-900 dark:text-white">{email}</span>.
+                            </p>
+                            <Link
+                                to="/signup"
+                                className="w-full inline-flex items-center justify-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter"
+                            >
+                                Register Now
+                            </Link>
+                            <button
+                                onClick={() => { setNotRegistered(false); setEmail(''); }}
+                                className="text-sm font-black text-slate-500 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider transition-colors"
+                            >
+                                Try different email
+                            </button>
+                        </div>
                     ) : (
+                        /* ── Email sent ── */
                         <div className="text-center">
                             <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/30 border-[3px] border-slate-900 dark:border-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-[3px_3px_0px_0px_#0f172a] dark:shadow-[3px_3px_0px_0px_#ffffff]">
                                 <CheckCircle className="w-8 h-8 text-emerald-600" />
@@ -112,7 +141,7 @@ export function ForgotPassword() {
                                 We've sent a password reset link to <span className="font-black text-slate-900 dark:text-white">{email}</span>.
                             </p>
                             <button
-                                onClick={() => setSubmitted(false)}
+                                onClick={() => { setSubmitted(false); setEmail(''); }}
                                 className="text-sm font-black text-rose-500 hover:text-rose-600 uppercase tracking-wider"
                             >
                                 Try different email

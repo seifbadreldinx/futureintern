@@ -29,8 +29,7 @@ def forgot_password():
             
         user = User.query.filter_by(email=email).first()
         if not user:
-            # Don't reveal user existence
-            return jsonify({'message': 'If your email is registered, you will receive a reset link.'}), 200
+            return jsonify({'error': 'No account found with this email.', 'not_registered': True}), 404
 
         # Create single-use token (invalidates previous tokens for this user)
         raw_token, _record = PasswordResetToken.create_for_user(user.id)
