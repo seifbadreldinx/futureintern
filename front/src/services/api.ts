@@ -1,8 +1,8 @@
 // API Service for backend communication
 // Handles all HTTP requests to the Flask backend
 
-// Get API base URL from environment or use default
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production-7d4f.up.railway.app/api';
+// Get API base URL from environment variable (set VITE_API_BASE_URL in Vercel/Railway env settings)
+const API_BASE_URL: string = import.meta.env.VITE_API_BASE_URL || 'https://futureintern-production.up.railway.app/api';
 
 // Helper function to get auth token from localStorage
 const getAuthToken = (): string | null => {
