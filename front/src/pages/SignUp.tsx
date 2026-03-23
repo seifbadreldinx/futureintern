@@ -495,7 +495,7 @@ export function SignUp() {
                   </div>
                   <input id="email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={handleChange}
                     className={`w-full pl-16 pr-5 py-4 bg-white dark:bg-slate-800 border-[3px] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 transition-all font-bold text-base ${errors.email ? 'border-red-500 shadow-[4px_4px_0px_0px_#ef4444]' : 'border-slate-900 dark:border-white focus:shadow-[4px_4px_0px_0px_#3b82f6]'}`}
-                    placeholder="you@example.com" />
+                    placeholder="Enter your email" />
                 </div>
                 {errors.email && <p className="mt-2 text-xs font-bold text-red-600 dark:text-red-400 flex items-center"><X className="w-3 h-3 mr-1" /> {errors.email}</p>}
               </div>
