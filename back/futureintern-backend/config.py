@@ -26,8 +26,10 @@ class Config:
     JWT_COOKIE_CSRF_PROTECT = False
     JWT_CSRF_CHECK_FORM = False
     
-    # CORS Configuration - Allow frontend domain
-    CORS_ORIGINS = os.environ.get('FRONTEND_URL', '*').split(',')
+    # CORS Configuration - Allow frontend domain(s)
+    # FRONTEND_URL can be a comma-separated list of allowed origins
+    _frontend_url = os.environ.get('FRONTEND_URL', 'https://futureintern-two.vercel.app')
+    CORS_ORIGINS = [origin.strip() for origin in _frontend_url.split(',') if origin.strip()]
 
     # Mail Configuration
     MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
