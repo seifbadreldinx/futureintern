@@ -70,21 +70,30 @@ def update_profile():
         points_awarded = 0
         if user.role == 'student':
             from app.utils.points import reward_profile_field, PROFILE_FIELDS
+            import json
 
-            profile_field_map = {
-                'university': 'university',
-                'major': 'major',
-                'skills': 'skills',
-                'interests': 'interests',
-                'bio': 'bio',
-            }
-
-            for data_key, model_field in profile_field_map.items():
+            # Simple string fields
+            simple_fields = {'university': 'university', 'major': 'major', 'bio': 'bio'}
+            for data_key, model_field in simple_fields.items():
                 if data_key in data:
                     was_empty = not getattr(user, model_field, None)
                     setattr(user, model_field, data[data_key])
                     if was_empty and data[data_key]:
                         points_awarded += reward_profile_field(user, model_field)
+
+            # List fields — serialize to JSON string for SQLite
+            for list_field in ('interests', 'skills'):
+                if list_field in data:
+                    raw = data[list_field]
+                    was_empty = not getattr(user, list_field, None)
+                    # Accept list or comma-separated string
+                    if isinstance(raw, list):
+                        serialized = json.dumps(raw)
+                    else:
+                        serialized = raw  # already a string
+                    setattr(user, list_field, serialized)
+                    if was_empty and raw:
+                        points_awarded += reward_profile_field(user, list_field)
 
             if 'location' in data:
                 was_empty = not user.location
