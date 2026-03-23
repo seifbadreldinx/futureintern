@@ -67,7 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         setUser(null);
       }
-    } catch {
+    } catch (err: any) {
+      // If token is invalid/expired (401), clear it so isAuthenticated becomes false
+      const msg = String(err?.message || '');
+      if (
+        msg.includes('401') ||
+        msg.includes('Unauthorized') ||
+        msg.includes('Invalid token') ||
+        msg.includes('expired')
+      ) {
+        removeAuthToken();
+      }
       setUser(null);
     } finally {
       setLoading(false);
@@ -76,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchUser();
-    // Listen for storage changes (login/logout in this tab)
+    // Listen for storage changes (login/logout in same tab)
     const onStorage = () => fetchUser();
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -86,7 +96,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     removeAuthToken();
     setUser(null);
     sessionStorage.clear();
-    // Replace history entry so back button can't return to authenticated pages
     window.location.replace('/login');
   }, []);
 
