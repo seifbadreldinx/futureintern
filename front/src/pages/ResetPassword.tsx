@@ -1,8 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { GraduationCap, Lock, CheckCircle, ArrowLeft, Loader2 } from 'lucide-react';
+import { GraduationCap, Lock, CheckCircle, ArrowLeft, Loader2, Check, X, Eye, EyeOff } from 'lucide-react';
 import { api } from '../services/api';
+
+const PASSWORD_RULES = [
+  { test: (p: string) => p.length >= 8,                          label: 'At least 8 characters' },
+  { test: (p: string) => /[a-zA-Z]/.test(p),                    label: 'At least one letter' },
+  { test: (p: string) => /\d/.test(p),                           label: 'At least one number' },
+  { test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p),     label: 'At least one special character' },
+];
 
 export function ResetPassword() {
     const [searchParams] = useSearchParams();
@@ -11,9 +18,14 @@ export function ResetPassword() {
 
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    const allRulesMet = PASSWORD_RULES.every(r => r.test(password));
+    const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
     useEffect(() => {
         if (!token) {
@@ -25,13 +37,13 @@ export function ResetPassword() {
         e.preventDefault();
         setError('');
 
-        if (password !== confirmPassword) {
-            setError('Passwords do not match');
+        if (!allRulesMet) {
+            setError('Please meet all password requirements.');
             return;
         }
 
-        if (password.length < 6) {
-            setError('Password must be at least 6 characters');
+        if (!passwordsMatch) {
+            setError('Passwords do not match');
             return;
         }
 
@@ -95,6 +107,7 @@ export function ResetPassword() {
                             )}
 
                             <div className="space-y-5">
+                                {/* New Password */}
                                 <div>
                                     <label htmlFor="password" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">
                                         New Password
@@ -106,16 +119,42 @@ export function ResetPassword() {
                                         <input
                                             id="password"
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? 'text' : 'password'}
                                             required
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full pl-16 pr-5 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all font-bold text-base"
+                                            className="w-full pl-16 pr-12 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all font-bold text-base"
                                             placeholder="••••••••"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1"
+                                        >
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
                                     </div>
+
+                                    {/* Password requirements checklist */}
+                                    {password.length > 0 && (
+                                        <ul className="mt-3 space-y-1">
+                                            {PASSWORD_RULES.map(({ test, label }) => {
+                                                const ok = test(password);
+                                                return (
+                                                    <li key={label} className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                                                        {ok
+                                                            ? <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                                                            : <X className="w-3.5 h-3.5 flex-shrink-0" />
+                                                        }
+                                                        {label}
+                                                    </li>
+                                                );
+                                            })}
+                                        </ul>
+                                    )}
                                 </div>
 
+                                {/* Confirm Password */}
                                 <div>
                                     <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">
                                         Confirm Password
@@ -127,20 +166,41 @@ export function ResetPassword() {
                                         <input
                                             id="confirmPassword"
                                             name="confirmPassword"
-                                            type="password"
+                                            type={showConfirmPassword ? 'text' : 'password'}
                                             required
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="w-full pl-16 pr-5 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all font-bold text-base"
+                                            className={`w-full pl-16 pr-12 py-4 bg-white dark:bg-slate-800 border-[3px] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-0 transition-all font-bold text-base ${
+                                                confirmPassword.length > 0
+                                                    ? passwordsMatch
+                                                        ? 'border-emerald-500 focus:shadow-[4px_4px_0px_0px_#10b981]'
+                                                        : 'border-rose-500 focus:shadow-[4px_4px_0px_0px_#f43f5e]'
+                                                    : 'border-slate-900 dark:border-white focus:shadow-[4px_4px_0px_0px_#3b82f6]'
+                                            }`}
                                             placeholder="••••••••"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors p-1"
+                                        >
+                                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
                                     </div>
+                                    {confirmPassword.length > 0 && (
+                                        <p className={`mt-2 text-xs font-bold flex items-center gap-1 ${passwordsMatch ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>
+                                            {passwordsMatch
+                                                ? <><Check className="w-3.5 h-3.5" /> Passwords match</>
+                                                : <><X className="w-3.5 h-3.5" /> Passwords do not match</>
+                                            }
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
                             <button
                                 type="submit"
-                                disabled={loading || !token}
+                                disabled={loading || !token || !allRulesMet || !passwordsMatch}
                                 className="w-full flex justify-center items-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Reset Password'}
