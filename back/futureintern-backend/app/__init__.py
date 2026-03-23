@@ -235,6 +235,19 @@ def create_app():
             }
         })
 
+    # Debug: show JWT key fingerprint (first+last 4 chars) to verify Railway env var
+    @app.route("/api/debug/jwt-check")
+    def jwt_check():
+        import os
+        key = app.config.get('JWT_SECRET_KEY', '')
+        key_from_env = os.environ.get('JWT_SECRET_KEY', '')
+        return jsonify({
+            "jwt_key_length": len(key),
+            "jwt_key_preview": f"{key[:4]}...{key[-4:]}" if len(key) > 8 else "TOO_SHORT",
+            "from_env_var": bool(key_from_env),
+            "env_key_length": len(key_from_env),
+        })
+
     # Development helper: Seed dev data - PROTECTED (requires secret token, disabled in production)
     @app.route('/api/debug/seed', methods=['POST'])
     def dev_seed():
