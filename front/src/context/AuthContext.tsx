@@ -61,21 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const res = await api.auth.getCurrentUser();
-      const userData = res?.user || res;
-      if (userData) {
+      const userData = res?.user || res?.profile || res;
+      if (userData && userData.id) {
         setUser(userData);
       } else {
         setUser(null);
       }
     } catch (err: any) {
-      // If token is invalid/expired (401), clear it so isAuthenticated becomes false
       const msg = String(err?.message || '');
-      if (
-        msg.includes('401') ||
-        msg.includes('Unauthorized') ||
-        msg.includes('Invalid token') ||
-        msg.includes('expired')
-      ) {
+      // Only clear token on definitive auth failures (bad signature, expired, revoked)
+      // NOT on network errors or temporary 401s right after login
+      const isDefinitiveAuthFailure =
+        msg.includes('Signature verification failed') ||
+        msg.includes('Token has expired') ||
+        msg.includes('token_revoked') ||
+        msg.includes('Invalid token');
+      if (isDefinitiveAuthFailure) {
         removeAuthToken();
       }
       setUser(null);
