@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   GraduationCap, Heart, BookOpen, Upload, FileText, X,
-  ChevronRight, Check, Loader2,
+  ChevronRight, Check, Loader2, Lock, Eye, EyeOff, Gift,
 } from 'lucide-react';
 import { api } from '../services/api';
 
@@ -14,7 +14,7 @@ const INTEREST_OPTIONS = [
 
 export function GoogleOnboarding() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1); // 1 = interests+uni, 2 = CV
+  const [step, setStep] = useState(1); // 1 = interests+uni, 2 = CV, 3 = password
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -27,6 +27,22 @@ export function GoogleOnboarding() {
   const [cv, setCv] = useState<File | null>(null);
   const [cvError, setCvError] = useState('');
   const [cvLater, setCvLater] = useState(false);
+
+  // Step 3 — optional password
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [skipPassword, setSkipPassword] = useState(false);
+
+  const PASSWORD_RULES = [
+    { test: (p: string) => p.length >= 8,                        label: 'At least 8 characters' },
+    { test: (p: string) => /[a-zA-Z]/.test(p),                  label: 'At least one letter' },
+    { test: (p: string) => /\d/.test(p),                         label: 'At least one number' },
+    { test: (p: string) => /[!@#$%^&*(),.?":{}|<>]/.test(p),   label: 'At least one special character' },
+  ];
+  const allRulesMet = PASSWORD_RULES.every(r => r.test(password));
+  const passwordsMatch = password === confirmPassword && confirmPassword.length > 0;
 
   const toggleInterest = (i: string) => {
     setInterests(prev => {
@@ -67,19 +83,32 @@ export function GoogleOnboarding() {
     setLoading(true);
     setError('');
     try {
-      // Save profile info
       await api.users.updateProfile({
         university: university.trim(),
         major: major.trim() || 'Not specified',
         interests,
       });
-      // Upload CV if provided
       if (cv) {
         try { await api.users.uploadCV(cv); } catch { /* best-effort */ }
       }
-      navigate('/dashboard');
+      setStep(3); // go to password step
     } catch (err: any) {
       setError(err.message || 'Failed to save profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleComplete = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      if (!skipPassword && password) {
+        await api.auth.setPassword(password);
+      }
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Failed to set password. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -110,12 +139,19 @@ export function GoogleOnboarding() {
             Complete Your Profile
           </h2>
           <p className="text-lg text-slate-600 dark:text-slate-400 font-bold">
-            {step === 1 ? 'Tell us about yourself to get matched' : 'Upload your CV for better matches'}
+            {step === 1 ? 'Tell us about yourself to get matched'
+              : step === 2 ? 'Upload your CV for better matches'
+              : 'Set a password to also login with email'}
           </p>
+          {/* Points notice */}
+          <div className="mt-3 inline-flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 border-2 border-amber-400 rounded-xl px-4 py-2">
+            <Gift className="w-4 h-4 text-amber-500" />
+            <span className="text-sm font-black text-amber-700 dark:text-amber-400">🎉 50 welcome points added to your account!</span>
+          </div>
 
           {/* Step indicators */}
           <div className="flex items-center justify-center gap-3 mt-6">
-            {[1, 2].map(s => (
+            {[1, 2, 3].map(s => (
               <div key={s} className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black border-[3px] transition-all ${
                   s < step ? 'bg-rose-500 text-white border-slate-900'
@@ -124,7 +160,7 @@ export function GoogleOnboarding() {
                 }`}>
                   {s < step ? <Check className="w-5 h-5" /> : s}
                 </div>
-                {s < 2 && <div className={`w-16 h-1.5 rounded-full ${s < step ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-700'}`} />}
+                {s < 3 && <div className={`w-16 h-1.5 rounded-full ${s < step ? 'bg-rose-500' : 'bg-slate-200 dark:bg-slate-700'}`} />}
               </div>
             ))}
           </div>
@@ -205,7 +241,7 @@ export function GoogleOnboarding() {
                 </div>
               </button>
             </div>
-          ) : (
+          ) : step === 2 ? (
             <div className="space-y-6">
               {/* CV Upload */}
               <div>
@@ -268,8 +304,92 @@ export function GoogleOnboarding() {
                 <button type="button" onClick={handleFinish} disabled={loading}
                   className="flex-1 flex justify-center items-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter disabled:opacity-50">
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-                    <><Check className="w-5 h-5 mr-2" />Finish</>
+                    <><Check className="w-5 h-5 mr-2" />Next Step</>
                   )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* ── Step 3: Optional password ── */
+            <div className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border-[3px] border-blue-300 dark:border-blue-700 rounded-xl p-4">
+                <p className="text-sm font-bold text-blue-800 dark:text-blue-300">
+                  <Lock className="inline w-4 h-4 mr-1" />
+                  Setting a password lets you log in with <strong>{"email + password"}</strong> in addition to Google.
+                  Your Google email will be the login email. This step is optional.
+                </p>
+              </div>
+
+              {!skipPassword && (
+                <>
+                  <div>
+                    <label className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">Password</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
+                        className="w-full pl-16 pr-12 py-4 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:shadow-[4px_4px_0px_0px_#3b82f6] transition-all font-bold text-base"
+                        placeholder="••••••••" />
+                      <button type="button" onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1">
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {password.length > 0 && (
+                      <ul className="mt-3 space-y-1">
+                        {PASSWORD_RULES.map(({ test, label }) => {
+                          const ok = test(password);
+                          return (
+                            <li key={label} className={`flex items-center gap-1.5 text-xs font-bold transition-colors ${ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`}>
+                              {ok ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />} {label}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 ml-1">Confirm Password</label>
+                    <div className="relative">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                        <Lock className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <input type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                        className={`w-full pl-16 pr-12 py-4 bg-white dark:bg-slate-800 border-[3px] rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all font-bold text-base ${
+                          confirmPassword.length > 0 ? (passwordsMatch ? 'border-emerald-500' : 'border-rose-500') : 'border-slate-900 dark:border-white'
+                        }`}
+                        placeholder="••••••••" />
+                      <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors p-1">
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {confirmPassword.length > 0 && (
+                      <p className={`mt-2 text-xs font-bold flex items-center gap-1 ${passwordsMatch ? 'text-emerald-600' : 'text-rose-500'}`}>
+                        {passwordsMatch ? <><Check className="w-3.5 h-3.5" />Passwords match</> : <><X className="w-3.5 h-3.5" />Passwords do not match</>}
+                      </p>
+                    )}
+                  </div>
+                </>
+              )}
+
+              <div className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700">
+                <input id="skipPwd" type="checkbox" checked={skipPassword} onChange={e => { setSkipPassword(e.target.checked); setPassword(''); setConfirmPassword(''); }}
+                  className="h-5 w-5 text-blue-600 rounded cursor-pointer" />
+                <label htmlFor="skipPwd" className="text-sm font-bold text-slate-600 dark:text-slate-400 cursor-pointer">Skip for now — I'll only use Google to log in</label>
+              </div>
+
+              <div className="flex gap-4">
+                <button type="button" onClick={() => setStep(2)}
+                  className="flex-1 py-4 px-6 bg-white dark:bg-slate-800 border-[3px] border-slate-900 dark:border-white rounded-xl font-bold text-slate-900 dark:text-white hover:bg-slate-100 transition-all uppercase tracking-wider text-sm">
+                  Back
+                </button>
+                <button type="button" onClick={handleComplete}
+                  disabled={loading || (!skipPassword && password.length > 0 && (!allRulesMet || !passwordsMatch))}
+                  className="flex-1 flex justify-center items-center py-4 px-6 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-black text-lg uppercase tracking-tighter disabled:opacity-50">
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Check className="w-5 h-5 mr-2" />Go to Dashboard</>}
                 </button>
               </div>
             </div>

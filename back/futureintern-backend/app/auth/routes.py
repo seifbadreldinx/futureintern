@@ -93,6 +93,38 @@ def index():
     return jsonify({"message": "Auth API - Endpoints: /register, /login, /refresh"})
 
 
+@auth_bp.route("/set-password", methods=["POST"])
+@jwt_required()
+def set_password():
+    """Allow a logged-in user (e.g. Google OAuth) to set or change their local password."""
+    try:
+        from flask_jwt_extended import get_jwt_identity
+        user_id = get_jwt_identity()
+        user = db.session.get(User, int(user_id))
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        data = request.get_json() or {}
+        password = data.get('password', '')
+        if not password:
+            return jsonify({'error': 'Password is required'}), 400
+
+        is_valid, error_msg = validate_password(password)
+        if not is_valid:
+            return jsonify({'error': error_msg}), 400
+
+        user.set_password(password)
+        # Allow email+password login alongside Google
+        db.session.commit()
+        log_audit('set_password', resource='user', resource_id=user.id, user_id=user.id)
+        return jsonify({'message': 'Password set successfully. You can now log in with email and password.'}), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+
 # ========== Email Verification ==========
 
 @auth_bp.route("/verify-email", methods=["POST"])

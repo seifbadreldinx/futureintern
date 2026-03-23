@@ -312,6 +312,14 @@ export const api = {
       return data;
     },
 
+    // Set / change password for authenticated users (e.g. Google sign-in users)
+    setPassword: async (password: string) => {
+      return apiRequest<{ message: string }>('/auth/set-password', {
+        method: 'POST',
+        body: JSON.stringify({ password }),
+      });
+    },
+
     // Update profile (alias for users.updateProfile, used by Dashboard)
     updateProfile: async (data: any) => {
       return apiRequest<any>('/users/profile', {
