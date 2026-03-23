@@ -268,6 +268,31 @@ def create_app():
         except Exception as e:
             return jsonify({"error": str(e)}), 500
 
+    # Debug: test Brevo directly and return raw response
+    @app.route("/api/debug/test-brevo")
+    def test_brevo():
+        import requests as req
+        api_key = app.config.get('BREVO_API_KEY', '')
+        sender = app.config.get('BREVO_SENDER_EMAIL', '')
+        sender_name = app.config.get('BREVO_SENDER_NAME', 'FutureIntern')
+        if not api_key or not sender:
+            return jsonify({"error": "Brevo not configured", "api_key_set": bool(api_key), "sender_set": bool(sender)}), 400
+        try:
+            resp = req.post(
+                'https://api.brevo.com/v3/smtp/email',
+                headers={'api-key': api_key, 'Content-Type': 'application/json'},
+                json={
+                    'sender': {'name': sender_name, 'email': sender},
+                    'to': [{'email': sender}],
+                    'subject': 'FutureIntern Brevo Test',
+                    'textContent': 'If you see this, Brevo is working!'
+                },
+                timeout=15,
+            )
+            return jsonify({"status_code": resp.status_code, "response": resp.json() if resp.text else {}, "sender_used": sender})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     # Development helper: Seed dev data - PROTECTED (requires secret token, disabled in production)
     @app.route('/api/debug/seed', methods=['POST'])
     def dev_seed():
