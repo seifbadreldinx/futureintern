@@ -248,6 +248,26 @@ def create_app():
             "env_key_length": len(key_from_env),
         })
 
+    # Debug: test Mailjet directly and return raw response
+    @app.route("/api/debug/test-mailjet")
+    def test_mailjet():
+        import requests as req
+        api_key = app.config.get('MAILJET_API_KEY', '')
+        api_secret = app.config.get('MAILJET_API_SECRET', '')
+        sender = app.config.get('MAILJET_SENDER_EMAIL', '')
+        if not api_key or not api_secret or not sender:
+            return jsonify({"error": "Mailjet not configured", "api_key_set": bool(api_key), "sender_set": bool(sender)}), 400
+        try:
+            resp = req.post(
+                'https://api.mailjet.com/v3.1/send',
+                auth=(api_key, api_secret),
+                json={"Messages": [{"From": {"Email": sender, "Name": "FutureIntern"}, "To": [{"Email": sender}], "Subject": "FutureIntern Email Test", "TextPart": "If you see this, Mailjet is working!"}]},
+                timeout=15,
+            )
+            return jsonify({"status_code": resp.status_code, "response": resp.json(), "sender_used": sender})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
     # Development helper: Seed dev data - PROTECTED (requires secret token, disabled in production)
     @app.route('/api/debug/seed', methods=['POST'])
     def dev_seed():
