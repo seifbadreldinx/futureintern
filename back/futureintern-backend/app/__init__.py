@@ -235,64 +235,6 @@ def create_app():
             }
         })
 
-    # Debug: show JWT key fingerprint (first+last 4 chars) to verify Railway env var
-    @app.route("/api/debug/jwt-check")
-    def jwt_check():
-        import os
-        key = app.config.get('JWT_SECRET_KEY', '')
-        key_from_env = os.environ.get('JWT_SECRET_KEY', '')
-        return jsonify({
-            "jwt_key_length": len(key),
-            "jwt_key_preview": f"{key[:4]}...{key[-4:]}" if len(key) > 8 else "TOO_SHORT",
-            "from_env_var": bool(key_from_env),
-            "env_key_length": len(key_from_env),
-        })
-
-    # Debug: test Mailjet directly and return raw response
-    @app.route("/api/debug/test-mailjet")
-    def test_mailjet():
-        import requests as req
-        api_key = app.config.get('MAILJET_API_KEY', '')
-        api_secret = app.config.get('MAILJET_API_SECRET', '')
-        sender = app.config.get('MAILJET_SENDER_EMAIL', '')
-        if not api_key or not api_secret or not sender:
-            return jsonify({"error": "Mailjet not configured", "api_key_set": bool(api_key), "sender_set": bool(sender)}), 400
-        try:
-            resp = req.post(
-                'https://api.mailjet.com/v3.1/send',
-                auth=(api_key, api_secret),
-                json={"Messages": [{"From": {"Email": sender, "Name": "FutureIntern"}, "To": [{"Email": sender}], "Subject": "FutureIntern Email Test", "TextPart": "If you see this, Mailjet is working!"}]},
-                timeout=15,
-            )
-            return jsonify({"status_code": resp.status_code, "response": resp.json(), "sender_used": sender})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    # Debug: test Brevo directly and return raw response
-    @app.route("/api/debug/test-brevo")
-    def test_brevo():
-        import requests as req
-        api_key = app.config.get('BREVO_API_KEY', '')
-        sender = app.config.get('BREVO_SENDER_EMAIL', '')
-        sender_name = app.config.get('BREVO_SENDER_NAME', 'FutureIntern')
-        if not api_key or not sender:
-            return jsonify({"error": "Brevo not configured", "api_key_set": bool(api_key), "sender_set": bool(sender)}), 400
-        try:
-            resp = req.post(
-                'https://api.brevo.com/v3/smtp/email',
-                headers={'api-key': api_key, 'Content-Type': 'application/json'},
-                json={
-                    'sender': {'name': sender_name, 'email': sender},
-                    'to': [{'email': sender}],
-                    'subject': 'FutureIntern Brevo Test',
-                    'textContent': 'If you see this, Brevo is working!'
-                },
-                timeout=15,
-            )
-            return jsonify({"status_code": resp.status_code, "response": resp.json() if resp.text else {}, "sender_used": sender})
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
     # Development helper: Seed dev data - PROTECTED (requires secret token, disabled in production)
     @app.route('/api/debug/seed', methods=['POST'])
     def dev_seed():
