@@ -300,8 +300,12 @@ export function SignUp() {
       setLoading(true);
       setSubmitError('');
       try {
-        await api.auth.googleLogin(tokenResponse.access_token);
-        navigate('/dashboard');
+        const response = await api.auth.googleLogin(tokenResponse.access_token);
+        if ((response as any).is_new_user) {
+          window.location.href = '/onboarding';
+        } else {
+          navigate('/dashboard');
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Google sign-up failed.';
         setSubmitError(errorMessage);

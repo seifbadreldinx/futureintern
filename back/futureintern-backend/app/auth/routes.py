@@ -689,6 +689,7 @@ def google_auth():
                 user.auth_provider = 'google'
             user.email_verified = True  # Google verifies email
             db.session.commit()
+            is_new_user = False
         else:
             # New user — create account automatically with signup bonus
             from werkzeug.security import generate_password_hash
@@ -709,6 +710,7 @@ def google_auth():
             from app.utils.points import grant_signup_bonus
             grant_signup_bonus(user, bonus=50)
             db.session.commit()
+            is_new_user = True
 
         # Issue JWT tokens
         access_token = create_access_token(
@@ -723,7 +725,8 @@ def google_auth():
             'message': 'Google login successful',
             'access_token': access_token,
             'refresh_token': refresh_token,
-            'user': user.to_dict()
+            'user': user.to_dict(),
+            'is_new_user': is_new_user,
         }), 200
 
     except Exception as e:

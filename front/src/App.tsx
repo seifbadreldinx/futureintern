@@ -29,6 +29,7 @@ const FAQ = lazy(() => import('./pages/FAQ').then(m => ({ default: m.FAQ })));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy').then(m => ({ default: m.PrivacyPolicy })));
 const TermsOfService = lazy(() => import('./pages/TermsOfService').then(m => ({ default: m.TermsOfService })));
 const PointsStore = lazy(() => import('./pages/PointsStore').then(m => ({ default: m.PointsStore })));
+const GoogleOnboarding = lazy(() => import('./pages/GoogleOnboarding').then(m => ({ default: m.GoogleOnboarding })));
 
 import { Unauthorized } from './pages/Unauthorized';
 import { AuthProvider } from './context/AuthContext';
@@ -75,6 +76,7 @@ function AppContent() {
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/points" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
             <Route path="/points-store" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
+            <Route path="/onboarding" element={<ProtectedRoute><GoogleOnboarding /></ProtectedRoute>} />
           </Routes>
         </main>
       </Suspense>

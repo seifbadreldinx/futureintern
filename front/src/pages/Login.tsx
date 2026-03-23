@@ -96,6 +96,8 @@ export function Login() {
         const response = await api.auth.googleLogin(tokenResponse.access_token);
         if (response.user?.role === 'admin') {
           window.location.href = '/admin';
+        } else if ((response as any).is_new_user) {
+          window.location.href = '/onboarding';
         } else {
           window.location.href = redirectTo;
         }
