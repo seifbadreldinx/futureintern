@@ -36,11 +36,12 @@ def forgot_password():
         raw_token, _record = PasswordResetToken.create_for_user(user.id)
         db.session.commit()
 
-        # Send email — surface real errors so the user knows if SMTP is misconfigured
+        # Send email — log errors but always return success (security + UX)
         success, _err = send_password_reset_email(user, raw_token)
         if not success:
             current_app.logger.error('Password reset email failed for user %s: %s', user.id, _err)
-            return jsonify({'error': f'Failed to send reset email: {_err}'}), 500
+            # Still return success — don't reveal email/provider issues to users
+            # Check Railway logs for the actual error message
 
         return jsonify({'message': 'If your email is registered, you will receive a reset link.'}), 200
         
