@@ -435,18 +435,10 @@ def login():
         # ── 2FA check ──
         if user.two_factor_enabled:
             from app.models.two_factor import TwoFactorCode
-            from flask_mail import Message
-            from app import mail
+            from app.utils.email import send_2fa_email
             code_entry = TwoFactorCode.generate(user.id)
             try:
-                msg = Message('Your FutureIntern Login Code', recipients=[user.email])
-                msg.body = (
-                    f'Hello {user.name},\n\n'
-                    f'Your login verification code is: {code_entry.code}\n\n'
-                    f'This code expires in 10 minutes. Do not share it with anyone.\n\n'
-                    f'FutureIntern Team'
-                )
-                mail.send(msg)
+                send_2fa_email(user, code_entry.code)
             except Exception:
                 pass  # Fail silently — code is still in DB
             log_audit('2fa_code_sent', resource='user', resource_id=user.id, user_id=user.id)

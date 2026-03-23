@@ -43,7 +43,14 @@ class Config:
 
     # Resend (HTTP email API — works on Railway where SMTP is blocked)
     RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
-    RESEND_FROM = os.environ.get('RESEND_FROM', 'FutureIntern <onboarding@resend.dev>')
+    RESEND_FROM = os.environ.get('RESEND_FROM', '')
+
+    # Mailjet (RECOMMENDED — 200 emails/day free, sends to any email, no domain needed)
+    # Sign up at https://app.mailjet.com → Account → API Keys
+    MAILJET_API_KEY = os.environ.get('MAILJET_API_KEY')
+    MAILJET_API_SECRET = os.environ.get('MAILJET_API_SECRET')
+    MAILJET_SENDER_EMAIL = os.environ.get('MAILJET_SENDER_EMAIL')
+    MAILJET_SENDER_NAME = os.environ.get('MAILJET_SENDER_NAME', 'FutureIntern')
 
     # Brevo / Sendinblue (preferred — no domain verification needed, just verify sender email)
     BREVO_API_KEY = os.environ.get('BREVO_API_KEY')
