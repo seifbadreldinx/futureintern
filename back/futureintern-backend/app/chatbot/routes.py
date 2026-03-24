@@ -40,9 +40,9 @@ You are NOT just a FAQ bot — you can discuss resumes, career paths, interview 
 def call_huggingface(messages: list, api_key: str, model: str) -> str:
     """
     Call Hugging Face Inference API using the OpenAI-compatible chat completions endpoint.
-    Works with instruction-tuned models on the HF Serverless Inference API.
+    The base URL is fixed; the model is specified in the request body.
     """
-    url = f"https://api-inference.huggingface.co/models/{model}/v1/chat/completions"
+    url = "https://api-inference.huggingface.co/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ def status():
     """Diagnostic endpoint — check if AI keys are configured and reachable."""
     hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
     openai_key = current_app.config.get("OPENAI_API_KEY")
-    hf_model = current_app.config.get("HUGGINGFACE_MODEL", "HuggingFaceH4/zephyr-7b-beta")
+    hf_model = current_app.config.get("HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct")
 
     result = {
         "huggingface_key_set": bool(hf_key),
@@ -166,7 +166,7 @@ def chat():
         # ── Try Hugging Face ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
-            "HUGGINGFACE_MODEL", "HuggingFaceH4/zephyr-7b-beta"
+            "HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct"
         )
         if hf_key:
             try:
