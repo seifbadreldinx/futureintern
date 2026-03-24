@@ -81,5 +81,6 @@ class Config:
     OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 
     # Hugging Face (primary AI chatbot)
+    # zephyr-7b-beta is free, ungated, and supports the chat completions endpoint
     HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')
-    HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'mistralai/Mistral-7B-Instruct-v0.2')
+    HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'HuggingFaceH4/zephyr-7b-beta')

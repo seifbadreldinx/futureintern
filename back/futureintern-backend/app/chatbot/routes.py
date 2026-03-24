@@ -38,43 +38,27 @@ You are NOT just a FAQ bot — you can discuss resumes, career paths, interview 
 
 
 def call_huggingface(messages: list, api_key: str, model: str) -> str:
-    """Call Hugging Face Inference API with chat template format."""
-    # Build prompt in ChatML / instruction format
-    prompt = "<s>"
-    for msg in messages:
-        role = msg["role"]
-        content = msg["content"]
-        if role == "system":
-            prompt += f"[INST] <<SYS>>\n{content}\n<</SYS>>\n\n"
-        elif role == "user":
-            if not prompt.endswith("[INST] <<SYS>>\n"):
-                prompt += f"[INST] {content} [/INST]"
-            else:
-                prompt += f"{content} [/INST]"
-        elif role == "assistant":
-            prompt += f" {content} </s><s>"
-
-    url = f"https://api-inference.huggingface.co/models/{model}"
+    """
+    Call Hugging Face Inference API using the OpenAI-compatible chat completions endpoint.
+    Works with instruction-tuned models on the HF Serverless Inference API.
+    """
+    url = f"https://api-inference.huggingface.co/models/{model}/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
     payload = {
-        "inputs": prompt,
-        "parameters": {
-            "max_new_tokens": 512,
-            "temperature": 0.7,
-            "top_p": 0.9,
-            "do_sample": True,
-            "return_full_text": False,
-        },
+        "model": model,
+        "messages": messages,
+        "max_tokens": 512,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "stream": False,
     }
     resp = http_requests.post(url, headers=headers, json=payload, timeout=30)
     resp.raise_for_status()
     data = resp.json()
-    if isinstance(data, list) and data:
-        return data[0].get("generated_text", "").strip()
-    raise ValueError(f"Unexpected HF response: {data}")
+    return data["choices"][0]["message"]["content"].strip()
 
 
 @chatbot_bp.route("/")
@@ -152,15 +136,11 @@ def chat():
         # ── Try Hugging Face ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
-            "HUGGINGFACE_MODEL", "mistralai/Mistral-7B-Instruct-v0.2"
+            "HUGGINGFACE_MODEL", "HuggingFaceH4/zephyr-7b-beta"
         )
         if hf_key:
             try:
                 answer = call_huggingface(messages, hf_key, hf_model)
-                # Strip any leftover instruction tokens
-                for tag in ["[INST]", "[/INST]", "<s>", "</s>", "<<SYS>>", "<</SYS>>"]:
-                    answer = answer.replace(tag, "")
-                answer = answer.strip()
                 if answer:
                     return jsonify({
                         "response": answer,
