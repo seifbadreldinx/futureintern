@@ -78,7 +78,7 @@ function AppContent() {
             <Route path="/points" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
             <Route path="/points-store" element={<ProtectedRoute><PointsStore /></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><GoogleOnboarding /></ProtectedRoute>} />
-            <Route path="/cv-builder" element={<ProtectedRoute><CVBuilder /></ProtectedRoute>} />
+            <Route path="/cv-builder" element={<ProtectedRoute role="student"><CVBuilder /></ProtectedRoute>} />
           </Routes>
         </main>
       </Suspense>

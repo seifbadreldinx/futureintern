@@ -810,6 +810,54 @@ export const api = {
     },
   },
 
+  // ========== CV Builder ==========
+  cv: {
+    get: async () => {
+      return apiRequest<{ cv: any | null; message?: string }>('/cv/');
+    },
+    saveHeader: async (data: {
+      headline?: string; summary?: string; phone?: string;
+      linkedin?: string; github?: string; website?: string;
+    }) => {
+      return apiRequest<{ message: string; cv: any }>('/cv/', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    addSection: async (data: {
+      section_type: string; title: string; subtitle?: string;
+      location?: string; start_date?: string; end_date?: string;
+      description?: string; order_index?: number;
+    }) => {
+      return apiRequest<{ message: string; section: any }>('/cv/sections', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    },
+    updateSection: async (id: number, data: {
+      title?: string; subtitle?: string; location?: string;
+      start_date?: string; end_date?: string; description?: string;
+      order_index?: number; section_type?: string;
+    }) => {
+      return apiRequest<{ message: string; section: any }>(`/cv/sections/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    },
+    deleteSection: async (id: number) => {
+      return apiRequest<{ message: string }>(`/cv/sections/${id}`, {
+        method: 'DELETE',
+      });
+    },
+    exportPDF: async () => {
+      const token = getAuthToken();
+      const response = await fetch(`${API_BASE_URL}/cv/export/pdf`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      return response;
+    },
+  },
+
   // ========== AI Chatbot ==========
   chatbot: {
     sendMessage: async (
