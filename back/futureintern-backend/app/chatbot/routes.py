@@ -1,7 +1,6 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from datetime import datetime
-import requests as http_requests
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
@@ -39,26 +38,20 @@ You are NOT just a FAQ bot — you can discuss resumes, career paths, interview 
 
 def call_huggingface(messages: list, api_key: str, model: str) -> str:
     """
-    Call Hugging Face Inference API using the OpenAI-compatible chat completions endpoint.
-    The base URL is fixed; the model is specified in the request body.
+    Call Hugging Face using the huggingface_hub InferenceClient.
+    This handles all API routing automatically.
     """
-    url = "https://api-inference.huggingface.co/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
-    payload = {
-        "model": model,
-        "messages": messages,
-        "max_tokens": 512,
-        "temperature": 0.7,
-        "top_p": 0.9,
-        "stream": False,
-    }
-    resp = http_requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data["choices"][0]["message"]["content"].strip()
+    from huggingface_hub import InferenceClient
+
+    client = InferenceClient(api_key=api_key)
+    response = client.chat_completion(
+        model=model,
+        messages=messages,
+        max_tokens=512,
+        temperature=0.7,
+        top_p=0.9,
+    )
+    return response.choices[0].message.content.strip()
 
 
 @chatbot_bp.route("/")
@@ -84,8 +77,7 @@ def status():
     if hf_key:
         try:
             test_msgs = [
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "Say hi in 5 words."},
+                {"role": "user", "content": "Say hello in exactly 5 words."},
             ]
             answer = call_huggingface(test_msgs, hf_key, hf_model)
             result["huggingface_test"] = "✅ OK"
@@ -102,7 +94,7 @@ def chat():
     try:
         data = request.get_json() or {}
         user_message = (data.get("message") or "").strip()
-        conversation_history = data.get("history", [])  # [{sender, text}, ...]
+        conversation_history = data.get("history", [])
 
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
@@ -126,11 +118,11 @@ def chat():
                         }), 402
                     db.session.commit()
         except Exception:
-            pass  # unauthenticated — still allow chatbot
+            pass
 
         # ── Build message list ──
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        for entry in conversation_history[-10:]:  # last 10 turns for context
+        for entry in conversation_history[-10:]:
             role = "user" if entry.get("sender") == "user" else "assistant"
             messages.append({"role": role, "content": entry.get("text", "")})
         messages.append({"role": "user", "content": user_message})
@@ -139,6 +131,7 @@ def chat():
         openai_key = current_app.config.get("OPENAI_API_KEY")
         if openai_key:
             try:
+                import requests as http_requests
                 r = http_requests.post(
                     "https://api.openai.com/v1/chat/completions",
                     headers={
@@ -163,7 +156,7 @@ def chat():
             except Exception as e:
                 current_app.logger.warning("OpenAI fallback: %s", e)
 
-        # ── Try Hugging Face ──
+        # ── Try Hugging Face (via huggingface_hub library) ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
             "HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct"
