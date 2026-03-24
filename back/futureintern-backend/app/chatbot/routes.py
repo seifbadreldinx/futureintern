@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, current_app
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from datetime import datetime
+import requests as http_requests
 
 chatbot_bp = Blueprint('chatbot', __name__)
 
@@ -36,22 +37,32 @@ SYSTEM_PROMPT = """You are FutureIntern AI, an intelligent career assistant buil
 You are NOT just a FAQ bot — you can discuss resumes, career paths, interview tips, salary expectations, industry trends, and anything career-related."""
 
 
+# The HF Inference Providers router endpoint (current as of 2026)
+HF_ROUTER_URL = "https://router.huggingface.co/hf-inference/models/{model}/v1/chat/completions"
+
+
 def call_huggingface(messages: list, api_key: str, model: str) -> str:
     """
-    Call Hugging Face using the huggingface_hub InferenceClient.
-    This handles all API routing automatically.
+    Call Hugging Face Inference via the router endpoint.
+    Uses the OpenAI-compatible chat completions format.
     """
-    from huggingface_hub import InferenceClient
-
-    client = InferenceClient(api_key=api_key)
-    response = client.chat_completion(
-        model=model,
-        messages=messages,
-        max_tokens=512,
-        temperature=0.7,
-        top_p=0.9,
-    )
-    return response.choices[0].message.content.strip()
+    url = HF_ROUTER_URL.format(model=model)
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+    }
+    payload = {
+        "model": model,
+        "messages": messages,
+        "max_tokens": 512,
+        "temperature": 0.7,
+        "top_p": 0.9,
+        "stream": False,
+    }
+    resp = http_requests.post(url, headers=headers, json=payload, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+    return data["choices"][0]["message"]["content"].strip()
 
 
 @chatbot_bp.route("/")
@@ -70,6 +81,7 @@ def status():
         "huggingface_key_set": bool(hf_key),
         "huggingface_key_prefix": hf_key[:8] + "..." if hf_key else None,
         "huggingface_model": hf_model,
+        "huggingface_url": HF_ROUTER_URL.format(model=hf_model),
         "openai_key_set": bool(openai_key),
     }
 
@@ -131,7 +143,6 @@ def chat():
         openai_key = current_app.config.get("OPENAI_API_KEY")
         if openai_key:
             try:
-                import requests as http_requests
                 r = http_requests.post(
                     "https://api.openai.com/v1/chat/completions",
                     headers={
@@ -156,7 +167,7 @@ def chat():
             except Exception as e:
                 current_app.logger.warning("OpenAI fallback: %s", e)
 
-        # ── Try Hugging Face (via huggingface_hub library) ──
+        # ── Try Hugging Face ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
             "HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct"
