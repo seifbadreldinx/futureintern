@@ -758,7 +758,7 @@ export function CVBuilder() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        .cvbuilder-root{background:${ui.bg};font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;transition:background 0.3s;height:calc(100vh - 64px);display:flex;flex-direction:column;}
+        .cvbuilder-root{background:${ui.bg};font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;transition:background 0.3s;height:calc(100vh - 64px);display:flex;flex-direction:row;}
         .cvbuilder-root *{box-sizing:border-box;}
         @keyframes sef{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
         @keyframes seb{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
