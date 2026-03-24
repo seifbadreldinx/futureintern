@@ -802,7 +802,7 @@ export function CVBuilder() {
         </div>
       )}
 
-      <div className="cvbuilder-root" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="cvbuilder-root" style={{ position: 'relative', zIndex: 1, marginTop: '96px' }}>
 
         <Sidebar step={step} accent={accent} ui={ui} isDark={isDark} onToggle={() => setIsDark(d => !d)} onJump={jumpTo} />
 

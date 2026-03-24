@@ -227,7 +227,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
             ))}
           </nav>
 
-          <div className="mt-6 pt-6 border-t-[3px] border-slate-900 dark:border-white">
+          <div className="mt-3">
+            <Link
+              to="/cv-builder"
+              className="w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border-[3px] border-transparent font-medium"
+            >
+              <FileText className="w-5 h-5" />
+              <span>CV Builder</span>
+            </Link>
+          </div>
+
+          <div className="mt-3 pt-6 border-t-[3px] border-slate-900 dark:border-white">
             <Link to="/points" className="w-full flex items-center justify-between px-4 py-3 bg-amber-400 dark:bg-amber-500 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all group">
               <div className="flex items-center space-x-3">
                 <Coins className="w-5 h-5 text-slate-900" />
