@@ -83,4 +83,4 @@ class Config:
     # Hugging Face (primary AI chatbot)
     # Phi-3-mini is free, fast, and confirmed available on the HF Inference API
     HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')
-    HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'microsoft/Phi-3-mini-4k-instruct')
+    HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'Qwen/Qwen2.5-72B-Instruct')

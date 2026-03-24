@@ -142,7 +142,7 @@ def status():
     """Diagnostic endpoint — tries ALL URL patterns and reports which works."""
     hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
     openai_key = current_app.config.get("OPENAI_API_KEY")
-    hf_model = current_app.config.get("HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct")
+    hf_model = current_app.config.get("HUGGINGFACE_MODEL", "Qwen/Qwen2.5-72B-Instruct")
 
     result = {
         "huggingface_key_set": bool(hf_key),
@@ -259,7 +259,7 @@ def chat():
         # ── Try Hugging Face (auto-discovers working URL) ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
-            "HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct"
+            "HUGGINGFACE_MODEL", "Qwen/Qwen2.5-72B-Instruct"
         )
         if hf_key:
             try:
