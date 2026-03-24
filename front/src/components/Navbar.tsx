@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, Shield, Coins, LogOut } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Shield, Coins, LogOut, FileText } from 'lucide-react';
 import { isAuthenticated, logout as doLogout } from '../utils/auth';
 import { useAuth } from '../context/AuthContext';
 import { ThemeToggle } from './ThemeToggle';
@@ -76,6 +76,13 @@ export function Navbar() {
                 </Link>
               )}
               <Link
+                to="/cv-builder"
+                className="flex items-center space-x-2 px-5 py-2.5 bg-rose-500 text-white border-[3px] border-slate-900 dark:border-white rounded-xl font-black shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-sm uppercase tracking-tighter"
+              >
+                <FileText className="w-4 h-4" />
+                <span className="hidden lg:inline">CV Builder</span>
+              </Link>
+              <Link
                 to={dashboardPath}
                 className="flex items-center space-x-2 px-6 py-2.5 bg-blue-600 text-white border-[3px] border-slate-900 dark:border-white rounded-xl font-black shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_#ffffff] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all text-lg uppercase tracking-tighter"
               >
@@ -145,6 +152,14 @@ export function Navbar() {
                       <span>Points: {user.points}</span>
                     </Link>
                   )}
+                  <Link
+                    to="/cv-builder"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-rose-500 text-white border-[3px] border-slate-900 rounded-xl font-black text-sm uppercase tracking-tighter"
+                  >
+                    <FileText className="w-5 h-5" />
+                    <span>CV Builder</span>
+                  </Link>
                   <Link
                     to={dashboardPath}
                     onClick={() => setMobileMenuOpen(false)}
