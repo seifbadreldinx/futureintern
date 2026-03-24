@@ -31,7 +31,6 @@ export function Navbar() {
     { to: '/#resources', label: 'Resources' },
     { to: '/about', label: 'About' },
     { to: '/contact', label: 'Contact' },
-    ...(isAuth ? [{ to: '/cv-builder', label: 'CV Builder' }] : []),
   ];
 
   return (
