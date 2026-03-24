@@ -1035,17 +1035,25 @@ export function CVBuilder() {
             </div>
             <div className="flex items-center gap-3 flex-wrap">
               <AutoSaveIndicator status={saveStatus} />
-              <button
-                onClick={handleExportPDF}
-                disabled={exporting || loading}
-                className="flex items-center gap-2 px-5 py-2.5 bg-rose-500 text-white font-bold text-sm rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-50 shadow-sm shadow-rose-200 dark:shadow-none"
-                aria-label="Download CV as PDF"
-              >
-                {exporting
-                  ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
-                Download PDF
-              </button>
+              <div className="flex flex-col items-end gap-1">
+                <button
+                  onClick={handleExportPDF}
+                  disabled={exporting || loading || !isCVComplete}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-rose-500 text-white font-bold text-sm rounded-xl hover:bg-rose-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-rose-200 dark:shadow-none"
+                  aria-label="Download CV as PDF"
+                  title={!isCVComplete ? 'Add a headline or summary and at least one section to enable download' : ''}
+                >
+                  {exporting
+                    ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    : <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>}
+                  Download PDF
+                </button>
+                {!loading && !isCVComplete && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    {sections.length === 0 ? 'Add at least one section' : 'Add a headline or summary'}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
