@@ -66,6 +66,36 @@ def index():
     return jsonify({"message": "FutureIntern AI Chatbot — powered by Hugging Face"})
 
 
+@chatbot_bp.route("/status")
+def status():
+    """Diagnostic endpoint — check if AI keys are configured and reachable."""
+    hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
+    openai_key = current_app.config.get("OPENAI_API_KEY")
+    hf_model = current_app.config.get("HUGGINGFACE_MODEL", "HuggingFaceH4/zephyr-7b-beta")
+
+    result = {
+        "huggingface_key_set": bool(hf_key),
+        "huggingface_key_prefix": hf_key[:8] + "..." if hf_key else None,
+        "huggingface_model": hf_model,
+        "openai_key_set": bool(openai_key),
+    }
+
+    # Test HF connection
+    if hf_key:
+        try:
+            test_msgs = [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "Say hi in 5 words."},
+            ]
+            answer = call_huggingface(test_msgs, hf_key, hf_model)
+            result["huggingface_test"] = "✅ OK"
+            result["huggingface_response"] = answer
+        except Exception as e:
+            result["huggingface_test"] = f"❌ FAILED: {str(e)}"
+
+    return jsonify(result), 200
+
+
 @chatbot_bp.route("/chat", methods=["POST"])
 def chat():
     """Main AI chat endpoint."""
