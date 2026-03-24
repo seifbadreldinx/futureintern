@@ -203,33 +203,71 @@ def export_pdf():
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib.units import cm
         from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
-        from reportlab.lib.enums import TA_LEFT, TA_CENTER
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Table, TableStyle
+        from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
         import io
+        import re as _re
+
+        # ── Date formatter (matches frontend formatDate) ──────────────────
+        _MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+        def fmt_date(raw):
+            if not raw:
+                return ''
+            if raw == 'Present':
+                return 'Present'
+            m = _re.match(r'^(\d{4})-(\d{2})$', raw)
+            if m:
+                year, month = m.groups()
+                idx = int(month) - 1
+                if 0 <= idx < 12:
+                    return f'{_MONTHS[idx]} {year}'
+            return raw
+
+        # ── ATS section label mapping ─────────────────────────────────────
+        ATS_LABELS = {
+            'education': 'EDUCATION',
+            'experience': 'WORK EXPERIENCE',
+            'projects': 'PROJECTS',
+            'skills': 'SKILLS',
+            'certifications': 'CERTIFICATIONS',
+            'other': 'OTHER',
+        }
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=A4,
                                 rightMargin=2*cm, leftMargin=2*cm,
                                 topMargin=2*cm, bottomMargin=2*cm)
 
-        styles = getSampleStyleSheet()
         elements = []
 
-        # ── Name & headline ──
+        # ── Styles ────────────────────────────────────────────────────────
         name_style = ParagraphStyle('name', fontSize=20, fontName='Helvetica-Bold',
                                     alignment=TA_CENTER, spaceAfter=4)
-        sub_style = ParagraphStyle('sub', fontSize=11, fontName='Helvetica',
-                                   alignment=TA_CENTER, textColor=colors.grey, spaceAfter=8)
-        body_style = ParagraphStyle('body', fontSize=10, fontName='Helvetica', spaceAfter=4)
-        section_title_style = ParagraphStyle('sec', fontSize=12, fontName='Helvetica-Bold',
-                                             spaceAfter=4, spaceBefore=10,
-                                             textColor=colors.HexColor('#1a1a2e'))
+        sub_style = ParagraphStyle('sub', fontSize=10, fontName='Helvetica',
+                                   alignment=TA_CENTER, textColor=colors.HexColor('#555555'), spaceAfter=4)
+        contact_style = ParagraphStyle('contact', fontSize=9, fontName='Helvetica',
+                                       alignment=TA_CENTER, textColor=colors.HexColor('#555555'), spaceAfter=8)
+        body_style = ParagraphStyle('body', fontSize=9.5, fontName='Helvetica',
+                                    spaceAfter=3, leading=14)
+        section_title_style = ParagraphStyle('sec', fontSize=10, fontName='Helvetica-Bold',
+                                             spaceAfter=3, spaceBefore=10,
+                                             textTransform='uppercase')
+        item_title_style = ParagraphStyle('ititle', fontSize=10, fontName='Helvetica-Bold',
+                                          spaceAfter=1)
+        item_date_style = ParagraphStyle('idate', fontSize=9, fontName='Helvetica',
+                                         textColor=colors.HexColor('#555555'),
+                                         alignment=TA_RIGHT, spaceAfter=1)
+        item_sub_style = ParagraphStyle('isub', fontSize=9.5, fontName='Helvetica-Oblique',
+                                        textColor=colors.HexColor('#444444'), spaceAfter=2)
 
+        # ── Name ─────────────────────────────────────────────────────────
         elements.append(Paragraph(user.name or '', name_style))
         if cv.headline:
             elements.append(Paragraph(cv.headline, sub_style))
 
-        # Contact line
+        # ── Contact line (all fields) ─────────────────────────────────────
         contacts = []
         if user.email:
             contacts.append(user.email)
@@ -237,46 +275,76 @@ def export_pdf():
             contacts.append(cv.phone)
         if cv.linkedin:
             contacts.append(cv.linkedin)
+        if cv.github:
+            contacts.append(cv.github)
+        if cv.website:
+            contacts.append(cv.website)
         if contacts:
-            elements.append(Paragraph(' | '.join(contacts), sub_style))
+            elements.append(Paragraph('  |  '.join(contacts), contact_style))
 
-        elements.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#1a1a2e')))
-        elements.append(Spacer(1, 8))
+        elements.append(HRFlowable(width='100%', thickness=1.5, color=colors.HexColor('#1a1a1a')))
+        elements.append(Spacer(1, 6))
 
-        # Summary
+        # ── Summary ───────────────────────────────────────────────────────
         if cv.summary:
-            elements.append(Paragraph('Summary', section_title_style))
+            elements.append(Paragraph('SUMMARY', section_title_style))
+            elements.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#cccccc')))
+            elements.append(Spacer(1, 3))
             elements.append(Paragraph(cv.summary, body_style))
-            elements.append(Spacer(1, 6))
+            elements.append(Spacer(1, 4))
 
-        # Group sections by type
+        # ── Sections ──────────────────────────────────────────────────────
         section_order = ['education', 'experience', 'projects', 'skills', 'certifications', 'other']
         grouped = {}
         for s in cv.sections:
             grouped.setdefault(s.section_type, []).append(s)
 
+        # available width inside margins
+        page_w = A4[0] - 4 * cm  # left 2cm + right 2cm
+
         for sec_type in section_order:
             if sec_type not in grouped:
                 continue
-            elements.append(Paragraph(sec_type.capitalize(), section_title_style))
-            elements.append(HRFlowable(width='100%', thickness=0.5, color=colors.lightgrey))
-            elements.append(Spacer(1, 4))
+
+            label = ATS_LABELS.get(sec_type, sec_type.upper())
+            elements.append(Paragraph(label, section_title_style))
+            elements.append(HRFlowable(width='100%', thickness=0.5, color=colors.HexColor('#cccccc')))
+            elements.append(Spacer(1, 3))
 
             for item in grouped[sec_type]:
-                if item.title:
-                    bold = ParagraphStyle('bold', fontSize=10, fontName='Helvetica-Bold')
-                    date_str = ''
-                    if item.start_date:
-                        date_str = f'{item.start_date} – {item.end_date or "Present"}'
-                    header = f'{item.title}'
-                    if item.subtitle:
-                        header += f' | {item.subtitle}'
-                    if date_str:
-                        header += f'  ({date_str})'
-                    elements.append(Paragraph(header, bold))
+                # Title + date as a two-column table row
+                start_fmt = fmt_date(item.start_date)
+                end_fmt = fmt_date(item.end_date) if item.end_date else ''
+                if item.end_date == 'Present' or not item.end_date:
+                    end_fmt = 'Present' if item.start_date else ''
+                date_str = f'{start_fmt} – {end_fmt}' if start_fmt else end_fmt
+
+                title_cell = Paragraph(item.title or '', item_title_style)
+                date_cell = Paragraph(date_str, item_date_style)
+
+                title_table = Table(
+                    [[title_cell, date_cell]],
+                    colWidths=[page_w * 0.68, page_w * 0.32],
+                )
+                title_table.setStyle(TableStyle([
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                    ('LEFTPADDING', (0, 0), (-1, -1), 0),
+                    ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+                    ('TOPPADDING', (0, 0), (-1, -1), 0),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+                ]))
+                elements.append(title_table)
+
+                # Subtitle · location
+                if item.subtitle or item.location:
+                    sub_parts = [p for p in [item.subtitle, item.location] if p]
+                    elements.append(Paragraph(' · '.join(sub_parts), item_sub_style))
+
+                # Description
                 if item.description:
                     elements.append(Paragraph(item.description, body_style))
-                elements.append(Spacer(1, 4))
+
+                elements.append(Spacer(1, 5))
 
         doc.build(elements)
         buffer.seek(0)
