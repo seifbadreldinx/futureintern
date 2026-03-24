@@ -1,284 +1,298 @@
 import { useState, useRef, useEffect } from 'react';
-import { MessageCircle, Send, Minimize2 } from 'lucide-react';
-import { containsArabic } from '../services/chatbotService';
+import {
+  Send, Bot, Sparkles, RotateCcw, ChevronDown, X,
+} from 'lucide-react';
+import { api } from '../services/api';
 
 interface Message {
   id: string;
   text: string;
   sender: 'user' | 'bot';
   timestamp: Date;
-  isArabic?: boolean;
 }
 
-const QUICK_REPLIES = [
-  "How to apply for internships?",
-  "How to upload my CV?",
-  "How does matching work?",
-  "Contact support"
+const WELCOME = `👋 Hi! I'm **FutureIntern AI** — your personal career assistant.
+
+I can help you with:
+• Finding & applying for internships
+• Resume & CV tips
+• Interview preparation
+• Navigating the platform
+
+What's on your mind?`;
+
+const SUGGESTIONS = [
+  "How do I apply for internships?",
+  "Give me CV tips",
+  "How does AI matching work?",
+  "Interview preparation tips",
 ];
 
-const QUICK_REPLIES_ARABIC = [
-  "كيف أتقدم للتدريب؟",
-  "كيف أرفع سيرتي الذاتية؟",
-  "كيف يعمل نظام المطابقة؟",
-  "اتصل بالدعم"
-];
-
-const GREETING_MESSAGE = "Hi! I'm your FutureIntern assistant. How can I help you today?";
-const GREETING_MESSAGE_ARABIC = "مرحباً! أنا مساعد FutureIntern. كيف يمكنني مساعدتك اليوم؟";
+// Simple markdown-like bold renderer
+function renderText(text: string) {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    // Render line breaks
+    return part.split('\n').map((line, j, arr) => (
+      <span key={`${i}-${j}`}>
+        {line}
+        {j < arr.length - 1 && <br />}
+      </span>
+    ));
+  });
+}
 
 export function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [preferredLanguage, setPreferredLanguage] = useState<'en' | 'ar'>('en');
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: GREETING_MESSAGE,
-      sender: 'bot',
-      timestamp: new Date(),
-      isArabic: false
-    }
+    { id: '0', text: WELCOME, sender: 'bot', timestamp: new Date() },
   ]);
-  const [inputValue, setInputValue] = useState('');
+  const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      scrollToBottom();
-      // Focus input when chat opens
-      setTimeout(() => inputRef.current?.focus(), 100);
+      bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [messages, isOpen]);
 
-  const handleQuickReply = async (text: string) => {
-    setInputValue(text);
-    await handleSendMessage(text);
-  };
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isTyping) return;
+    setShowSuggestions(false);
 
-  const handleSendMessage = async (text?: string) => {
-    const messageText = text || inputValue.trim();
-    if (!messageText) return;
-
-    // Detect if message contains Arabic
-    const messageIsArabic = containsArabic(messageText);
-    if (messageIsArabic) {
-      setPreferredLanguage('ar');
-    }
-
-    // Build conversation history BEFORE adding the new message
-    // (exclude the initial greeting message)
-    const conversationHistory = messages
-      .filter(msg => msg.id !== '1') // Exclude the greeting message
-      .map(msg => ({
-        text: msg.text,
-        sender: msg.sender
-      }));
-
-    // Add user message
-    const userMessage: Message = {
+    const userMsg: Message = {
       id: Date.now().toString(),
-      text: messageText,
+      text: text.trim(),
       sender: 'user',
       timestamp: new Date(),
-      isArabic: messageIsArabic
     };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
     setIsTyping(true);
 
+    // Build history (exclude welcome message)
+    const history = messages
+      .filter(m => m.id !== '0')
+      .map(m => ({ sender: m.sender, text: m.text }));
+
     try {
-      // Import and call the chatbot service
-      const { getChatbotResponse } = await import('../services/chatbotService');
-
-      const response = await getChatbotResponse(messageText, conversationHistory);
-
-      // Detect if response contains Arabic
-      const responseIsArabic = containsArabic(response);
-      if (responseIsArabic) {
-        setPreferredLanguage('ar');
-      }
-
-      const botMessage: Message = {
+      const res = await api.chatbot.sendMessage(text.trim(), history);
+      const botMsg: Message = {
         id: (Date.now() + 1).toString(),
-        text: response,
+        text: res.response || "I'm not sure about that. Try rephrasing!",
         sender: 'bot',
         timestamp: new Date(),
-        isArabic: responseIsArabic
       };
-
-      setMessages(prev => [...prev, botMessage]);
-    } catch (error) {
-      console.error('Chatbot error:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: preferredLanguage === 'ar'
-          ? "عذراً، لم أتمكن من الحصول على إجابة. يرجى المحاولة مرة أخرى أو الاتصال بالدعم."
-          : "Sorry, I couldn't get an answer. Please try again or contact support.",
-        sender: 'bot',
-        timestamp: new Date(),
-        isArabic: preferredLanguage === 'ar'
-      };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prev => [...prev, botMsg]);
+    } catch (err: any) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: err?.message?.includes('402')
+            ? "⚠️ You've run out of chatbot points. Visit the Points Store to get more!"
+            : "Sorry, I couldn't connect right now. Please try again in a moment.",
+          sender: 'bot',
+          timestamp: new Date(),
+        },
+      ]);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleSendMessage();
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input);
+    }
   };
 
-  const toggleChat = () => {
-    setIsOpen(!isOpen);
-    // Reset to default language when closing
-    if (isOpen) {
-      setPreferredLanguage('en');
-    }
+  const clearChat = () => {
+    setMessages([{ id: '0', text: WELCOME, sender: 'bot', timestamp: new Date() }]);
+    setShowSuggestions(true);
   };
 
   return (
     <>
-      {/* Chat Button */}
+      {/* FAB Button */}
       {!isOpen && (
         <button
-          onClick={toggleChat}
-          className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center z-50 group animate-scale-in"
-          aria-label="Open chat"
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full flex items-center justify-center z-50 shadow-2xl transition-all duration-300 hover:scale-110 group"
+          style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '2px solid #f43f5e' }}
+          aria-label="Open AI chat"
         >
-          <MessageCircle className="w-6 h-6 group-hover:scale-110 transition-transform" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-gray-600 rounded-full border-2 border-white animate-pulse"></span>
+          <Bot className="w-6 h-6 text-white group-hover:scale-110 transition-transform" />
+          {/* Pulse ring */}
+          <span className="absolute inset-0 rounded-full border-2 border-rose-500 animate-ping opacity-40" />
+          {/* AI badge */}
+          <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[8px] font-black px-1 rounded-full border border-white">AI</span>
         </button>
       )}
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-8rem)] sm:h-[600px] max-h-[calc(100vh-8rem)] bg-white rounded-2xl shadow-2xl flex flex-col z-50 border border-gray-200 animate-scale-in">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-4 rounded-t-2xl flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <MessageCircle className="w-5 h-5" />
+        <div
+          className="fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl"
+          style={{
+            width: 'min(420px, calc(100vw - 2rem))',
+            height: 'min(620px, calc(100vh - 6rem))',
+            background: 'white',
+            border: '3px solid #0f172a',
+            boxShadow: '8px 8px 0px 0px #0f172a',
+          }}
+        >
+          {/* ── Header ── */}
+          <div
+            className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+            style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)', borderBottom: '2px solid #f43f5e' }}
+          >
+            <div className="relative">
+              <div className="w-9 h-9 rounded-xl bg-rose-500/20 border-2 border-rose-500/50 flex items-center justify-center">
+                <Bot className="w-5 h-5 text-rose-400" />
               </div>
-              <div>
-                <h3 className="font-semibold">FutureIntern Assistant</h3>
-                <p className="text-xs text-gray-300">We're here to help</p>
-              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-slate-900" />
             </div>
-            <button
-              onClick={toggleChat}
-              className="p-1 hover:bg-white/20 rounded-lg transition-colors"
-              aria-label="Close chat"
-            >
-              <Minimize2 className="w-5 h-5" />
-            </button>
+            <div className="flex-1 min-w-0">
+              <p className="text-white font-black text-sm tracking-tight leading-none">FutureIntern AI</p>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-0.5 flex items-center gap-1">
+                <Sparkles className="w-2.5 h-2.5 text-amber-400" /> Powered by Hugging Face
+              </p>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={clearChat}
+                title="Clear chat"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                title="Minimize"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                title="Close"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-white/10 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-            {messages.map((message) => {
-              const isArabic = message.isArabic || containsArabic(message.text);
-              return (
-                <div
-                  key={message.id}
-                  className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${message.sender === 'user'
-                        ? 'bg-gray-900 text-white rounded-br-sm'
-                        : 'bg-white text-gray-800 rounded-bl-sm shadow-sm border border-gray-200'
-                      }`}
-                    dir={isArabic ? 'rtl' : 'ltr'}
-                  >
-                    <p className={`text-sm whitespace-pre-wrap break-words ${isArabic ? 'text-right' : 'text-left'}`}>
-                      {message.text}
-                    </p>
-                    <span className={`text-xs mt-1 block ${message.sender === 'user' ? 'text-gray-300' : 'text-gray-400'} ${isArabic ? 'text-right' : 'text-left'}`}>
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
+          {/* ── Messages ── */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4" style={{ background: '#f8fafc' }}>
+            {messages.map(msg => (
+              <div key={msg.id} className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                {msg.sender === 'bot' && (
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0 mt-1 border-2 border-rose-500/30">
+                    <Bot className="w-3.5 h-3.5 text-rose-400" />
                   </div>
+                )}
+                <div
+                  className={`max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    msg.sender === 'user'
+                      ? 'bg-slate-900 text-white rounded-br-sm shadow-md'
+                      : 'bg-white text-slate-800 rounded-bl-sm shadow-sm border border-slate-200'
+                  }`}
+                >
+                  <p className="whitespace-pre-wrap break-words">{renderText(msg.text)}</p>
+                  <span className={`text-[10px] mt-1.5 block font-bold ${msg.sender === 'user' ? 'text-slate-400 text-right' : 'text-slate-400'}`}>
+                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 </div>
-              );
-            })}
+              </div>
+            ))}
 
-            {/* Typing Indicator */}
+            {/* Typing indicator */}
             {isTyping && (
-              <div className="flex justify-start">
-                <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm shadow-sm border border-gray-200 px-4 py-3">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+              <div className="flex gap-2 justify-start">
+                <div className="w-7 h-7 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0 border-2 border-rose-500/30">
+                  <Bot className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <div className="bg-white rounded-2xl rounded-bl-sm px-4 py-3 shadow-sm border border-slate-200">
+                  <div className="flex gap-1.5 items-center h-4">
+                    {[0, 150, 300].map(delay => (
+                      <span
+                        key={delay}
+                        className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                        style={{ animationDelay: `${delay}ms` }}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Quick Replies (show after every bot response) */}
-            {messages.length > 0 &&
-              !isTyping &&
-              messages[messages.length - 1]?.sender === 'bot' && (
-                <div className="space-y-2 mt-2" dir={preferredLanguage === 'ar' ? 'rtl' : 'ltr'}>
-                  <p className={`text-xs text-gray-500 mb-2 ${preferredLanguage === 'ar' ? 'text-right' : 'text-left'}`}>
-                    {preferredLanguage === 'ar' ? 'أسئلة سريعة:' : 'Quick questions:'}
-                  </p>
-                  {(preferredLanguage === 'ar' ? QUICK_REPLIES_ARABIC : QUICK_REPLIES).map((reply, index) => (
+            {/* Suggestions */}
+            {showSuggestions && !isTyping && messages[messages.length - 1]?.sender === 'bot' && (
+              <div className="space-y-2 pt-1">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Quick questions</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {SUGGESTIONS.map(s => (
                     <button
-                      key={index}
-                      onClick={() => handleQuickReply(reply)}
-                      className={`w-full px-4 py-2 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 rounded-lg border border-gray-200 hover:border-gray-300 transition-all text-sm shadow-sm ${preferredLanguage === 'ar' ? 'text-right' : 'text-left'
-                        }`}
+                      key={s}
+                      onClick={() => sendMessage(s)}
+                      className="px-3 py-2 bg-white text-slate-700 hover:bg-slate-900 hover:text-white rounded-xl border-2 border-slate-200 hover:border-slate-900 transition-all text-xs font-bold text-left shadow-sm hover:shadow-md"
                     >
-                      {reply}
+                      {s}
                     </button>
                   ))}
                 </div>
-              )}
+              </div>
+            )}
 
-            <div ref={messagesEndRef} />
+            <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
-          <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-200 rounded-b-2xl">
-            <div className="flex space-x-2">
-              <input
+          {/* ── Input ── */}
+          <div className="flex-shrink-0 px-3 py-3" style={{ background: 'white', borderTop: '2px solid #e2e8f0' }}>
+            <div
+              className="flex items-end gap-2 rounded-xl border-2 border-slate-200 focus-within:border-slate-900 transition-colors px-3 py-2"
+              style={{ background: '#f8fafc' }}
+            >
+              <textarea
                 ref={inputRef}
-                id="chatbot-message"
-                name="chatbot_message"
-                type="text"
-                value={inputValue}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setInputValue(value);
-                  // Detect Arabic and update language preference
-                  if (containsArabic(value)) {
-                    setPreferredLanguage('ar');
-                  }
+                rows={1}
+                value={input}
+                onChange={e => {
+                  setInput(e.target.value);
+                  // auto-resize
+                  e.target.style.height = 'auto';
+                  e.target.style.height = `${Math.min(e.target.scrollHeight, 96)}px`;
                 }}
-                placeholder={preferredLanguage === 'ar' ? 'اكتب رسالتك...' : 'Type your message...'}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent text-sm"
-                dir={containsArabic(inputValue) ? 'rtl' : 'ltr'}
+                onKeyDown={handleKeyDown}
                 disabled={isTyping}
+                placeholder="Ask me anything..."
+                className="flex-1 bg-transparent resize-none text-sm text-slate-900 placeholder-slate-400 focus:outline-none max-h-24 font-medium"
+                style={{ minHeight: '24px', lineHeight: '1.5' }}
               />
               <button
-                type="submit"
-                disabled={!inputValue.trim() || isTyping}
-                className="px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                onClick={() => sendMessage(input)}
+                disabled={!input.trim() || isTyping}
+                className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center flex-shrink-0 transition-all hover:bg-rose-500 disabled:opacity-30 disabled:cursor-not-allowed hover:scale-105"
               >
-                <Send className="w-4 h-4" />
+                <Send className="w-3.5 h-3.5" />
               </button>
             </div>
-          </form>
+            <p className="text-center text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2">
+              Shift+Enter for new line · Enter to send
+            </p>
+          </div>
         </div>
       )}
     </>
   );
 }
-

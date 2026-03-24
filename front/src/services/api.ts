@@ -699,16 +699,6 @@ export const api = {
     },
   },
 
-  // ========== Chatbot ==========
-  chatbot: {
-    // Send message to chatbot
-    sendMessage: async (message: string) => {
-      return apiRequest<any>('/chatbot/chat', {
-        method: 'POST',
-        body: JSON.stringify({ message }),
-      });
-    },
-  },
 
   // ========== Points System ==========
   points: {
@@ -818,12 +808,22 @@ export const api = {
         body: JSON.stringify({ note }),
       });
     },
-    testEmail: async (email: string) => {
-      return apiRequest<any>('/admin/test-email', {
-        method: 'POST',
-        body: JSON.stringify({ email }),
-        _timeout: 60000,
-      } as any);
+  },
+
+  // ========== AI Chatbot ==========
+  chatbot: {
+    sendMessage: async (
+      message: string,
+      history: { sender: string; text: string }[] = []
+    ) => {
+      return apiRequest<{ response: string; provider: string; timestamp: string }>(
+        '/chatbot/chat',
+        {
+          method: 'POST',
+          body: JSON.stringify({ message, history }),
+          _timeout: 35000,
+        } as any
+      );
     },
   },
 };
