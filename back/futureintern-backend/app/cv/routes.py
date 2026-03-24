@@ -244,9 +244,10 @@ def export_pdf():
 
         # ── Styles ────────────────────────────────────────────────────────
         name_style = ParagraphStyle('name', fontSize=20, fontName='Helvetica-Bold',
-                                    alignment=TA_CENTER, spaceAfter=4)
+                                    alignment=TA_CENTER, spaceAfter=6, leading=26)
         sub_style = ParagraphStyle('sub', fontSize=10, fontName='Helvetica',
-                                   alignment=TA_CENTER, textColor=colors.HexColor('#555555'), spaceAfter=4)
+                                   alignment=TA_CENTER, textColor=colors.HexColor('#555555'),
+                                   spaceBefore=4, spaceAfter=4)
         contact_style = ParagraphStyle('contact', fontSize=9, fontName='Helvetica',
                                        alignment=TA_CENTER, textColor=colors.HexColor('#555555'), spaceAfter=8)
         body_style = ParagraphStyle('body', fontSize=9.5, fontName='Helvetica',
