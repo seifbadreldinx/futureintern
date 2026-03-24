@@ -239,7 +239,7 @@ const LoadingSkeleton: FC = () => (
   <div className="space-y-4">
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700 p-6 space-y-4">
       <Skeleton className="h-5 w-32" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-10" />)}
       </div>
       <Skeleton className="h-24" />
@@ -336,7 +336,7 @@ const HeaderEditor: FC<HeaderEditorProps> = ({ header, onChange, userName, userE
 
       <div className="p-5 space-y-4">
         {/* Read-only from profile */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Full Name</label>
             <div className="w-full rounded-lg border border-gray-200 dark:border-slate-600 px-3 py-2 text-sm bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 flex items-center gap-2">
@@ -371,7 +371,7 @@ const HeaderEditor: FC<HeaderEditorProps> = ({ header, onChange, userName, userE
           atsTip="Use keywords from the job description. Avoid pronouns (I, me). Aim for 50–120 words."
         />
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <ATSField label="Phone" value={header.phone} onChange={set('phone')} type="tel" placeholder="+20 1XX XXX XXXX" />
           <ATSField label="LinkedIn URL" value={header.linkedin} onChange={set('linkedin')} type="url" placeholder="linkedin.com/in/yourname" />
           <ATSField label="GitHub URL" value={header.github} onChange={set('github')} type="url" placeholder="github.com/yourname" />
@@ -418,7 +418,7 @@ const SectionCard: FC<SectionCardProps> = ({ section, onEdit, onDelete, dragHand
           className="shrink-0 text-xs font-bold px-2 py-1 rounded-md"
           style={{ background: cfg.bg, color: cfg.color }}
         >
-          {cfg.icon} {cfg.label}
+          {cfg.icon} <span className="hidden sm:inline">{cfg.label}</span>
         </span>
 
         {/* Content preview */}
@@ -589,7 +589,7 @@ const SectionModal: FC<SectionModalProps> = ({ initial, onSave, onClose }) => {
           {!initial && (
             <div>
               <label className="block text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide mb-2">Section Type</label>
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
                 {SECTION_TYPES.map(t => {
                   const c = SECTION_CONFIG[t];
                   return (
@@ -1144,7 +1144,7 @@ export function CVBuilder() {
             </div>
 
             {/* ── Right: A4 Preview ── */}
-            <div className={`shrink-0 xl:w-[420px] ${activeView === 'editor' ? 'hidden xl:block' : ''}`}>
+            <div className={`shrink-0 xl:w-[420px] w-full max-w-lg mx-auto xl:mx-0 xl:max-w-none ${activeView === 'editor' ? 'hidden xl:block' : ''}`}>
               <div className="xl:sticky xl:top-28">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide flex items-center gap-1.5">
