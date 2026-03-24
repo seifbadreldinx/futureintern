@@ -39,10 +39,11 @@ You are NOT just a FAQ bot — you can discuss resumes, career paths, interview 
 
 # All possible HuggingFace endpoint URL patterns to try (in order)
 HF_URL_PATTERNS = [
+    "https://router.huggingface.co/v1/chat/completions",
     "https://router.huggingface.co/hf-inference/v1/chat/completions",
     "https://router.huggingface.co/hf-inference/models/{model}/v1/chat/completions",
-    "https://api-inference.huggingface.co/models/{model}/v1/chat/completions",
     "https://api-inference.huggingface.co/v1/chat/completions",
+    "https://api-inference.huggingface.co/models/{model}/v1/chat/completions",
     "https://api-inference.huggingface.co/models/{model}",
 ]
 
