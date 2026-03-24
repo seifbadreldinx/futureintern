@@ -758,7 +758,7 @@ export function CVBuilder() {
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        .cvbuilder-root{background:${ui.bg};font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;transition:background 0.3s;height:calc(100vh - 64px);display:flex;flex-direction:row;}
+        .cvbuilder-root{background:${ui.bg};font-family:'Plus Jakarta Sans',sans-serif;overflow:hidden;transition:background 0.3s;height:calc(100vh - 96px);display:flex;flex-direction:row;}
         .cvbuilder-root *{box-sizing:border-box;}
         @keyframes sef{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
         @keyframes seb{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
@@ -809,7 +809,7 @@ export function CVBuilder() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
 
           {/* Top bar */}
-          <div style={{ height: '56px', borderBottom: `1px solid ${ui.border}`, padding: '0 26px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: ui.navBg, flexShrink: 0, transition: 'background 0.3s' }}>
+          <div style={{ height: '48px', borderBottom: `1px solid ${ui.border}`, padding: '0 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: ui.navBg, flexShrink: 0, transition: 'background 0.3s' }}>
             <div>
               <div style={{ fontSize: '13px', color: ui.text, fontFamily: "'Syne',sans-serif", fontWeight: 650 }}>{STEPS[step].label}</div>
               <div style={{ fontSize: '9px', color: ui.textMuted, marginTop: '1px' }}>{STEPS[step].desc}</div>
@@ -830,14 +830,14 @@ export function CVBuilder() {
           <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
             {/* Form area */}
-            <div className="fscroll" style={{ flex: 1, overflowY: 'auto', padding: isPreview ? '22px' : '24px 32px' }}>
+            <div className="fscroll" style={{ flex: 1, overflowY: 'auto', padding: isPreview ? '16px 20px' : '16px 24px' }}>
 
               {/* Completeness + ATS panels (visible on all steps) */}
               {!isPreview && (
-                <>
+                <div style={{ maxWidth: '820px', margin: '0 auto', width: '100%' }}>
                   <CompletenessBar data={data} accent={accent} ui={ui} />
                   <ATSPanel data={data} accent={accent} ui={ui} />
-                </>
+                </div>
               )}
 
               {/* Preview toolbar */}
@@ -874,16 +874,16 @@ export function CVBuilder() {
                 </div>
               )}
 
-              <div className={animClass}>
-                {step === 0 && <div style={{ background: ui.card, borderRadius: '16px', padding: '28px 28px 20px', boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${ui.border}` }}><Step1 data={data.personal} onChange={p => setData({ ...data, personal: p })} accent={accent} ui={ui} errors={errors} /></div>}
-                {step === 1 && <div style={{ background: ui.card, borderRadius: '16px', padding: '28px 28px 20px', boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${ui.border}` }}><Step2 data={data.academic} onChange={a => setData({ ...data, academic: a })} accent={accent} ui={ui} errors={errors} /></div>}
+              <div className={animClass} style={{ maxWidth: '820px', margin: '0 auto', width: '100%' }}>
+                {step === 0 && <div style={{ background: ui.card, borderRadius: '14px', padding: '20px 22px 16px', boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${ui.border}` }}><Step1 data={data.personal} onChange={p => setData({ ...data, personal: p })} accent={accent} ui={ui} errors={errors} /></div>}
+                {step === 1 && <div style={{ background: ui.card, borderRadius: '14px', padding: '20px 22px 16px', boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.05)', border: `1px solid ${ui.border}` }}><Step2 data={data.academic} onChange={a => setData({ ...data, academic: a })} accent={accent} ui={ui} errors={errors} /></div>}
                 {step === 2 && <div id="cvp">{template==='modern'&&<CVModern data={data} accent={accent}/>}{template==='classic'&&<CVClassic data={data} accent={accent}/>}{template==='minimal'&&<CVMinimal data={data} accent={accent}/>}</div>}
               </div>
             </div>
 
             {/* Live Preview panel */}
             {!isPreview && (
-              <div style={{ width: '305px', flexShrink: 0, borderLeft: `1px solid ${ui.border}`, background: ui.previewShell, display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}>
+              <div style={{ width: '270px', flexShrink: 0, borderLeft: `1px solid ${ui.border}`, background: ui.previewShell, display: 'flex', flexDirection: 'column', transition: 'background 0.3s' }}>
                 <div style={{ padding: '9px 13px', borderBottom: `1px solid ${ui.border}`, display: 'flex', alignItems: 'center', gap: '7px', flexShrink: 0 }}>
                   <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: accent, boxShadow: `0 0 7px ${accent}88` }} />
                   <span style={{ fontSize: '8.5px', letterSpacing: '2.5px', color: ui.textMuted, textTransform: 'uppercase', fontFamily: "'Plus Jakarta Sans',sans-serif", fontWeight: 650 }}>Live Preview</span>
