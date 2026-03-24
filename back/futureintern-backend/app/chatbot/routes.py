@@ -37,21 +37,32 @@ SYSTEM_PROMPT = """You are FutureIntern AI, an intelligent career assistant buil
 You are NOT just a FAQ bot — you can discuss resumes, career paths, interview tips, salary expectations, industry trends, and anything career-related."""
 
 
-# The HF Inference Providers router endpoint (current as of 2026)
-HF_ROUTER_URL = "https://router.huggingface.co/hf-inference/models/{model}/v1/chat/completions"
+# All possible HuggingFace endpoint URL patterns to try (in order)
+HF_URL_PATTERNS = [
+    "https://router.huggingface.co/hf-inference/v1/chat/completions",
+    "https://router.huggingface.co/hf-inference/models/{model}/v1/chat/completions",
+    "https://api-inference.huggingface.co/models/{model}/v1/chat/completions",
+    "https://api-inference.huggingface.co/v1/chat/completions",
+    "https://api-inference.huggingface.co/models/{model}",
+]
+
+# Will be set after /status discovers the working URL
+_working_url_pattern = None
 
 
-def call_huggingface(messages: list, api_key: str, model: str) -> str:
+def call_huggingface(messages: list, api_key: str, model: str, url_pattern: str = None) -> str:
     """
-    Call Hugging Face Inference via the router endpoint.
-    Uses the OpenAI-compatible chat completions format.
+    Call Hugging Face Inference API.
+    If url_pattern is provided, use it directly.
+    Otherwise, try all known URL patterns.
     """
-    url = HF_ROUTER_URL.format(model=model)
     headers = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
-    payload = {
+
+    # OpenAI-compatible payload (for chat/completions endpoints)
+    chat_payload = {
         "model": model,
         "messages": messages,
         "max_tokens": 512,
@@ -59,10 +70,65 @@ def call_huggingface(messages: list, api_key: str, model: str) -> str:
         "top_p": 0.9,
         "stream": False,
     }
-    resp = http_requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data["choices"][0]["message"]["content"].strip()
+
+    # Legacy text-generation payload
+    def build_prompt(msgs):
+        prompt = ""
+        for m in msgs:
+            if m["role"] == "system":
+                prompt += f"System: {m['content']}\n\n"
+            elif m["role"] == "user":
+                prompt += f"User: {m['content']}\n"
+            elif m["role"] == "assistant":
+                prompt += f"Assistant: {m['content']}\n"
+        prompt += "Assistant:"
+        return prompt
+
+    patterns = [url_pattern] if url_pattern else HF_URL_PATTERNS
+    last_error = None
+
+    for pattern in patterns:
+        url = pattern.format(model=model) if "{model}" in pattern else pattern
+
+        # For legacy text-gen endpoint (no /chat/completions)
+        if url.endswith(f"/models/{model}") and "/v1/" not in url:
+            payload = {
+                "inputs": build_prompt(messages),
+                "parameters": {
+                    "max_new_tokens": 512,
+                    "temperature": 0.7,
+                    "return_full_text": False,
+                },
+            }
+        else:
+            payload = chat_payload
+
+        try:
+            resp = http_requests.post(url, headers=headers, json=payload, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+
+            # Parse response based on format
+            if isinstance(data, list) and data:
+                # Legacy text-generation format
+                text = data[0].get("generated_text", "").strip()
+            elif isinstance(data, dict) and "choices" in data:
+                # OpenAI-compatible format
+                text = data["choices"][0]["message"]["content"].strip()
+            else:
+                continue
+
+            if text:
+                # Remember the working pattern for future calls
+                global _working_url_pattern
+                _working_url_pattern = pattern
+                return text
+
+        except Exception as e:
+            last_error = f"{url}: {str(e)}"
+            continue
+
+    raise RuntimeError(f"All HF URL patterns failed. Last error: {last_error}")
 
 
 @chatbot_bp.route("/")
@@ -72,7 +138,7 @@ def index():
 
 @chatbot_bp.route("/status")
 def status():
-    """Diagnostic endpoint — check if AI keys are configured and reachable."""
+    """Diagnostic endpoint — tries ALL URL patterns and reports which works."""
     hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
     openai_key = current_app.config.get("OPENAI_API_KEY")
     hf_model = current_app.config.get("HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct")
@@ -81,21 +147,43 @@ def status():
         "huggingface_key_set": bool(hf_key),
         "huggingface_key_prefix": hf_key[:8] + "..." if hf_key else None,
         "huggingface_model": hf_model,
-        "huggingface_url": HF_ROUTER_URL.format(model=hf_model),
         "openai_key_set": bool(openai_key),
+        "url_tests": {},
     }
 
-    # Test HF connection
-    if hf_key:
+    if not hf_key:
+        return jsonify(result), 200
+
+    test_msgs = [{"role": "user", "content": "Say hello in 5 words."}]
+    chat_payload = {
+        "model": hf_model,
+        "messages": test_msgs,
+        "max_tokens": 50,
+        "temperature": 0.7,
+        "stream": False,
+    }
+    headers = {
+        "Authorization": f"Bearer {hf_key}",
+        "Content-Type": "application/json",
+    }
+
+    for pattern in HF_URL_PATTERNS:
+        url = pattern.format(model=hf_model) if "{model}" in pattern else pattern
         try:
-            test_msgs = [
-                {"role": "user", "content": "Say hello in exactly 5 words."},
-            ]
-            answer = call_huggingface(test_msgs, hf_key, hf_model)
-            result["huggingface_test"] = "✅ OK"
-            result["huggingface_response"] = answer
+            resp = http_requests.post(url, headers=headers, json=chat_payload, timeout=15)
+            if resp.ok:
+                data = resp.json()
+                if isinstance(data, dict) and "choices" in data:
+                    text = data["choices"][0]["message"]["content"].strip()
+                    result["url_tests"][pattern] = f"✅ OK: {text[:60]}"
+                elif isinstance(data, list):
+                    result["url_tests"][pattern] = f"✅ OK (legacy): {str(data)[:60]}"
+                else:
+                    result["url_tests"][pattern] = f"⚠️ {resp.status_code}: {str(data)[:80]}"
+            else:
+                result["url_tests"][pattern] = f"❌ {resp.status_code}: {resp.text[:80]}"
         except Exception as e:
-            result["huggingface_test"] = f"❌ FAILED: {str(e)}"
+            result["url_tests"][pattern] = f"❌ Error: {str(e)[:80]}"
 
     return jsonify(result), 200
 
@@ -167,14 +255,17 @@ def chat():
             except Exception as e:
                 current_app.logger.warning("OpenAI fallback: %s", e)
 
-        # ── Try Hugging Face ──
+        # ── Try Hugging Face (auto-discovers working URL) ──
         hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
         hf_model = current_app.config.get(
             "HUGGINGFACE_MODEL", "microsoft/Phi-3-mini-4k-instruct"
         )
         if hf_key:
             try:
-                answer = call_huggingface(messages, hf_key, hf_model)
+                answer = call_huggingface(
+                    messages, hf_key, hf_model,
+                    url_pattern=_working_url_pattern  # use cached URL if found
+                )
                 if answer:
                     return jsonify({
                         "response": answer,
