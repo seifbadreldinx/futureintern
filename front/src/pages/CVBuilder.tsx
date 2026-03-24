@@ -1008,6 +1008,12 @@ export function CVBuilder() {
 
   const deleteTarget = sections.find(s => s.id === deleteId);
 
+  // CV is considered complete enough to download when it has
+  // at least one section AND either a headline or a summary filled in.
+  const isCVComplete =
+    sections.length >= 1 &&
+    (header.headline.trim() !== '' || header.summary.trim() !== '');
+
   return (
     <>
       <style>{`

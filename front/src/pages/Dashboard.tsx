@@ -78,6 +78,11 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
+  const [cvBuilderData, setCvBuilderData] = useState<{ headline?: string; summary?: string; sections_count: number } | null>(null);
+  const [cvBuilderLoading, setCvBuilderLoading] = useState(false);
+  const [uploadingCV, setUploadingCV] = useState(false);
+  const [deletingCV, setDeletingCV] = useState(false);
+  const [exportingBuilderPDF, setExportingBuilderPDF] = useState(false);
 
   // Auto-focus a profile field when navigated from the profile completion card
   useEffect(() => {
@@ -101,6 +106,26 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
       setTimeout(() => tryFocus(5), 200);
     }
   }, [activeTab, focusField]);
+
+  // Load CV Builder status when profile tab is opened
+  useEffect(() => {
+    if (activeTab !== 'profile') return;
+    setCvBuilderLoading(true);
+    api.cv.get()
+      .then(res => {
+        if (res.cv) {
+          setCvBuilderData({
+            headline: res.cv.headline ?? '',
+            summary: res.cv.summary ?? '',
+            sections_count: res.cv.sections?.length ?? 0,
+          });
+        } else {
+          setCvBuilderData(null);
+        }
+      })
+      .catch(() => setCvBuilderData(null))
+      .finally(() => setCvBuilderLoading(false));
+  }, [activeTab]);
 
   // Check for daily reward toast from login
   useEffect(() => {
@@ -164,6 +189,31 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
       );
     } finally {
       setIsLoadingRecommendations(false);
+    }
+  };
+
+  const handleExportBuilderPDF = async () => {
+    setExportingBuilderPDF(true);
+    try {
+      const response = await api.cv.exportPDF();
+      if (!response.ok) {
+        const json = await response.json().catch(() => ({}));
+        alert(json.error ?? 'PDF export failed. Please try again.');
+        return;
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `CV_${user.name?.replace(/\s+/g, '_') || 'CV'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('PDF export failed. Check your connection.');
+    } finally {
+      setExportingBuilderPDF(false);
     }
   };
 
@@ -678,6 +728,128 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 </button>
               </div>
             </form>
+
+            {/* ── Your CV Section ── */}
+            <div className="mt-8 pt-6 border-t-[3px] border-slate-900 dark:border-white">
+              <h3 className="text-base font-black text-slate-900 dark:text-white mb-4 uppercase tracking-tight">Your CV</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Uploaded CV */}
+                <div className="rounded-xl border-[3px] border-slate-900 dark:border-white p-4 space-y-3 bg-slate-50 dark:bg-slate-800">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">Uploaded CV</h4>
+                  </div>
+                  {user.resume_url ? (
+                    <>
+                      <p className="text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                        ✓ PDF file attached
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <a
+                          href={resolveLogoUrl(user.resume_url)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          download
+                          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                        >
+                          Download
+                        </a>
+                        <label className={`text-xs px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-semibold cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors ${uploadingCV ? 'opacity-60 pointer-events-none' : ''}`}>
+                          {uploadingCV ? 'Uploading…' : 'Replace'}
+                          <input type="file" className="hidden" accept=".pdf" onChange={async (e) => {
+                            if (!e.target.files?.[0]) return;
+                            setUploadingCV(true);
+                            try {
+                              await api.users.uploadCV(e.target.files[0]);
+                              await refreshUserData();
+                            } catch { alert('Upload failed. Please try again.'); }
+                            finally { setUploadingCV(false); }
+                          }} />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!confirm('Remove your uploaded CV?')) return;
+                            setDeletingCV(true);
+                            try {
+                              await api.users.deleteCV();
+                              await refreshUserData();
+                            } catch { alert('Delete failed.'); }
+                            finally { setDeletingCV(false); }
+                          }}
+                          disabled={deletingCV}
+                          className="text-xs px-3 py-1.5 bg-red-50 dark:bg-red-950 text-red-600 dark:text-red-400 rounded-lg font-semibold hover:bg-red-100 dark:hover:bg-red-900 disabled:opacity-60 transition-colors"
+                        >
+                          {deletingCV ? '…' : 'Remove'}
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">No CV uploaded yet. Upload a PDF file.</p>
+                      <label className={`inline-flex items-center gap-2 text-xs px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold cursor-pointer hover:bg-blue-700 transition-colors ${uploadingCV ? 'opacity-60 pointer-events-none' : ''}`}>
+                        {uploadingCV ? 'Uploading…' : '↑ Upload PDF'}
+                        <input type="file" className="hidden" accept=".pdf" onChange={async (e) => {
+                          if (!e.target.files?.[0]) return;
+                          setUploadingCV(true);
+                          try {
+                            await api.users.uploadCV(e.target.files[0]);
+                            await refreshUserData();
+                          } catch { alert('Upload failed. Please try again.'); }
+                          finally { setUploadingCV(false); }
+                        }} />
+                      </label>
+                    </>
+                  )}
+                </div>
+
+                {/* CV Builder */}
+                <div className="rounded-xl border-[3px] border-slate-900 dark:border-white p-4 space-y-3 bg-slate-50 dark:bg-slate-800">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">CV Builder</h4>
+                  </div>
+                  {cvBuilderLoading ? (
+                    <p className="text-xs text-slate-400">Loading…</p>
+                  ) : cvBuilderData && (cvBuilderData.headline || cvBuilderData.summary || cvBuilderData.sections_count > 0) ? (
+                    <>
+                      <p className="text-xs text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
+                        ✓ CV built — {cvBuilderData.sections_count} section{cvBuilderData.sections_count !== 1 ? 's' : ''}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          to="/cv-builder"
+                          className="text-xs px-3 py-1.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-semibold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={handleExportBuilderPDF}
+                          disabled={exportingBuilderPDF}
+                          className="text-xs px-3 py-1.5 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-60 transition-colors flex items-center gap-1.5"
+                        >
+                          {exportingBuilderPDF && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+                          Download PDF
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">No CV built yet. Use our builder to create an ATS-optimised CV.</p>
+                      <Link
+                        to="/cv-builder"
+                        className="inline-flex items-center gap-2 text-xs px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        Build CV
+                      </Link>
+                    </>
+                  )}
+                </div>
+
+              </div>
+            </div>
           </div>
         )}
       </div>
