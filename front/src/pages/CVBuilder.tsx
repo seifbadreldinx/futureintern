@@ -636,7 +636,12 @@ const SectionModal: FC<SectionModalProps> = ({ initial, onSave, onClose }) => {
               )}
               <div>
                 {cfg.fields.end_date && (
-                  <ATSField label="End Date" value={endDate} onChange={setEndDate} type="month" />
+                  <ATSField
+                    label="End Date"
+                    value={endDate === 'Present' ? '' : endDate}
+                    onChange={(v) => setEndDate(v)}
+                    type="month"
+                  />
                 )}
                 {cfg.fields.end_date && (
                   <button

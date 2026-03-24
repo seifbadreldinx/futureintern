@@ -13,6 +13,7 @@ Werkzeug
 email-validator
 PyPDF2
 python-docx
+reportlab
 pandas
 numpy
 scikit-learn
