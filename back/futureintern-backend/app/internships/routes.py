@@ -20,17 +20,17 @@ def get_internships():
         per_page = request.args.get('per_page', 100, type=int)
         
         # Query active internships and eager-load company to ensure we can serialize company data reliably
-        from datetime import date
-        today = date.today()
         query = Internship.query.options(joinedload(Internship.company)).filter_by(is_active=True)
 
-        # Auto-filter expired internships (deadline passed)
-        query = query.filter(
-            db.or_(
-                Internship.application_deadline >= today,
-                Internship.application_deadline.is_(None)
-            )
-        )
+        # Auto-filter expired internships (deadline passed) — uncomment when data is updated
+        # from datetime import date
+        # today = date.today()
+        # query = query.filter(
+        #     db.or_(
+        #         Internship.application_deadline >= today,
+        #         Internship.application_deadline.is_(None)
+        #     )
+        # )
 
         
         # Pagination
