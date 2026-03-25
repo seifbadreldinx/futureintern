@@ -1,3 +1,14 @@
+export interface Company {
+  id: number;
+  name: string;
+  description?: string;
+  logo_url?: string;
+  website?: string;
+  industry?: string;
+  location?: string;
+  internships_count?: number;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -79,6 +90,7 @@ export type AuthStackParamList = {
 
 export type MainTabParamList = {
   Browse: undefined;
+  Companies: undefined;
   Saved: undefined;
   Dashboard: undefined;
   Profile: undefined;

@@ -256,6 +256,11 @@ export const api = {
       }),
   },
 
+  // ── Companies ────────────────────────────────────────────────────────────
+  companies: {
+    list: async () => apiRequest<{ companies: any[] }>('/users/companies'),
+  },
+
   // ── CV Builder ───────────────────────────────────────────────────────────
   cv: {
     get: async () => apiRequest<{ cv: any | null }>('/cv/'),
