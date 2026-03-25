@@ -121,7 +121,7 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
         {/* Hero card */}
         <View style={styles.heroCard}>
           <View style={styles.companyInitialBox}>
-            <Text style={styles.companyInitial}>{internship.company.charAt(0).toUpperCase()}</Text>
+            <Text style={styles.companyInitial}>{String(internship.company || 'C')[0].toUpperCase()}</Text>
           </View>
           <Text style={styles.heroTitle}>{internship.title}</Text>
           <Text style={styles.heroCompany}>{internship.company}</Text>
