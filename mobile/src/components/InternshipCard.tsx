@@ -31,12 +31,12 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
             <Image source={{ uri: internship.company_logo }} style={styles.logo} resizeMode="contain" />
           ) : (
             <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoInitial}>{internship.company.charAt(0).toUpperCase()}</Text>
+              <Text style={styles.logoInitial}>{(internship.company || 'C').charAt(0).toUpperCase()}</Text>
             </View>
           )}
         </View>
         <View style={styles.headerInfo}>
-          <Text style={styles.company} numberOfLines={1}>{internship.company}</Text>
+          <Text style={styles.company} numberOfLines={1}>{internship.company || 'Company'}</Text>
           <Text style={styles.title} numberOfLines={2}>{internship.title}</Text>
         </View>
         {onSave && (
