@@ -1,9 +1,9 @@
 export const Colors = {
-  primary: '#2563eb',      // blue-600
-  primaryDark: '#1d4ed8',  // blue-700
-  primaryLight: '#dbeafe', // blue-100
-  accent: '#f43f5e',       // rose-500
-  accentDark: '#e11d48',   // rose-600
+  primary: '#f43f5e',      // rose-500 (website primary)
+  primaryDark: '#e11d48',  // rose-600
+  primaryLight: '#ffe4e6', // rose-100
+  accent: '#2563eb',       // blue-600 (website accent)
+  accentDark: '#1d4ed8',   // blue-700
   amber: '#f59e0b',        // amber-400 (points)
   green: '#16a34a',        // green-600
   red: '#dc2626',          // red-600
