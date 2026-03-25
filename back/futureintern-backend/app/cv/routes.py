@@ -4,7 +4,7 @@ Endpoints for managing student CVs: create, read, update, delete sections, and P
 All endpoints are protected: each student can only access their own CV.
 """
 import os
-from flask import Blueprint, jsonify, request, make_response
+from flask import Blueprint, jsonify, request, make_response, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models import db
 from app.models.cv import CV, CVSection
@@ -367,7 +367,10 @@ def export_pdf():
         doc.build(elements)
         buffer.seek(0)
 
-        filename = f"CV_{user.name.replace(' ', '_')}.pdf" if user.name else "CV.pdf"
+        import re as _re2
+        safe_name = _re2.sub(r'[^\w\s-]', '', user.name or '').strip().replace(' ', '_')
+        safe_name = safe_name[:50] or 'CV'
+        filename = f"CV_{safe_name}.pdf"
         response = make_response(buffer.read())
         response.headers['Content-Type'] = 'application/pdf'
         response.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
@@ -378,4 +381,5 @@ def export_pdf():
             'error': 'PDF export requires reportlab. Run: pip install reportlab'
         }), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        current_app.logger.error("CV PDF export error for user %s: %s", user.id, e)
+        return jsonify({'error': 'Failed to generate PDF. Please try again.'}), 500

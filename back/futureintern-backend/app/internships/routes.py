@@ -20,18 +20,17 @@ def get_internships():
         per_page = request.args.get('per_page', 100, type=int)
         
         # Query active internships and eager-load company to ensure we can serialize company data reliably
+        from datetime import date
+        today = date.today()
         query = Internship.query.options(joinedload(Internship.company)).filter_by(is_active=True)
-        
-        # TEMPORARY: Date filtering disabled to show all internships
+
         # Auto-filter expired internships (deadline passed)
-        # from datetime import date
-        # today = date.today()
-        # query = query.filter(
-        #     db.or_(
-        #         Internship.application_deadline >= today,
-        #         Internship.application_deadline.is_(None)
-        #     )
-        # )
+        query = query.filter(
+            db.or_(
+                Internship.application_deadline >= today,
+                Internship.application_deadline.is_(None)
+            )
+        )
 
         
         # Pagination
@@ -80,6 +79,14 @@ def create_internship():
     """Create new internship (Company only)"""
     try:
         user_id = get_jwt_identity()
+        from app.models.user import User
+        from app.models import db
+        company_user = db.session.get(User, int(user_id))
+        if not company_user or not company_user.email_verified:
+            return jsonify({
+                'error': 'Please verify your email address before posting internships.',
+                'needs_verification': True,
+            }), 403
         data = request.get_json()
         
         # Validation
