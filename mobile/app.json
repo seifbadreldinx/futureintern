@@ -36,8 +36,7 @@
           "icon": "./assets/notification-icon.png",
           "color": "#1e40af"
         }
-      ],
-      "expo-asset"
+      ]
     ],
     "extra": {
       "apiBaseUrl": "https://futureintern-production.up.railway.app/api"
