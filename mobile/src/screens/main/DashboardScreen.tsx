@@ -5,14 +5,11 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
-import { RootStackParamList } from '../../types';
-
-type Nav = NativeStackNavigationProp<RootStackParamList>;
+import { TabScreenNavProp } from '../../types';
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; border: string }> = {
   pending:    { bg: '#fef3c7', text: '#92400e', border: '#fde68a' },
@@ -33,7 +30,7 @@ interface Application {
 
 export default function DashboardScreen() {
   const { user } = useAuth();
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation<TabScreenNavProp>();
   const [applications, setApplications] = useState<Application[]>([]);
   const [points, setPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
@@ -119,7 +116,7 @@ export default function DashboardScreen() {
             <Ionicons name="briefcase-outline" size={32} color={Colors.gray400} />
             <Text style={styles.emptyTitle}>No applications yet</Text>
             <Text style={styles.emptySubtitle}>Start applying to internships to track them here</Text>
-            <TouchableOpacity style={styles.browseBtn} onPress={() => navigation.navigate('Main' as any)}>
+            <TouchableOpacity style={styles.browseBtn} onPress={() => navigation.navigate('Browse')}>
               <Text style={styles.browseBtnText}>Browse Internships</Text>
             </TouchableOpacity>
           </View>
@@ -138,7 +135,7 @@ export default function DashboardScreen() {
             icon="briefcase-outline"
             label="Browse Jobs"
             color={Colors.primary}
-            onPress={() => navigation.navigate('Main' as any)}
+            onPress={() => navigation.navigate('Browse')}
           />
           <QuickAction
             icon="document-text-outline"

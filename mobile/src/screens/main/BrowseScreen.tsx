@@ -5,21 +5,17 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../../services/api';
-import { Internship } from '../../types';
+import { Internship, TabScreenNavProp } from '../../types';
 import { Colors, FontSize, Spacing, Radius } from '../../constants/theme';
-import { RootStackParamList } from '../../types';
 import InternshipCard from '../../components/InternshipCard';
 import EmptyState from '../../components/EmptyState';
-
-type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const TYPES = ['All', 'Full-time', 'Part-time', 'Remote', 'Hybrid'];
 
 export default function BrowseScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation<TabScreenNavProp>();
   const [internships, setInternships] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);

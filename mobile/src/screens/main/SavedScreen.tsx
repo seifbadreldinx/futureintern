@@ -4,19 +4,15 @@ import {
   Text, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../../services/api';
-import { Internship } from '../../types';
+import { Internship, TabScreenNavProp } from '../../types';
 import { Colors, FontSize, Spacing } from '../../constants/theme';
-import { RootStackParamList } from '../../types';
 import InternshipCard from '../../components/InternshipCard';
 import EmptyState from '../../components/EmptyState';
 
-type Nav = NativeStackNavigationProp<RootStackParamList>;
-
 export default function SavedScreen() {
-  const navigation = useNavigation<Nav>();
+  const navigation = useNavigation<TabScreenNavProp>();
   const [saved, setSaved] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,7 +74,7 @@ export default function SavedScreen() {
               title="No saved internships"
               subtitle="Bookmark internships you're interested in to find them here quickly"
               actionLabel="Browse Internships"
-              onAction={() => navigation.navigate('Main' as any)}
+              onAction={() => navigation.navigate('Browse')}
             />
           }
           renderItem={({ item }) => (

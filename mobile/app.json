@@ -3,9 +3,10 @@
     "name": "FutureIntern",
     "slug": "futureintern",
     "version": "1.0.0",
+    "scheme": "futureintern",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",

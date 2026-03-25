@@ -90,3 +90,14 @@ export type RootStackParamList = {
   InternshipDetail: { id: number };
   CVBuilder: undefined;
 };
+
+// Composite nav type for screens that live inside the tab navigator
+// but also need to push onto the root stack (e.g. InternshipDetail).
+import type { CompositeNavigationProp } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+export type TabScreenNavProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
