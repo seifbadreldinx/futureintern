@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, current_app
-from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from datetime import datetime
 import requests as http_requests
 
@@ -76,8 +76,9 @@ def status():
 
 
 @chatbot_bp.route("/chat", methods=["POST"])
+@jwt_required()
 def chat():
-    """Main AI chat endpoint."""
+    """Main AI chat endpoint. Requires authentication."""
     try:
         data = request.get_json() or {}
         user_message = (data.get("message") or "").strip()
@@ -86,33 +87,43 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
 
+        # Enforce message length to prevent token exhaustion
+        if len(user_message) > 2000:
+            return jsonify({"error": "Message too long. Maximum 2000 characters."}), 400
+
         # ── Points check for authenticated students ──
+        points_charged = False
         try:
-            verify_jwt_in_request(optional=True)
+            from app.models.user import User
+            from app.models import db
+            from app.utils.points import check_and_charge
             user_id = get_jwt_identity()
-            if user_id:
-                from app.models.user import User
-                from app.models import db
-                from app.utils.points import check_and_charge
-                user = db.session.get(User, int(user_id))
-                if user and user.role == "student":
-                    success, msg, _ = check_and_charge(user, "chatbot")
-                    if not success:
-                        return jsonify({
-                            "response": msg,
-                            "provider": "system",
-                            "timestamp": datetime.utcnow().isoformat(),
-                        }), 402
-                    db.session.commit()
+            user = db.session.get(User, int(user_id))
+            if user and user.role == "student":
+                success, msg, _ = check_and_charge(user, "chatbot")
+                if not success:
+                    return jsonify({
+                        "response": msg,
+                        "provider": "system",
+                        "timestamp": datetime.utcnow().isoformat(),
+                    }), 402
+                points_charged = True
         except Exception:
             pass
 
-        # ── Build message list ──
+        # ── Build message list (sanitize history entries) ──
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        valid_roles = {"user", "assistant"}
         for entry in conversation_history[-10:]:
             role = "user" if entry.get("sender") == "user" else "assistant"
-            messages.append({"role": role, "content": entry.get("text", "")})
+            if role not in valid_roles:
+                continue
+            content = str(entry.get("text", ""))[:2000]
+            if content:
+                messages.append({"role": role, "content": content})
         messages.append({"role": "user", "content": user_message})
+
+        answer = None
 
         # ── Try OpenAI first (if configured) ──
         openai_key = current_app.config.get("OPENAI_API_KEY")
@@ -134,30 +145,34 @@ def chat():
                 )
                 r.raise_for_status()
                 answer = r.json()["choices"][0]["message"]["content"].strip()
-                return jsonify({
-                    "response": answer,
-                    "provider": "openai",
-                    "timestamp": datetime.utcnow().isoformat(),
-                }), 200
             except Exception as e:
                 current_app.logger.warning("OpenAI fallback: %s", e)
 
         # ── Try Hugging Face ──
-        hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
-        hf_model = current_app.config.get(
-            "HUGGINGFACE_MODEL", "Qwen/Qwen2.5-72B-Instruct"
-        )
-        if hf_key:
+        if not answer:
+            hf_key = current_app.config.get("HUGGINGFACE_API_KEY")
+            hf_model = current_app.config.get(
+                "HUGGINGFACE_MODEL", "Qwen/Qwen2.5-72B-Instruct"
+            )
+            if hf_key:
+                try:
+                    answer = call_huggingface(messages, hf_key, hf_model)
+                except Exception as e:
+                    current_app.logger.warning("HuggingFace error: %s", e)
+
+        # ── Commit points only after a successful AI response ──
+        if answer and points_charged:
             try:
-                answer = call_huggingface(messages, hf_key, hf_model)
-                if answer:
-                    return jsonify({
-                        "response": answer,
-                        "provider": "huggingface",
-                        "timestamp": datetime.utcnow().isoformat(),
-                    }), 200
-            except Exception as e:
-                current_app.logger.warning("HuggingFace error: %s", e)
+                from app.models import db
+                db.session.commit()
+            except Exception:
+                pass
+
+        if answer:
+            return jsonify({
+                "response": answer,
+                "timestamp": datetime.utcnow().isoformat(),
+            }), 200
 
         # ── Final fallback ──
         return jsonify({
@@ -171,4 +186,4 @@ def chat():
 
     except Exception as e:
         current_app.logger.error("Chatbot error: %s", e)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An unexpected error occurred. Please try again."}), 500
