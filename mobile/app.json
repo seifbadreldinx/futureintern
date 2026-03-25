@@ -22,7 +22,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1e40af"
+        "backgroundColor": "#f43f5e"
       },
       "package": "com.futureintern.app"
     },
@@ -34,7 +34,7 @@
         "expo-notifications",
         {
           "icon": "./assets/notification-icon.png",
-          "color": "#1e40af"
+          "color": "#f43f5e"
         }
       ]
     ],
