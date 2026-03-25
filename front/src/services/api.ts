@@ -829,7 +829,7 @@ export const api = {
       location?: string; start_date?: string; end_date?: string;
       description?: string; order_index?: number;
     }) => {
-      return apiRequest<{ message: string; section: any }>('/cv/sections', {
+      return apiRequest<{ message: string; section: any; points_charged: number; new_balance: number }>('/cv/sections', {
         method: 'POST',
         body: JSON.stringify(data),
       });

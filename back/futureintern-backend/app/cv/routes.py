@@ -93,6 +93,18 @@ def add_section():
     if section_type not in ALLOWED_SECTION_TYPES:
         return jsonify({'error': f'section_type must be one of: {", ".join(ALLOWED_SECTION_TYPES)}'}), 400
 
+    # Check & charge points for adding a CV section
+    from app.utils.points import check_and_charge
+    success, msg, cost = check_and_charge(user, 'cv_section_add')
+    if not success:
+        return jsonify({
+            'error': 'Insufficient points',
+            'message': msg,
+            'points_required': cost,
+            'current_balance': user.points or 0,
+        }), 402
+    db.session.flush()   # persist the points transaction before creating section
+
     section = CVSection(
         cv_id=cv.id,
         section_type=section_type,
@@ -107,7 +119,12 @@ def add_section():
     db.session.add(section)
     db.session.commit()
 
-    return jsonify({'message': 'Section added', 'section': section.to_dict()}), 201
+    return jsonify({
+        'message': 'Section added',
+        'section': section.to_dict(),
+        'points_charged': cost,
+        'new_balance': user.points or 0,
+    }), 201
 
 
 # ────────────────────────────────────────────────────────

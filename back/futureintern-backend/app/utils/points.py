@@ -101,6 +101,13 @@ def seed_default_pricing():
             'first_time_free': True,
             'description': 'Get AI-powered internship recommendations',
         },
+        {
+            'service_key': 'cv_section_add',
+            'display_name': 'CV Section',
+            'points_cost': 3,
+            'first_time_free': True,
+            'description': 'Add a section to your CV (first section is free)',
+        },
     ]
     for d in defaults:
         existing = ServicePricing.query.filter_by(service_key=d['service_key']).first()

@@ -820,6 +820,9 @@ export function CVBuilder() {
   const [editingSection, setEditingSection] = useState<CVSection | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  // Points pricing for cv_section_add
+  const [sectionAddCost, setSectionAddCost] = useState<number>(3);
+  const [sectionAddFirstFree, setSectionAddFirstFree] = useState<boolean>(true);
   const [exporting, setExporting] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastIdRef = useRef(0);
@@ -871,6 +874,17 @@ export function CVBuilder() {
     })();
   }, [addToast]);
 
+  // ── Load section-add pricing ──────────────────────────────────────────────
+  useEffect(() => {
+    api.points.getPricing().then(res => {
+      const pricing = res.services?.find((s: any) => s.service_key === 'cv_section_add');
+      if (pricing) {
+        setSectionAddCost(pricing.points_cost ?? 3);
+        setSectionAddFirstFree(pricing.first_time_free ?? true);
+      }
+    }).catch(() => {/* use defaults */});
+  }, []);
+
   // ── Auto-save header (debounced 1.5s) ────────────────────────────────────
 
   const saveHeaderFn = useCallback(async (h: CVHeader) => {
@@ -910,9 +924,17 @@ export function CVBuilder() {
         description: s.description ?? '',
         order_index: s.order_index ?? prev.length,
       }]);
-      addToast('Section added!', 'success');
-    } catch {
-      addToast('Failed to add section. Please try again.', 'error');
+      if (res.points_charged > 0) {
+        addToast(`Section added! (−${res.points_charged} pts, balance: ${res.new_balance} pts)`, 'info');
+      } else {
+        addToast('Section added! (free)', 'success');
+      }
+    } catch (err: any) {
+      if (err?.message?.includes('Insufficient points')) {
+        addToast(`Not enough points to add a section. Each section costs ${sectionAddCost} pts. Visit the Points Store to get more.`, 'error');
+      } else {
+        addToast('Failed to add section. Please try again.', 'error');
+      }
       throw new Error('add failed');
     }
   };
@@ -1097,13 +1119,20 @@ export function CVBuilder() {
                   <section>
                     <div className="flex items-center justify-between mb-3">
                       <h2 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wide">Sections</h2>
-                      <button
-                        onClick={() => setShowAddModal(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-xl hover:bg-rose-600 transition-colors"
-                        aria-label="Add new section"
-                      >
-                        <span className="text-base leading-none">+</span> Add Section
-                      </button>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <button
+                          onClick={() => setShowAddModal(true)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 text-white text-xs font-bold rounded-xl hover:bg-rose-600 transition-colors"
+                          aria-label="Add new section"
+                        >
+                          <span className="text-base leading-none">+</span> Add Section
+                        </button>
+                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                          {sectionAddFirstFree && sections.length === 0
+                            ? 'First section free'
+                            : `${sectionAddCost} pts each`}
+                        </span>
+                      </div>
                     </div>
 
                     {sections.length === 0 ? (
