@@ -19,10 +19,15 @@ const TYPE_COLORS: Record<string, string> = {
   'On-site': '#dc2626',
 };
 
+const getCompanyName = (company: any): string => {
+  if (!company) return '';
+  if (typeof company === 'object') return company.name || '';
+  return String(company);
+};
+
 const getCompanyInitial = (company: any): string => {
-  if (!company) return 'C';
-  const str = String(company);
-  return str[0]?.toUpperCase() || 'C';
+  const name = getCompanyName(company);
+  return name[0]?.toUpperCase() || 'C';
 };
 
 export default function InternshipCard({ internship, onPress, onSave, isSaved }: Props) {
@@ -42,7 +47,7 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
           )}
         </View>
         <View style={styles.headerInfo}>
-          <Text style={styles.company} numberOfLines={1}>{internship.company || 'Company'}</Text>
+          <Text style={styles.company} numberOfLines={1}>{getCompanyName(internship.company) || 'Company'}</Text>
           <Text style={styles.title} numberOfLines={2}>{internship.title}</Text>
         </View>
         {onSave && (

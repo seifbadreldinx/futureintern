@@ -8,6 +8,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 
 import { api } from '../../services/api';
+
+const getCompanyName = (company: any): string => {
+  if (!company) return '';
+  if (typeof company === 'object') return company.name || '';
+  return String(company);
+};
 import { Internship } from '../../types';
 import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { RootStackParamList } from '../../types';
@@ -64,7 +70,7 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
     if (hasApplied) return;
     Alert.alert(
       'Apply Now',
-      `Apply for "${internship?.title}" at ${internship?.company}?`,
+      `Apply for "${internship?.title}" at ${getCompanyName(internship?.company)}?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -121,10 +127,10 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
         {/* Hero card */}
         <View style={styles.heroCard}>
           <View style={styles.companyInitialBox}>
-            <Text style={styles.companyInitial}>{String(internship.company || 'C')[0].toUpperCase()}</Text>
+            <Text style={styles.companyInitial}>{(getCompanyName(internship.company) || 'C')[0].toUpperCase()}</Text>
           </View>
           <Text style={styles.heroTitle}>{internship.title}</Text>
-          <Text style={styles.heroCompany}>{internship.company}</Text>
+          <Text style={styles.heroCompany}>{getCompanyName(internship.company)}</Text>
 
           {/* Tags */}
           <View style={styles.tagRow}>

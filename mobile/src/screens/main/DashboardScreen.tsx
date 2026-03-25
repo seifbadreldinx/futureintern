@@ -180,12 +180,12 @@ function ApplicationRow({ app }: { app: Application }) {
     <View style={appStyles.row}>
       <View style={appStyles.iconBox}>
         <Text style={appStyles.initial}>
-          {(app.company || app.internship_title || '?').charAt(0).toUpperCase()}
+          {(typeof app.company === 'object' ? app.company?.name : app.company || app.internship_title || '?').charAt(0).toUpperCase()}
         </Text>
       </View>
       <View style={appStyles.info}>
         <Text style={appStyles.title} numberOfLines={1}>{app.internship_title || `Internship #${app.internship_id}`}</Text>
-        <Text style={appStyles.company} numberOfLines={1}>{app.company || ''}</Text>
+        <Text style={appStyles.company} numberOfLines={1}>{(typeof app.company === 'object' ? app.company?.name : app.company) || ''}</Text>
       </View>
       <View style={appStyles.right}>
         <View style={[appStyles.statusBadge, { backgroundColor: colors.bg, borderColor: colors.border }]}>
