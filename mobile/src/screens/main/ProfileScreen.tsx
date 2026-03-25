@@ -4,12 +4,17 @@ import {
   Platform, Alert, Switch, ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 
 import { useAuth } from '../../context/AuthContext';
-import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme, C } = useTheme();
+  const styles = makeStyles(C);
+
   const [loggingOut, setLoggingOut] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
@@ -24,11 +29,8 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             setLoggingOut(true);
-            try {
-              await logout();
-            } finally {
-              setLoggingOut(false);
-            }
+            try { await logout(); }
+            finally { setLoggingOut(false); }
           },
         },
       ]
@@ -40,132 +42,161 @@ export default function ProfileScreen() {
     : '?';
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{initials}</Text>
-        </View>
-        <Text style={styles.name}>{user?.name || 'Student'}</Text>
-        <Text style={styles.email}>{user?.email || ''}</Text>
-        {(user?.university || user?.major) && (
-          <Text style={styles.university}>
-            {[user?.major, user?.university].filter(Boolean).join(' · ')}
-          </Text>
-        )}
-      </View>
-
-      {/* Points card */}
-      <View style={styles.pointsCard}>
-        <View style={styles.pointsLeft}>
-          <Ionicons name="star" size={20} color="#f59e0b" />
-          <View style={styles.pointsTextBox}>
-            <Text style={styles.pointsValue}>{user?.points ?? 0}</Text>
-            <Text style={styles.pointsLabel}>Points Balance</Text>
+    <>
+      <StatusBar style={isDark ? 'light' : 'light'} />
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero header */}
+        <View style={styles.header}>
+          <View style={styles.avatar}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
+          <Text style={styles.name}>{user?.name || 'Student'}</Text>
+          <Text style={styles.email}>{user?.email || ''}</Text>
+          {(user?.university || user?.major) && (
+            <Text style={styles.university}>
+              {[user?.major, user?.university].filter(Boolean).join(' · ')}
+            </Text>
+          )}
         </View>
-        <View style={styles.pointsRight}>
-          <Ionicons name="chevron-forward" size={18} color={Colors.gray400} />
-        </View>
-      </View>
 
-      {/* Account section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <View style={styles.card}>
-          <MenuItem icon="person-outline" label="Edit Profile" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="lock-closed-outline" label="Change Password" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="document-text-outline" label="My CV" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="briefcase-outline" label="My Applications" onPress={() => {}} />
-        </View>
-      </View>
-
-      {/* Preferences section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Preferences</Text>
-        <View style={styles.card}>
-          <View style={styles.menuItem}>
-            <View style={styles.menuItemLeft}>
-              <View style={[styles.menuIcon, { backgroundColor: '#3b82f6' + '20' }]}>
-                <Ionicons name="notifications-outline" size={18} color="#3b82f6" />
-              </View>
-              <Text style={styles.menuLabel}>Push Notifications</Text>
+        {/* Points card */}
+        <TouchableOpacity style={styles.pointsCard} activeOpacity={0.85}>
+          <View style={styles.pointsLeft}>
+            <Ionicons name="star" size={20} color="#f59e0b" />
+            <View>
+              <Text style={styles.pointsValue}>{user?.points ?? 0}</Text>
+              <Text style={styles.pointsLabel}>Points Balance</Text>
             </View>
-            <Switch
-              value={notificationsEnabled}
-              onValueChange={setNotificationsEnabled}
-              trackColor={{ false: Colors.gray200, true: Colors.primary + '60' }}
-              thumbColor={notificationsEnabled ? Colors.primary : Colors.gray400}
-            />
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={C.gray400} />
+        </TouchableOpacity>
+
+        {/* Account */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account</Text>
+          <View style={styles.card}>
+            <MenuItem C={C} icon="person-outline" label="Edit Profile" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="lock-closed-outline" label="Change Password" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="document-text-outline" label="My CV" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="briefcase-outline" label="My Applications" onPress={() => {}} />
           </View>
         </View>
-      </View>
 
-      {/* Support section */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Support</Text>
-        <View style={styles.card}>
-          <MenuItem icon="help-circle-outline" label="Help Center" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="chatbubble-outline" label="Contact Support" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="document-outline" label="Privacy Policy" onPress={() => {}} />
-          <MenuDivider />
-          <MenuItem icon="shield-checkmark-outline" label="Terms of Service" onPress={() => {}} />
+        {/* Preferences */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Preferences</Text>
+          <View style={styles.card}>
+            {/* Dark mode toggle */}
+            <View style={styles.menuItem}>
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.menuIcon, { backgroundColor: isDark ? '#7c3aed20' : '#7c3aed20' }]}>
+                  <Ionicons
+                    name={isDark ? 'moon' : 'sunny'}
+                    size={18}
+                    color="#7c3aed"
+                  />
+                </View>
+                <Text style={styles.menuLabel}>{isDark ? 'Dark Mode' : 'Light Mode'}</Text>
+              </View>
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                trackColor={{ false: C.gray200, true: '#7c3aed60' }}
+                thumbColor={isDark ? '#7c3aed' : C.gray400}
+              />
+            </View>
+            <Divider C={C} />
+            {/* Push notifications */}
+            <View style={styles.menuItem}>
+              <View style={styles.menuItemLeft}>
+                <View style={[styles.menuIcon, { backgroundColor: '#3b82f620' }]}>
+                  <Ionicons name="notifications-outline" size={18} color="#3b82f6" />
+                </View>
+                <Text style={styles.menuLabel}>Push Notifications</Text>
+              </View>
+              <Switch
+                value={notificationsEnabled}
+                onValueChange={setNotificationsEnabled}
+                trackColor={{ false: C.gray200, true: C.primary + '60' }}
+                thumbColor={notificationsEnabled ? C.primary : C.gray400}
+              />
+            </View>
+          </View>
         </View>
-      </View>
 
-      {/* Sign out */}
-      <View style={styles.section}>
-        <TouchableOpacity
-          style={styles.signOutBtn}
-          onPress={handleLogout}
-          disabled={loggingOut}
-          activeOpacity={0.85}
-        >
-          {loggingOut
-            ? <ActivityIndicator size="small" color={Colors.red} />
-            : (
+        {/* Support */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Support</Text>
+          <View style={styles.card}>
+            <MenuItem C={C} icon="help-circle-outline" label="Help Center" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="chatbubble-outline" label="Contact Support" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="document-outline" label="Privacy Policy" onPress={() => {}} />
+            <Divider C={C} />
+            <MenuItem C={C} icon="shield-checkmark-outline" label="Terms of Service" onPress={() => {}} />
+          </View>
+        </View>
+
+        {/* Sign out */}
+        <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.signOutBtn}
+            onPress={handleLogout}
+            disabled={loggingOut}
+            activeOpacity={0.85}
+          >
+            {loggingOut ? (
+              <ActivityIndicator size="small" color={C.red} />
+            ) : (
               <>
-                <Ionicons name="log-out-outline" size={20} color={Colors.red} />
+                <Ionicons name="log-out-outline" size={20} color={C.red} />
                 <Text style={styles.signOutText}>Sign Out</Text>
               </>
             )}
-        </TouchableOpacity>
-      </View>
+          </TouchableOpacity>
+        </View>
 
-      {/* Version */}
-      <Text style={styles.version}>FutureIntern v1.0.0</Text>
-    </ScrollView>
+        <Text style={styles.version}>FutureIntern v1.0.0</Text>
+      </ScrollView>
+    </>
   );
 }
 
-function MenuItem({ icon, label, onPress }: { icon: any; label: string; onPress: () => void }) {
+function MenuItem({ C, icon, label, onPress }: { C: any; icon: any; label: string; onPress: () => void }) {
   return (
-    <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.menuItemLeft}>
-        <View style={[styles.menuIcon, { backgroundColor: Colors.primary + '20' }]}>
-          <Ionicons name={icon} size={18} color={Colors.primary} />
+    <TouchableOpacity
+      style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.md, paddingVertical: 14 }}
+      onPress={onPress}
+      activeOpacity={0.7}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <View style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: C.primary + '20', alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name={icon} size={18} color={C.primary} />
         </View>
-        <Text style={styles.menuLabel}>{label}</Text>
+        <Text style={{ fontSize: FontSize.base, color: C.text, fontWeight: '500' }}>{label}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={16} color={Colors.gray400} />
+      <Ionicons name="chevron-forward" size={16} color={C.gray400} />
     </TouchableOpacity>
   );
 }
 
-function MenuDivider() {
-  return <View style={styles.divider} />;
+function Divider({ C }: { C: any }) {
+  return <View style={{ height: 1, backgroundColor: C.border, marginLeft: 60 }} />;
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.background },
   content: { paddingBottom: 40 },
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: C.primary,
     paddingTop: Platform.OS === 'ios' ? 60 : 44,
     paddingBottom: 32,
     paddingHorizontal: Spacing.lg,
@@ -178,32 +209,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)',
   },
-  avatarText: { fontSize: FontSize['2xl'], fontWeight: '900', color: Colors.white },
-  name: { fontSize: FontSize.xl, fontWeight: '800', color: Colors.white, marginBottom: 2 },
+  avatarText: { fontSize: FontSize['2xl'], fontWeight: '900', color: '#fff' },
+  name: { fontSize: FontSize.xl, fontWeight: '800', color: '#fff', marginBottom: 2 },
   email: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.8)', marginBottom: 4 },
   university: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.65)' },
   pointsCard: {
     marginHorizontal: Spacing.md,
     marginTop: -20,
-    backgroundColor: Colors.white,
+    backgroundColor: C.card,
     borderRadius: Radius.lg,
     padding: Spacing.md,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     ...Shadow.md,
-    borderWidth: 1, borderColor: Colors.border,
+    borderWidth: 1, borderColor: C.border,
     marginBottom: Spacing.lg,
   },
   pointsLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  pointsTextBox: {},
-  pointsValue: { fontSize: FontSize.xl, fontWeight: '900', color: Colors.text },
-  pointsLabel: { fontSize: FontSize.xs, color: Colors.textSecondary },
-  pointsRight: {},
+  pointsValue: { fontSize: FontSize.xl, fontWeight: '900', color: C.text },
+  pointsLabel: { fontSize: FontSize.xs, color: C.textSecondary },
   section: { paddingHorizontal: Spacing.md, marginBottom: Spacing.md },
-  sectionTitle: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.textSecondary, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitle: {
+    fontSize: FontSize.sm, fontWeight: '700', color: C.textSecondary,
+    marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5,
+  },
   card: {
-    backgroundColor: Colors.white, borderRadius: Radius.lg,
-    borderWidth: 1, borderColor: Colors.border,
-    overflow: 'hidden',
+    backgroundColor: C.card, borderRadius: Radius.lg,
+    borderWidth: 1, borderColor: C.border, overflow: 'hidden',
   },
   menuItem: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -211,13 +242,12 @@ const styles = StyleSheet.create({
   },
   menuItemLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   menuIcon: { width: 34, height: 34, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  menuLabel: { fontSize: FontSize.base, color: Colors.text, fontWeight: '500' },
-  divider: { height: 1, backgroundColor: Colors.border, marginLeft: 60 },
+  menuLabel: { fontSize: FontSize.base, color: C.text, fontWeight: '500' },
   signOutBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: Colors.white, borderRadius: Radius.lg,
-    padding: Spacing.md, borderWidth: 1.5, borderColor: Colors.red + '40',
+    backgroundColor: C.card, borderRadius: Radius.lg,
+    padding: Spacing.md, borderWidth: 1.5, borderColor: C.red + '40',
   },
-  signOutText: { fontSize: FontSize.base, color: Colors.red, fontWeight: '700' },
-  version: { textAlign: 'center', fontSize: FontSize.xs, color: Colors.gray400, marginTop: 8 },
+  signOutText: { fontSize: FontSize.base, color: C.red, fontWeight: '700' },
+  version: { textAlign: 'center', fontSize: FontSize.xs, color: C.gray400, marginTop: 8 },
 });
