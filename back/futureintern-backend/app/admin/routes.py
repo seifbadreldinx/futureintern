@@ -1147,3 +1147,100 @@ def reject_purchase_request(req_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ========== CSV Import: Internship Application Links ==========
+
+@admin_bp.route("/internships/import-csv", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def import_internships_csv():
+    """
+    Bulk-import or update internships from a CSV file.
+
+    Required CSV columns (case-insensitive headers):
+      - title            : internship title (used for matching)
+      - application_link : external application URL
+
+    Optional columns:
+      - id               : internship ID (takes priority over title matching)
+      - company          : company name (improves title matching accuracy)
+      - description, location, duration, stipend, deadline
+
+    Returns a summary of updated / skipped / not_found rows.
+    """
+    import csv, io
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file uploaded. Send a multipart field named "file".'}), 400
+
+    f = request.files['file']
+    if not f.filename or not f.filename.lower().endswith('.csv'):
+        return jsonify({'error': 'File must be a .csv'}), 400
+
+    try:
+        content = f.read().decode('utf-8-sig')  # strip BOM if present
+        reader = csv.DictReader(io.StringIO(content))
+
+        # Normalise headers to lowercase
+        rows = [{k.strip().lower(): v.strip() for k, v in row.items()} for row in reader]
+        if not rows:
+            return jsonify({'error': 'CSV is empty'}), 400
+
+        updated, skipped, not_found = [], [], []
+
+        for i, row in enumerate(rows, start=2):  # row 1 = header
+            link = row.get('application_link') or row.get('application_url') or row.get('url') or ''
+            if not link:
+                skipped.append({'row': i, 'reason': 'no application_link'})
+                continue
+
+            internship = None
+
+            # Try matching by id first
+            row_id = row.get('id', '').strip()
+            if row_id.isdigit():
+                internship = db.session.get(Internship, int(row_id))
+
+            # Fall back to title match
+            if not internship:
+                title = row.get('title', '').strip()
+                if not title:
+                    skipped.append({'row': i, 'reason': 'no title or id'})
+                    continue
+
+                q = Internship.query.filter(
+                    func.lower(Internship.title).contains(title.lower())
+                )
+                company = row.get('company', '').strip()
+                if company:
+                    q = q.join(User, Internship.company_id == User.id).filter(
+                        func.lower(User.company_name).contains(company.lower())
+                    )
+                results = q.all()
+                if len(results) == 1:
+                    internship = results[0]
+                elif len(results) > 1:
+                    skipped.append({'row': i, 'title': title, 'reason': f'{len(results)} matches — be more specific'})
+                    continue
+
+            if not internship:
+                not_found.append({'row': i, 'title': row.get('title', ''), 'id': row_id})
+                continue
+
+            # Apply updates
+            internship.application_link = link[:500]
+            updated.append({'row': i, 'internship_id': internship.id, 'title': internship.title})
+
+        db.session.commit()
+
+        return jsonify({
+            'message': f'Import complete: {len(updated)} updated, {len(skipped)} skipped, {len(not_found)} not found',
+            'updated': updated,
+            'skipped': skipped,
+            'not_found': not_found,
+        }), 200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500

@@ -17,6 +17,7 @@ from app.models.cv import CV, CVSection  # noqa: F401
 from app.models.points import PointsTransaction, PointsPackage, ServicePricing, PurchaseRequest  # noqa: F401
 # Import security models so SQLAlchemy creates the tables
 from app.models.token_blacklist import TokenBlacklist  # noqa: F401
+from app.models.push_token import UserPushToken  # noqa: F401
 from app.models.two_factor import TwoFactorCode  # noqa: F401
 # Import auth token models so SQLAlchemy creates the tables
 from app.models.password_reset import PasswordResetToken  # noqa: F401
@@ -73,6 +74,7 @@ from app.chatbot.routes import chatbot_bp
 from app.cv.routes import cv_bp
 from app.auth.security_routes import security_bp
 from app.points import points_bp
+from app.notifications.routes import notifications_bp
 
 # TEMPORARY - Optional imports (won't break app if they fail)
 try:
@@ -341,6 +343,7 @@ def create_app():
     app.register_blueprint(cv_bp, url_prefix="/api/cv")
     app.register_blueprint(security_bp, url_prefix="/api/auth")
     app.register_blueprint(points_bp, url_prefix="/api/points")
+    app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
 
     # Seed default points pricing & packages on first run
     with app.app_context():

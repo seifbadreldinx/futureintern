@@ -36,11 +36,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const data = await api.auth.login(email, password);
     if (data.access_token) {
       await refreshUserData();
+      // Register push token in background — don't block login on failure
+      import('../services/notifications').then(({ registerForPushNotifications }) => {
+        registerForPushNotifications().catch(() => {});
+      });
     }
     return data;
   };
 
   const logout = async () => {
+    // Unregister push token before clearing auth
+    try {
+      const { unregisterPushNotifications } = await import('../services/notifications');
+      await unregisterPushNotifications();
+    } catch {}
     await removeAuthToken();
     setUser(null);
   };

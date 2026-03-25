@@ -174,7 +174,27 @@ def update_application_status(application_id):
                       user_id=company_id)
         except Exception:
             pass
-        
+
+        # Push notification to student
+        try:
+            from app.utils.push_notifications import send_push_notification
+            internship_title = application.internship.title if application.internship else 'your application'
+            status_messages = {
+                'accepted':  ('🎉 Application Accepted!', f'Congratulations! You were accepted for "{internship_title}".'),
+                'rejected':  ('Application Update', f'Your application for "{internship_title}" was not selected.'),
+                'pending':   ('Application Update', f'Your application for "{internship_title}" is under review.'),
+                'withdrawn': ('Application Update', f'Your application for "{internship_title}" has been withdrawn.'),
+            }
+            notif_title, notif_body = status_messages.get(new_status, ('Application Update', f'Your application status changed to {new_status}.'))
+            send_push_notification(
+                application.student_id,
+                notif_title,
+                notif_body,
+                data={'application_id': application_id, 'status': new_status},
+            )
+        except Exception:
+            pass
+
         return jsonify({
             'message': 'Application status updated successfully',
             'application': application.to_dict(include_details=True)

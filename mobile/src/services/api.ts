@@ -241,6 +241,21 @@ export const api = {
     getStore: async () => apiRequest<any>('/points/store'),
   },
 
+  // ── Notifications ────────────────────────────────────────────────────────
+  notifications: {
+    register: async (token: string, platform: string) =>
+      apiRequest<any>('/notifications/register', {
+        method: 'POST',
+        body: JSON.stringify({ token, platform }),
+      }),
+
+    unregister: async (token: string) =>
+      apiRequest<any>('/notifications/unregister', {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      }),
+  },
+
   // ── CV Builder ───────────────────────────────────────────────────────────
   cv: {
     get: async () => apiRequest<{ cv: any | null }>('/cv/'),
