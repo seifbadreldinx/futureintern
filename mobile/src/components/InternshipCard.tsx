@@ -31,7 +31,7 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
             <Image source={{ uri: internship.company_logo }} style={styles.logo} resizeMode="contain" />
           ) : (
             <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoInitial}>{(internship.company || 'C').charAt(0).toUpperCase()}</Text>
+              <Text style={styles.logoInitial}>{String(internship.company || 'C')[0].toUpperCase()}</Text>
             </View>
           )}
         </View>
