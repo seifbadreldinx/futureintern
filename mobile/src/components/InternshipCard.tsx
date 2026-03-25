@@ -19,6 +19,12 @@ const TYPE_COLORS: Record<string, string> = {
   'On-site': '#dc2626',
 };
 
+const getCompanyInitial = (company: any): string => {
+  if (!company) return 'C';
+  const str = String(company);
+  return str[0]?.toUpperCase() || 'C';
+};
+
 export default function InternshipCard({ internship, onPress, onSave, isSaved }: Props) {
   const typeColor = TYPE_COLORS[internship.type] || Colors.primary;
 
@@ -31,7 +37,7 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
             <Image source={{ uri: internship.company_logo }} style={styles.logo} resizeMode="contain" />
           ) : (
             <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoInitial}>{String(internship.company || 'C')[0].toUpperCase()}</Text>
+              <Text style={styles.logoInitial}>{getCompanyInitial(internship.company)}</Text>
             </View>
           )}
         </View>
