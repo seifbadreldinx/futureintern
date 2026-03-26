@@ -15,6 +15,19 @@ const getInitial = (name: string) => name?.[0]?.toUpperCase() || 'C';
 const INITIAL_COLORS = ['#f43f5e', '#2563eb', '#059669', '#7c3aed', '#f59e0b', '#0891b2'];
 const colorFor = (name: string) => INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
 
+const API_BASE = 'https://futureintern-production.up.railway.app';
+
+const resolveLogoUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  return null;
+};
+
 // ─── Company card (separate component so it can use useState for img error) ───
 
 function CompanyCard({ item, styles, C }: { item: Company; styles: any; C: any }) {
@@ -93,8 +106,7 @@ export default function CompaniesScreen() {
         id: c.id,
         name: c.company_name || c.name || 'Company',
         description: c.company_description || c.bio || c.description || '',
-        // Backend returns the logo as `profile_image`
-        logo_url: c.profile_image || c.logo_url || c.company_logo || null,
+        logo_url: resolveLogoUrl(c.profile_image || c.logo_url || c.company_logo),
         website: c.company_website || c.website || '',
         industry: c.industry || '',
         location: c.company_location || c.location || '',

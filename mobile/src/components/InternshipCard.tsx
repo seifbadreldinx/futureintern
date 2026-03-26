@@ -31,18 +31,37 @@ const getCompanyInitial = (company: any): string => {
   return name[0]?.toUpperCase() || 'C';
 };
 
+const API_BASE = 'https://futureintern-production.up.railway.app';
+
+/**
+ * Converts any logo URL to an absolute URL the mobile Image component can load.
+ * Backend stores 3 formats:
+ *  1. Full https:// URL  → use as-is (normalise old Railway paths)
+ *  2. /uploads/logos/…  → prepend backend origin
+ *  3. /logos/…          → static asset served from frontend (skip on mobile)
+ */
+const resolveLogoUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    // Normalise old Railway/localhost URLs that embed /uploads/logos/
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  // /logos/ static paths are frontend-only — not available on mobile
+  return null;
+};
+
 /** Resolve logo URL — backend returns it as `profile_image` on the nested company object */
 const getLogoUrl = (internship: Internship): string | null => {
+  let raw: string | null = null;
   if (internship.company && typeof internship.company === 'object') {
     const co = internship.company as any;
-    if (co.profile_image) return co.profile_image;
-    if (co.logo_url) return co.logo_url;
-    if (co.company_logo) return co.company_logo;
+    raw = co.profile_image || co.logo_url || co.company_logo || null;
   }
-  // Fallback to top-level fields
-  if (internship.company_logo) return internship.company_logo;
-  if (internship.logo_url) return internship.logo_url;
-  return null;
+  if (!raw) raw = internship.company_logo || internship.logo_url || null;
+  return resolveLogoUrl(raw);
 };
 
 export default function InternshipCard({ internship, onPress, onSave, isSaved }: Props) {
