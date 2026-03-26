@@ -6,11 +6,18 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
+import { RootStackParamList } from '../../types';
+
+type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
+  const navigation = useNavigation<NavProp>();
   const { user, logout } = useAuth();
   const { isDark, toggleTheme, C } = useTheme();
   const styles = makeStyles(C);
@@ -64,7 +71,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Points card */}
-        <TouchableOpacity style={styles.pointsCard} activeOpacity={0.85}>
+        <TouchableOpacity style={styles.pointsCard} activeOpacity={0.85} onPress={() => navigation.navigate('Points')}>
           <View style={styles.pointsLeft}>
             <Ionicons name="star" size={20} color="#f59e0b" />
             <View>
@@ -79,13 +86,13 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account</Text>
           <View style={styles.card}>
-            <MenuItem C={C} icon="person-outline" label="Edit Profile" onPress={() => {}} />
+            <MenuItem C={C} icon="person-outline" label="Edit Profile" onPress={() => navigation.navigate('EditProfile')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="lock-closed-outline" label="Change Password" onPress={() => {}} />
+            <MenuItem C={C} icon="document-text-outline" label="My CV" onPress={() => navigation.navigate('CVBuilder')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="document-text-outline" label="My CV" onPress={() => {}} />
+            <MenuItem C={C} icon="briefcase-outline" label="My Applications" onPress={() => navigation.navigate('Applications', { filter: 'all' })} />
             <Divider C={C} />
-            <MenuItem C={C} icon="briefcase-outline" label="My Applications" onPress={() => {}} />
+            <MenuItem C={C} icon="star-outline" label="Points & Rewards" onPress={() => navigation.navigate('Points')} />
           </View>
         </View>
 

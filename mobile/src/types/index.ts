@@ -101,6 +101,9 @@ export type RootStackParamList = {
   Main: undefined;
   InternshipDetail: { id: number };
   CVBuilder: undefined;
+  Applications: { filter?: string } | undefined;
+  Points: undefined;
+  EditProfile: undefined;
 };
 
 // Composite nav type for screens that live inside the tab navigator

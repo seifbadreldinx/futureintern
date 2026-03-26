@@ -103,10 +103,10 @@ export default function DashboardScreen() {
 
       {/* Stats grid */}
       <View style={styles.statsGrid}>
-        <StatCard C={C} label="Total"     value={stats.total}     icon="briefcase-outline"       color={C.primary}  />
-        <StatCard C={C} label="Pending"   value={stats.pending}   icon="time-outline"            color="#f59e0b"    />
-        <StatCard C={C} label="Reviewing" value={stats.reviewing} icon="eye-outline"             color="#3b82f6"    />
-        <StatCard C={C} label="Accepted"  value={stats.accepted}  icon="checkmark-circle-outline" color="#10b981"  />
+        <StatCard C={C} label="Total"     value={stats.total}     icon="briefcase-outline"        color={C.primary} onPress={() => navigation.navigate('Applications', { filter: 'all' })} />
+        <StatCard C={C} label="Pending"   value={stats.pending}   icon="time-outline"             color="#f59e0b"   onPress={() => navigation.navigate('Applications', { filter: 'pending' })} />
+        <StatCard C={C} label="Reviewing" value={stats.reviewing} icon="eye-outline"              color="#3b82f6"   onPress={() => navigation.navigate('Applications', { filter: 'reviewing' })} />
+        <StatCard C={C} label="Accepted"  value={stats.accepted}  icon="checkmark-circle-outline" color="#10b981"  onPress={() => navigation.navigate('Applications', { filter: 'accepted' })} />
       </View>
 
       {/* Recent Applications */}
@@ -114,7 +114,7 @@ export default function DashboardScreen() {
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Applications</Text>
           {applications.length > 5 && (
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('Applications', { filter: 'all' })}>
               <Text style={[styles.seeAll, { color: C.primary }]}>See all</Text>
             </TouchableOpacity>
           )}
@@ -138,10 +138,12 @@ export default function DashboardScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         <View style={styles.actionsGrid}>
-          <QuickAction C={C} icon="briefcase-outline"   label="Browse Jobs" color={C.primary}  onPress={() => navigation.navigate('Browse')} />
-          <QuickAction C={C} icon="business-outline"    label="Companies"   color="#2563eb"    onPress={() => navigation.navigate('Companies')} />
-          <QuickAction C={C} icon="bookmark-outline"    label="Saved"       color="#0891b2"    onPress={() => navigation.navigate('Saved')} />
-          <QuickAction C={C} icon="star-outline"        label="Points"      color="#f59e0b"    onPress={() => {}} />
+          <QuickAction C={C} icon="briefcase-outline"   label="Browse Jobs"    color={C.primary} onPress={() => navigation.navigate('Browse')} />
+          <QuickAction C={C} icon="business-outline"    label="Companies"      color="#2563eb"   onPress={() => navigation.navigate('Companies')} />
+          <QuickAction C={C} icon="document-text-outline" label="My CV"        color="#059669"   onPress={() => navigation.navigate('CVBuilder')} />
+          <QuickAction C={C} icon="star-outline"        label="Points"         color="#f59e0b"   onPress={() => navigation.navigate('Points')} />
+          <QuickAction C={C} icon="bookmark-outline"    label="Saved"          color="#0891b2"   onPress={() => navigation.navigate('Saved')} />
+          <QuickAction C={C} icon="list-outline"        label="Applications"   color="#7c3aed"   onPress={() => navigation.navigate('Applications', { filter: 'all' })} />
         </View>
       </View>
     </ScrollView>
@@ -150,21 +152,25 @@ export default function DashboardScreen() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({ C, label, value, icon, color }: { C: any; label: string; value: number; icon: any; color: string }) {
+function StatCard({ C, label, value, icon, color, onPress }: { C: any; label: string; value: number; icon: any; color: string; onPress: () => void }) {
   return (
-    <View style={[{
-      flex: 1, minWidth: '45%',
-      backgroundColor: C.card,
-      borderRadius: Radius.md, padding: Spacing.md,
-      alignItems: 'center', gap: 4,
-      borderTopWidth: 3, borderTopColor: color,
-      borderWidth: 1, borderColor: C.border,
-      ...Shadow.sm,
-    }]}>
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={onPress}
+      style={{
+        flex: 1, minWidth: '45%',
+        backgroundColor: C.card,
+        borderRadius: Radius.md, padding: Spacing.md,
+        alignItems: 'center', gap: 4,
+        borderTopWidth: 3, borderTopColor: color,
+        borderWidth: 1, borderColor: C.border,
+        ...Shadow.sm,
+      }}
+    >
       <Ionicons name={icon} size={20} color={color} />
       <Text style={{ fontSize: FontSize['2xl'], fontWeight: '900', color: C.text }}>{value}</Text>
       <Text style={{ fontSize: FontSize.xs, color: C.textSecondary, fontWeight: '500' }}>{label}</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 

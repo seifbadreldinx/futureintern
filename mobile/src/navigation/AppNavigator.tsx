@@ -11,6 +11,10 @@ import { RootStackParamList } from '../types';
 import AuthNavigator from './AuthNavigator';
 import MainNavigator from './MainNavigator';
 import InternshipDetailScreen from '../screens/main/InternshipDetailScreen';
+import CVBuilderScreen from '../screens/main/CVBuilderScreen';
+import ApplicationsScreen from '../screens/main/ApplicationsScreen';
+import PointsScreen from '../screens/main/PointsScreen';
+import EditProfileScreen from '../screens/main/EditProfileScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -45,11 +49,11 @@ export default function AppNavigator() {
         {user ? (
           <>
             <Stack.Screen name="Main" component={MainNavigator} />
-            <Stack.Screen
-              name="InternshipDetail"
-              component={InternshipDetailScreen}
-              options={{ headerShown: false }}
-            />
+            <Stack.Screen name="InternshipDetail" component={InternshipDetailScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="CVBuilder" component={CVBuilderScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Applications" component={ApplicationsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Points" component={PointsScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />
