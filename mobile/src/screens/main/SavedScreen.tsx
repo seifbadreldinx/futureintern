@@ -7,12 +7,16 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 import { api } from '../../services/api';
 import { Internship, TabScreenNavProp } from '../../types';
-import { Colors, FontSize, Spacing } from '../../constants/theme';
+import { FontSize, Spacing } from '../../constants/theme';
+import { useTheme } from '../../context/ThemeContext';
 import InternshipCard from '../../components/InternshipCard';
 import EmptyState from '../../components/EmptyState';
 
 export default function SavedScreen() {
   const navigation = useNavigation<TabScreenNavProp>();
+  const { C } = useTheme();
+  const styles = makeStyles(C);
+
   const [saved, setSaved] = useState<Internship[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,7 +48,6 @@ export default function SavedScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Saved Internships</Text>
         <Text style={styles.headerSub}>
@@ -54,7 +57,7 @@ export default function SavedScreen() {
 
       {loading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={C.primary} />
         </View>
       ) : (
         <FlatList
@@ -65,7 +68,8 @@ export default function SavedScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => loadSaved(true)}
-              tintColor={Colors.primary}
+              tintColor={C.primary}
+              colors={[C.primary]}
             />
           }
           ListEmptyComponent={
@@ -91,15 +95,15 @@ export default function SavedScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
+const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: C.background },
   header: {
-    backgroundColor: Colors.primary,
+    backgroundColor: C.primary,
     paddingTop: Platform.OS === 'ios' ? 60 : 44,
     paddingBottom: 24,
     paddingHorizontal: Spacing.lg,
   },
-  headerTitle: { fontSize: FontSize['2xl'], fontWeight: '900', color: Colors.white },
+  headerTitle: { fontSize: FontSize['2xl'], fontWeight: '900', color: '#fff' },
   headerSub: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
   loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   listContent: { padding: Spacing.md, flexGrow: 1 },

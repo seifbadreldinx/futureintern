@@ -12,10 +12,67 @@ import { useTheme } from '../../context/ThemeContext';
 
 const getInitial = (name: string) => name?.[0]?.toUpperCase() || 'C';
 
-// Deterministic color per company initial
 const INITIAL_COLORS = ['#f43f5e', '#2563eb', '#059669', '#7c3aed', '#f59e0b', '#0891b2'];
-const colorFor = (name: string) =>
-  INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
+const colorFor = (name: string) => INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
+
+// ─── Company card (separate component so it can use useState for img error) ───
+
+function CompanyCard({ item, styles, C }: { item: Company; styles: any; C: any }) {
+  const [imgError, setImgError] = useState(false);
+  const logoColor = colorFor(item.name);
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        {/* Logo */}
+        <View style={[styles.logoWrap, { borderColor: logoColor + '30' }]}>
+          {item.logo_url && !imgError ? (
+            <Image
+              source={{ uri: item.logo_url }}
+              style={styles.logo}
+              resizeMode="contain"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <View style={[styles.logoPlaceholder, { backgroundColor: logoColor + '18' }]}>
+              <Text style={[styles.logoInitial, { color: logoColor }]}>
+                {getInitial(item.name)}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Info */}
+        <View style={styles.cardInfo}>
+          <Text style={styles.companyName} numberOfLines={1}>{item.name}</Text>
+          {item.industry ? (
+            <Text style={styles.industry} numberOfLines={1}>{item.industry}</Text>
+          ) : null}
+          {item.location ? (
+            <View style={styles.locationRow}>
+              <Ionicons name="location-outline" size={11} color={C.textSecondary} />
+              <Text style={styles.location}>{item.location}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        {/* Open roles badge */}
+        {(item.internships_count ?? 0) > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{item.internships_count}</Text>
+            <Text style={styles.badgeLabel}>open</Text>
+          </View>
+        )}
+      </View>
+
+      {item.description ? (
+        <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
+      ) : null}
+    </View>
+  );
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function CompaniesScreen() {
   const { C } = useTheme();
@@ -35,12 +92,13 @@ export default function CompaniesScreen() {
       const list: Company[] = (res.companies || []).map((c: any) => ({
         id: c.id,
         name: c.company_name || c.name || 'Company',
-        description: c.bio || c.description || '',
-        logo_url: c.logo_url || c.company_logo || null,
-        website: c.website || c.portfolio_url || '',
+        description: c.company_description || c.bio || c.description || '',
+        // Backend returns the logo as `profile_image`
+        logo_url: c.profile_image || c.logo_url || c.company_logo || null,
+        website: c.company_website || c.website || '',
         industry: c.industry || '',
-        location: c.location || '',
-        internships_count: c.internships_count ?? 0,
+        location: c.company_location || c.location || '',
+        internships_count: c.internship_count ?? c.internships_count ?? 0,
       }));
       setCompanies(list);
       setFiltered(list);
@@ -67,49 +125,6 @@ export default function CompaniesScreen() {
     }
   }, [search, companies]);
 
-  const renderItem = ({ item }: { item: Company }) => {
-    const logoColor = colorFor(item.name);
-    return (
-      <View style={styles.card}>
-        {/* Logo */}
-        <View style={styles.cardHeader}>
-          <View style={[styles.logoWrap, { borderColor: logoColor + '30' }]}>
-            {item.logo_url ? (
-              <Image source={{ uri: item.logo_url }} style={styles.logo} resizeMode="contain" />
-            ) : (
-              <View style={[styles.logoPlaceholder, { backgroundColor: logoColor + '18' }]}>
-                <Text style={[styles.logoInitial, { color: logoColor }]}>
-                  {getInitial(item.name)}
-                </Text>
-              </View>
-            )}
-          </View>
-          <View style={styles.cardInfo}>
-            <Text style={styles.companyName} numberOfLines={1}>{item.name}</Text>
-            {item.industry ? (
-              <Text style={styles.industry} numberOfLines={1}>{item.industry}</Text>
-            ) : null}
-            {item.location ? (
-              <View style={styles.locationRow}>
-                <Ionicons name="location-outline" size={11} color={C.textSecondary} />
-                <Text style={styles.location}>{item.location}</Text>
-              </View>
-            ) : null}
-          </View>
-          {(item.internships_count ?? 0) > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.internships_count}</Text>
-              <Text style={styles.badgeLabel}>open</Text>
-            </View>
-          )}
-        </View>
-        {item.description ? (
-          <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
-        ) : null}
-      </View>
-    );
-  };
-
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -120,7 +135,7 @@ export default function CompaniesScreen() {
         </Text>
       </View>
 
-      {/* Search bar */}
+      {/* Search */}
       <View style={styles.searchWrap}>
         <View style={styles.searchBox}>
           <Ionicons name="search-outline" size={16} color={C.textSecondary} style={{ marginRight: 8 }} />
@@ -148,7 +163,7 @@ export default function CompaniesScreen() {
         <FlatList
           data={filtered}
           keyExtractor={item => String(item.id)}
-          renderItem={renderItem}
+          renderItem={({ item }) => <CompanyCard item={item} styles={styles} C={C} />}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
           refreshControl={
@@ -173,6 +188,8 @@ export default function CompaniesScreen() {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
 const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
   container: { flex: 1, backgroundColor: C.background },
   header: {
@@ -183,7 +200,11 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
   },
   headerTitle: { fontSize: FontSize['2xl'], fontWeight: '900', color: '#fff', marginBottom: 2 },
   headerSub: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.8)' },
-  searchWrap: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, backgroundColor: C.background },
+  searchWrap: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    backgroundColor: C.background,
+  },
   searchBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -217,14 +238,27 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
     backgroundColor: C.gray50,
   },
   logo: { width: '100%', height: '100%' },
-  logoPlaceholder: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  logoPlaceholder: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   logoInitial: { fontSize: FontSize.xl, fontWeight: '900' },
   cardInfo: { flex: 1 },
   companyName: { fontSize: FontSize.base, fontWeight: '800', color: C.text, marginBottom: 2 },
   industry: { fontSize: FontSize.xs, color: C.primary, fontWeight: '600', marginBottom: 2 },
   locationRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
   location: { fontSize: FontSize.xs, color: C.textSecondary },
-  badge: { alignItems: 'center', paddingHorizontal: 10, paddingVertical: 6, backgroundColor: C.primary + '15', borderRadius: Radius.md, borderWidth: 1, borderColor: C.primary + '30' },
+  badge: {
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    backgroundColor: C.primary + '15',
+    borderRadius: Radius.md,
+    borderWidth: 1,
+    borderColor: C.primary + '30',
+  },
   badgeText: { fontSize: FontSize.md, fontWeight: '900', color: C.primary },
   badgeLabel: { fontSize: 9, color: C.primary, fontWeight: '600', textTransform: 'uppercase' },
   description: { fontSize: FontSize.sm, color: C.textSecondary, lineHeight: 18 },

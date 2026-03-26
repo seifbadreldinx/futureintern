@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { FontSize, Spacing, Radius, Shadow } from '../constants/theme';
@@ -31,15 +31,17 @@ const getCompanyInitial = (company: any): string => {
   return name[0]?.toUpperCase() || 'C';
 };
 
-/** Resolve logo URL from any of the possible field locations */
+/** Resolve logo URL — backend returns it as `profile_image` on the nested company object */
 const getLogoUrl = (internship: Internship): string | null => {
-  if (internship.company_logo) return internship.company_logo;
-  if (internship.logo_url) return internship.logo_url;
   if (internship.company && typeof internship.company === 'object') {
     const co = internship.company as any;
+    if (co.profile_image) return co.profile_image;
     if (co.logo_url) return co.logo_url;
     if (co.company_logo) return co.company_logo;
   }
+  // Fallback to top-level fields
+  if (internship.company_logo) return internship.company_logo;
+  if (internship.logo_url) return internship.logo_url;
   return null;
 };
 
@@ -48,17 +50,19 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
   const styles = makeStyles(C);
   const typeColor = TYPE_COLORS[internship.type] || C.primary;
   const logoUrl = getLogoUrl(internship);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       {/* Header row */}
       <View style={styles.header}>
         <View style={styles.logoBox}>
-          {logoUrl ? (
+          {logoUrl && !imgError ? (
             <Image
               source={{ uri: logoUrl }}
               style={styles.logo}
               resizeMode="contain"
+              onError={() => setImgError(true)}
             />
           ) : (
             <View style={styles.logoPlaceholder}>

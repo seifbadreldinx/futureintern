@@ -5,8 +5,8 @@
     "version": "1.0.0",
     "scheme": "futureintern",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/futureintern-logo.jpg",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/futureintern-logo.jpg",
       "resizeMode": "contain",
@@ -21,8 +21,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#f43f5e"
+        "foregroundImage": "./assets/futureintern-logo.jpg",
+        "backgroundColor": "#ffffff"
       },
       "package": "com.futureintern.app"
     },
