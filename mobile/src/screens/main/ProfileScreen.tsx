@@ -142,13 +142,13 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.card}>
-            <MenuItem C={C} icon="help-circle-outline" label="Help Center" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/get-help')} />
+            <MenuItem C={C} icon="help-circle-outline" label="Help Center" onPress={() => navigation.navigate('HelpCenter')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="chatbubble-outline" label="Contact Support" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/contact')} />
+            <MenuItem C={C} icon="chatbubble-outline" label="Contact Support" onPress={() => navigation.navigate('ContactSupport')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="document-outline" label="Privacy Policy" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/privacy-policy')} />
+            <MenuItem C={C} icon="document-outline" label="Privacy Policy" onPress={() => navigation.navigate('PrivacyPolicy')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="shield-checkmark-outline" label="Terms of Service" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/terms-of-service')} />
+            <MenuItem C={C} icon="shield-checkmark-outline" label="Terms of Service" onPress={() => navigation.navigate('TermsOfService')} />
           </View>
         </View>
 

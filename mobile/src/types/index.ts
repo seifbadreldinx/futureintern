@@ -104,6 +104,10 @@ export type RootStackParamList = {
   Applications: { filter?: string } | undefined;
   Points: undefined;
   EditProfile: undefined;
+  HelpCenter: undefined;
+  ContactSupport: undefined;
+  PrivacyPolicy: undefined;
+  TermsOfService: undefined;
 };
 
 // Composite nav type for screens that live inside the tab navigator

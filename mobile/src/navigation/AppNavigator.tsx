@@ -15,6 +15,10 @@ import CVBuilderScreen from '../screens/main/CVBuilderScreen';
 import ApplicationsScreen from '../screens/main/ApplicationsScreen';
 import PointsScreen from '../screens/main/PointsScreen';
 import EditProfileScreen from '../screens/main/EditProfileScreen';
+import HelpCenterScreen from '../screens/main/HelpCenterScreen';
+import ContactSupportScreen from '../screens/main/ContactSupportScreen';
+import PrivacyPolicyScreen from '../screens/main/PrivacyPolicyScreen';
+import TermsOfServiceScreen from '../screens/main/TermsOfServiceScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -54,6 +58,10 @@ export default function AppNavigator() {
             <Stack.Screen name="Applications" component={ApplicationsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Points" component={PointsScreen} options={{ headerShown: false }} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="HelpCenter" component={HelpCenterScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="ContactSupport" component={ContactSupportScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />

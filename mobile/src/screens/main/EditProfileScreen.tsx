@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
-  Platform, Alert, ActivityIndicator, KeyboardAvoidingView,
+  Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
 
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +33,52 @@ export default function EditProfileScreen() {
   );
   const [linkedin, setLinkedin] = useState('');
   const [saving, setSaving] = useState(false);
+  const [photoUri, setPhotoUri] = useState<string | null>(user?.profile_image || null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const initials = user?.name
+    ? user.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
+
+  const pickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Please allow access to your photo library to upload a profile photo.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      setPhotoUri(asset.uri);
+      // Upload to backend
+      setUploadingPhoto(true);
+      try {
+        const token = await (await import('../../services/api')).getAuthToken();
+        const form = new FormData();
+        form.append('profile_image', {
+          uri: asset.uri,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        } as any);
+        const res = await fetch('https://futureintern-production.up.railway.app/api/users/profile-image', {
+          method: 'POST',
+          body: form,
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error('Upload failed');
+        await refreshUserData?.();
+      } catch {
+        Alert.alert('Upload Failed', 'Could not upload photo. It will be saved locally for now.');
+      } finally {
+        setUploadingPhoto(false);
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -78,6 +125,26 @@ export default function EditProfileScreen() {
             : <Text style={styles.saveText}>Save</Text>
           }
         </TouchableOpacity>
+      </View>
+
+      {/* Avatar section */}
+      <View style={styles.avatarSection}>
+        <TouchableOpacity onPress={pickPhoto} style={styles.avatarWrapper} activeOpacity={0.85}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.avatarImage} />
+          ) : (
+            <View style={styles.avatarFallback}>
+              <Text style={styles.avatarInitials}>{initials}</Text>
+            </View>
+          )}
+          <View style={styles.cameraOverlay}>
+            {uploadingPhoto
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Ionicons name="camera" size={18} color="#fff" />
+            }
+          </View>
+        </TouchableOpacity>
+        <Text style={styles.avatarHint}>Tap to change photo</Text>
       </View>
 
       <ScrollView
@@ -197,6 +264,31 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
   headerTitle: { flex: 1, fontSize: FontSize.xl, fontWeight: '800', color: '#fff' },
   saveBtn: { padding: 4 },
   saveText: { fontSize: FontSize.base, fontWeight: '700', color: '#fff' },
+  avatarSection: {
+    backgroundColor: C.primary,
+    paddingBottom: 24,
+    alignItems: 'center',
+  },
+  avatarWrapper: { position: 'relative' },
+  avatarImage: {
+    width: 90, height: 90, borderRadius: 45,
+    borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)',
+  },
+  avatarFallback: {
+    width: 90, height: 90, borderRadius: 45,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)',
+  },
+  avatarInitials: { fontSize: FontSize['2xl'], fontWeight: '900', color: '#fff' },
+  cameraOverlay: {
+    position: 'absolute', bottom: 0, right: 0,
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: C.primary,
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: '#fff',
+  },
+  avatarHint: { fontSize: FontSize.xs, color: 'rgba(255,255,255,0.8)', marginTop: 8 },
   scroll: { padding: Spacing.md, paddingBottom: 60 },
   sectionTitle: {
     fontSize: FontSize.xs, fontWeight: '700', color: C.textSecondary,

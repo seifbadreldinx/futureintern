@@ -47,13 +47,16 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
         navigation.goBack();
         return;
       }
-      setInternship(detailRes.value);
+      // API returns { internship: {...} } or the object directly
+      const raw = detailRes.value;
+      setInternship(raw?.internship ?? raw);
       if (savedRes.status === 'fulfilled') {
         const savedIds = (savedRes.value.saved_internships || []).map((i: Internship) => i.id);
         setIsSaved(savedIds.includes(id));
       }
       if (appsRes.status === 'fulfilled') {
-        const appliedIds = (appsRes.value.applications || []).map((a: any) => a.internship_id);
+        const apps = appsRes.value?.applications ?? appsRes.value ?? [];
+        const appliedIds = apps.map((a: any) => a.internship_id ?? a.internship?.id);
         setHasApplied(appliedIds.includes(id));
       }
     } catch {
