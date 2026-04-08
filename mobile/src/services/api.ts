@@ -267,7 +267,7 @@ export const api = {
     getEarningActivities: async () => apiRequest<any>('/points/earning-activities'),
 
     claimDaily: async () =>
-      apiRequest<any>('/points/claim-daily', { method: 'POST' }),
+      apiRequest<any>('/points/daily-claim', { method: 'POST' }),
   },
 
   // ── Notifications ────────────────────────────────────────────────────────

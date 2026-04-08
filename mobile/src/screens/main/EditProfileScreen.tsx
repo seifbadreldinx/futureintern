@@ -55,25 +55,30 @@ export default function EditProfileScreen() {
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
       setPhotoUri(asset.uri);
-      // Upload to backend
       setUploadingPhoto(true);
       try {
         const token = await (await import('../../services/api')).getAuthToken();
         const form = new FormData();
-        form.append('profile_image', {
-          uri: asset.uri,
-          type: 'image/jpeg',
+        // Backend expects field name 'logo' at endpoint /users/upload-logo
+        form.append('logo', {
+          uri: Platform.OS === 'ios' ? asset.uri.replace('file://', '') : asset.uri,
+          type: asset.mimeType || 'image/jpeg',
           name: 'profile.jpg',
         } as any);
-        const res = await fetch('https://futureintern-production.up.railway.app/api/users/profile-image', {
+        const res = await fetch('https://futureintern-production.up.railway.app/api/users/upload-logo', {
           method: 'POST',
           body: form,
+          // Do NOT set Content-Type – let fetch set it with the correct boundary
           headers: { Authorization: `Bearer ${token}` },
         });
-        if (!res.ok) throw new Error('Upload failed');
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || `Upload failed (${res.status})`);
+        }
         await refreshUserData?.();
-      } catch {
-        Alert.alert('Upload Failed', 'Could not upload photo. It will be saved locally for now.');
+        Alert.alert('✅ Photo Updated', 'Your profile photo has been updated successfully.');
+      } catch (err: any) {
+        Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
       } finally {
         setUploadingPhoto(false);
       }

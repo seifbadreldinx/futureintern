@@ -10,6 +10,7 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { api } from '../../services/api';
 import { Colors, FontSize, Spacing, Radius } from '../../constants/theme';
 import { AuthStackParamList } from '../../types';
@@ -34,6 +35,7 @@ type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignUp
 
 export default function SignUpScreen({ navigation }: Props) {
   const { loginWithGoogle } = useAuth();
+  const { isDark, toggleTheme, C } = useTheme();
   const [step, setStep] = useState(1);
   const [userType, setUserType] = useState<UserType>('student');
   const [loading, setLoading] = useState(false);
@@ -213,6 +215,20 @@ export default function SignUpScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* Theme toggle */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute', top: Platform.OS === 'ios' ? 56 : 16, right: 20, zIndex: 20,
+          width: 38, height: 38, borderRadius: 19,
+          backgroundColor: 'rgba(255,255,255,0.15)',
+          alignItems: 'center', justifyContent: 'center',
+          borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)',
+        }}
+        onPress={toggleTheme}
+        activeOpacity={0.8}
+      >
+        <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color="#fff" />
+      </TouchableOpacity>
       <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         {/* Header */}
