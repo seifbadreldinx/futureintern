@@ -1,7 +1,8 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -30,20 +31,21 @@ const TAB_ICONS: Record<keyof MainTabParamList, { active: IoniconName; inactive:
 /** Floating AI chatbot button — appears on every main screen like the website */
 function ChatbotFAB() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { C } = useTheme();
   return (
     <TouchableOpacity
       onPress={() => navigation.navigate('Chatbot')}
-      style={[styles.fab, { backgroundColor: C.primary }]}
+      style={styles.fab}
       activeOpacity={0.9}
     >
       <Ionicons name="hardware-chip-outline" size={22} color="#fff" />
+      {/* Amber "AI" badge — identical to the design seen logged-out */}
       <View style={styles.fabBadge}>
-        <Ionicons name="star" size={9} color="#fff" />
+        <Text style={{ fontSize: 8, fontWeight: '900', color: '#fff' }}>AI</Text>
       </View>
     </TouchableOpacity>
   );
 }
+
 
 export default function MainNavigator() {
   const { C } = useTheme();
@@ -102,14 +104,16 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
+    backgroundColor: '#f43f5e',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: '#f43f5e',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
   },
+
   fabBadge: {
     position: 'absolute',
     top: 4,

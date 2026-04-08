@@ -11,14 +11,17 @@ import { api } from '../../services/api';
 import { Internship } from '../../types';
 import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { RootStackParamList } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const API_BASE = 'https://futureintern-production.up.railway.app';
 
 const getCompanyName = (company: any): string => {
   if (!company) return '';
-  if (typeof company === 'object') return company.name || '';
+  if (typeof company === 'object') return company.name || company.company_name || '';
   return String(company);
 };
-
-const API_BASE = 'https://futureintern-production.up.railway.app';
 
 function resolveLogoUrl(raw: string | undefined | null): string | null {
   if (!raw) return null;
@@ -26,80 +29,125 @@ function resolveLogoUrl(raw: string | undefined | null): string | null {
   return `${API_BASE}${raw.startsWith('/') ? '' : '/'}${raw}`;
 }
 
-function CompanyLogo({ internship }: { internship: Internship }) {
-  const companyName = getCompanyName((internship as any).company) || (internship as any).company_name || 'C';
-  const rawLogo = (internship as any).company_logo_url
-    || (internship as any).logo_url
-    || (internship as any).company_logo
-    || ((internship as any).company && typeof (internship as any).company === 'object' && ((internship as any).company.logo_url || (internship as any).company.profile_image))
-    || null;
-  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=ffe4e6&color=f43f5e&size=128&bold=true`;
-  const [src, setSrc] = useState<string>(resolveLogoUrl(rawLogo) || fallbackUrl);
+// ─── Company Logo ─────────────────────────────────────────────────────────────
+
+function CompanyLogo({ internship }: { internship: any }) {
+  const companyObj = internship.company;
+  const companyName =
+    getCompanyName(companyObj) ||
+    internship.company_name ||
+    internship.title?.split(' ')[0] ||
+    'Co';
+
+  // Try every possible logo field (direct + nested inside company object)
+  const rawLogo =
+    internship.company_logo_url ||
+    internship.logo_url ||
+    internship.company_logo ||
+    (companyObj && typeof companyObj === 'object'
+      ? companyObj.logo_url ||
+        companyObj.logo ||
+        companyObj.profile_image ||
+        companyObj.company_logo_url ||
+        companyObj.image
+      : null) ||
+    null;
+
+  const resolved = resolveLogoUrl(rawLogo);
+  const fallback = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=ffe4e6&color=f43f5e&size=128&bold=true&format=png`;
+
+  const [src, setSrc] = useState<string>(resolved || fallback);
+
+  // Reset when internship changes
+  useEffect(() => {
+    setSrc(resolved || fallback);
+  }, [internship.id]);
 
   return (
-    <View style={logoStyles.wrap}>
+    <View style={logoS.wrap}>
       <Image
         source={{ uri: src }}
-        style={logoStyles.img}
+        style={logoS.img}
         resizeMode="contain"
-        onError={() => setSrc(fallbackUrl)}
+        onError={() => setSrc(fallback)}
       />
     </View>
   );
 }
 
-const logoStyles = StyleSheet.create({
+const logoS = StyleSheet.create({
   wrap: {
     width: 72, height: 72, borderRadius: 16,
-    backgroundColor: '#fff', borderWidth: 3, borderColor: Colors.black,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
-    shadowColor: Colors.black, shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 1, shadowRadius: 0, elevation: 4,
+    backgroundColor: '#fff',
+    borderWidth: 2.5, borderColor: Colors.border,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 12,
     overflow: 'hidden',
+    ...Shadow.sm,
   },
-  img: { width: 62, height: 62, borderRadius: 13 },
+  img: { width: 64, height: 64 },
 });
+
+// ─── Bullet list renderer ─────────────────────────────────────────────────────
+
+function BulletList({ text, color }: { text: string; color: string }) {
+  const lines = text
+    .split('\n')
+    .map(l => l.replace(/^[-•*]\s*/, '').trim())
+    .filter(Boolean);
+  if (!lines.length) return null;
+  return (
+    <View>
+      {lines.map((line, i) => (
+        <View key={i} style={{ flexDirection: 'row', marginBottom: 6, paddingRight: 4 }}>
+          <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: color, marginTop: 7, marginRight: 8, flexShrink: 0 }} />
+          <Text style={{ fontSize: FontSize.sm, color: Colors.textSecondary, lineHeight: 22, flex: 1 }}>{line}</Text>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ─── Props ─────────────────────────────────────────────────────────────────────
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'InternshipDetail'>;
   route: RouteProp<RootStackParamList, 'InternshipDetail'>;
 };
 
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
 export default function InternshipDetailScreen({ navigation, route }: Props) {
   const { id } = route.params;
-  const [internship, setInternship] = useState<Internship | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [applying, setApplying] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const { C } = useTheme();
 
-  useEffect(() => {
-    loadData();
-  }, [id]);
+  const [internship, setInternship] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isSaved, setIsSaved] = useState(false);
+  const [applying, setApplying] = useState(false);
+
+  useEffect(() => { loadData(); }, [id]);
 
   const loadData = async () => {
     try {
-      const [detailRes, savedRes, appsRes] = await Promise.allSettled([
+      const [detailRes, savedRes] = await Promise.allSettled([
         api.internships.detail(id),
         api.internships.saved(),
-        api.applications.list(),
       ]);
+
       if (detailRes.status === 'rejected') {
         Alert.alert('Error', 'Failed to load internship details.');
         navigation.goBack();
         return;
       }
-      // API returns { internship: {...} } or the object directly
-      const raw = detailRes.value;
-      setInternship(raw?.internship ?? raw);
+
+      const raw = (detailRes as any).value;
+      const intern = raw?.internship ?? raw;
+      setInternship(intern);
+
       if (savedRes.status === 'fulfilled') {
-        const savedIds = (savedRes.value.saved_internships || []).map((i: Internship) => i.id);
+        const savedIds = ((savedRes as any).value.saved_internships || []).map((i: any) => i.id);
         setIsSaved(savedIds.includes(id));
-      }
-      if (appsRes.status === 'fulfilled') {
-        const apps = appsRes.value?.applications ?? appsRes.value ?? [];
-        const appliedIds = apps.map((a: any) => a.internship_id ?? a.internship?.id);
-        setHasApplied(appliedIds.includes(id));
       }
     } catch {
       Alert.alert('Error', 'Failed to load internship details.');
@@ -120,58 +168,49 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
     }
   };
 
+  // Apply — always open external URL, exactly like the website
   const handleApply = async () => {
-    if (hasApplied) return;
+    if (applying) return;
+    setApplying(true);
+    try {
+      // Pick first available external URL
+      const externalUrl =
+        internship?.application_url ||
+        internship?.apply_url ||
+        internship?.external_url ||
+        internship?.apply_link ||
+        internship?.url ||
+        (internship?.company && typeof internship.company === 'object'
+          ? internship.company.website || internship.company.url
+          : null) ||
+        null;
 
-    // If the internship has an external application URL, open it directly (like website behaviour)
-    const applyUrl = internship?.application_url || internship?.apply_url || internship?.external_url;
-    if (applyUrl) {
-      const canOpen = await Linking.canOpenURL(applyUrl);
-      if (canOpen) {
-        await Linking.openURL(applyUrl);
-        // Also record the application internally (best-effort)
+      if (externalUrl) {
+        // Record internally (best-effort, ignore errors)
         api.applications.apply(id).catch(() => {});
-        setHasApplied(true);
-        return;
+        await Linking.openURL(externalUrl);
+      } else {
+        // Fallback: submit internal application
+        await api.applications.apply(id);
+        Alert.alert('🎉 Application Submitted!', 'Your application has been submitted. Good luck!');
       }
+    } catch (err: any) {
+      const msg = (err?.message || '').toLowerCase();
+      if (msg.includes('already') || msg.includes('duplicate')) {
+        Alert.alert('Already Applied', 'You have already applied for this internship.');
+      } else {
+        Alert.alert('Error', err?.message || 'Could not submit application. Please try again.');
+      }
+    } finally {
+      setApplying(false);
     }
-
-    // Fallback: internal application
-    Alert.alert(
-      'Apply Now',
-      `Apply for "${internship?.title}" at ${getCompanyName(internship?.company)}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Apply',
-          onPress: async () => {
-            setApplying(true);
-            try {
-              await api.applications.apply(id);
-              setHasApplied(true);
-              Alert.alert('🎉 Application Submitted!', 'Your application has been successfully submitted. Good luck!');
-            } catch (err: any) {
-              const msg = err.message || '';
-              if (msg.toLowerCase().includes('deadline')) {
-                Alert.alert('Deadline Passed', 'The application deadline for this internship has passed. Applications are closed.');
-              } else if (msg.toLowerCase().includes('already')) {
-                Alert.alert('Already Applied', 'You have already applied for this internship.');
-                setHasApplied(true);
-              } else {
-                Alert.alert('Application Failed', msg || 'Could not submit application. Please try again.');
-              }
-            } finally {
-              setApplying(false);
-            }
-          },
-        },
-      ]
-    );
   };
+
+  // ── Loading ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: C.background }}>
         <ActivityIndicator size="large" color={Colors.primary} />
       </View>
     );
@@ -179,194 +218,236 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
 
   if (!internship) return null;
 
-  const deadlineDate = internship.deadline
-    ? new Date(internship.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-    : null;
+  const companyName = getCompanyName(internship.company) || internship.company_name || '';
+  const companyAbout =
+    (internship.company && typeof internship.company === 'object'
+      ? internship.company.description || internship.company.about || internship.company.bio
+      : null) || internship.company_description || '';
+
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <View style={styles.container}>
-      {/* Sticky Header */}
-      <View style={styles.navBar}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.navBtn}>
-          <Ionicons name="arrow-back" size={22} color={Colors.text} />
+    <View style={{ flex: 1, backgroundColor: C.background }}>
+
+      {/* ── Nav bar ── */}
+      <View style={[S.navBar, { backgroundColor: C.card, borderBottomColor: C.border }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={S.navBtn}>
+          <Ionicons name="arrow-back" size={22} color={C.text} />
         </TouchableOpacity>
-        <Text style={styles.navTitle} numberOfLines={1}>{internship.title}</Text>
-        <TouchableOpacity onPress={handleSave} style={styles.navBtn}>
+        <Text style={[S.navTitle, { color: C.text }]} numberOfLines={1}>{internship.title}</Text>
+        <TouchableOpacity onPress={handleSave} style={S.navBtn}>
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
             size={22}
-            color={isSaved ? Colors.primary : Colors.text}
+            color={isSaved ? Colors.primary : C.text}
           />
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* Hero card */}
-        <View style={styles.heroCard}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+
+        {/* ── Hero card — logo + title + Apply Now ── */}
+        <View style={[S.heroCard, { backgroundColor: C.card, borderColor: C.border }]}>
           <CompanyLogo internship={internship} />
-          <Text style={styles.heroTitle}>{internship.title}</Text>
-          <Text style={styles.heroCompany}>{getCompanyName(internship.company)}</Text>
+          <Text style={[S.heroTitle, { color: C.text }]}>{internship.title}</Text>
+          <Text style={[S.heroCompany, { color: C.textSecondary }]}>{companyName}</Text>
 
-          {/* Tags */}
-          <View style={styles.tagRow}>
-            {internship.location && (
-              <View style={styles.tag}>
-                <Ionicons name="location-outline" size={13} color={Colors.textSecondary} />
-                <Text style={styles.tagText}>{internship.location}</Text>
+          {/* Location + Type chips */}
+          <View style={S.tagRow}>
+            {internship.location ? (
+              <View style={[S.tag, { backgroundColor: C.background, borderColor: C.border }]}>
+                <Ionicons name="location-outline" size={13} color={C.textSecondary} />
+                <Text style={[S.tagText, { color: C.textSecondary }]}>{internship.location}</Text>
               </View>
-            )}
-            <View style={[styles.tag, styles.typeTag]}>
-              <Text style={styles.typeTagText}>{internship.type}</Text>
-            </View>
-            {internship.is_paid && (
-              <View style={[styles.tag, styles.paidTag]}>
-                <Text style={styles.paidTagText}>Paid</Text>
+            ) : null}
+            {internship.type ? (
+              <View style={[S.tag, { backgroundColor: Colors.primary + '18', borderColor: Colors.primary + '50' }]}>
+                <Text style={{ fontSize: FontSize.xs, color: Colors.primary, fontWeight: '700' }}>
+                  {internship.type}
+                </Text>
               </View>
-            )}
+            ) : null}
           </View>
 
-          {/* Quick stats */}
-          <View style={styles.statsRow}>
-            {internship.stipend && (
-              <View style={styles.stat}>
-                <Ionicons name="cash-outline" size={16} color={Colors.primary} />
-                <Text style={styles.statLabel}>Stipend</Text>
-                <Text style={styles.statValue}>{internship.stipend}</Text>
-              </View>
-            )}
-            {internship.duration && (
-              <View style={styles.stat}>
-                <Ionicons name="time-outline" size={16} color={Colors.primary} />
-                <Text style={styles.statLabel}>Duration</Text>
-                <Text style={styles.statValue}>{internship.duration}</Text>
-              </View>
-            )}
-            {deadlineDate && (
-              <View style={styles.stat}>
-                <Ionicons name="calendar-outline" size={16} color={Colors.primary} />
-                <Text style={styles.statLabel}>Deadline</Text>
-                <Text style={styles.statValue}>{deadlineDate}</Text>
-              </View>
-            )}
-          </View>
+          {/* Divider */}
+          <View style={[S.divider, { backgroundColor: C.border }]} />
+
+          {/* Apply Now button — inside hero card, like website */}
+          <TouchableOpacity
+            style={[S.applyHeroBtn, applying && { opacity: 0.7 }]}
+            onPress={handleApply}
+            disabled={applying}
+            activeOpacity={0.85}
+          >
+            {applying
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <>
+                  <Ionicons name="paper-plane-outline" size={16} color="#fff" />
+                  <Text style={S.applyHeroBtnText}>Apply Now</Text>
+                </>
+            }
+          </TouchableOpacity>
         </View>
 
-        {/* Description */}
-        {internship.description && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About this role</Text>
-            <Text style={styles.bodyText}>{internship.description}</Text>
+        {/* ── About the Role ── */}
+        {internship.description ? (
+          <View style={[S.card, { backgroundColor: C.card, borderColor: C.border }]}>
+            <Text style={[S.sectionLabel, { color: C.text }]}>ABOUT THE ROLE</Text>
+            <Text style={[S.bodyText, { color: C.textSecondary }]}>{internship.description}</Text>
           </View>
-        )}
+        ) : null}
 
-        {/* Requirements */}
-        {internship.requirements && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Requirements</Text>
-            <Text style={styles.bodyText}>{internship.requirements}</Text>
+        {/* ── Responsibilities & Requirements — 2-column grid like website ── */}
+        {(internship.responsibilities || internship.requirements) ? (
+          <View style={S.twoCol}>
+            {internship.responsibilities ? (
+              <View style={[S.halfCard, { backgroundColor: C.card, borderColor: C.border }]}>
+                <View style={S.halfCardHeader}>
+                  <Ionicons name="briefcase-outline" size={15} color={Colors.primary} />
+                  <Text style={[S.halfCardTitle, { color: C.text }]}>Responsibilities</Text>
+                </View>
+                <BulletList text={internship.responsibilities} color={Colors.primary} />
+              </View>
+            ) : null}
+            {internship.requirements ? (
+              <View style={[S.halfCard, { backgroundColor: C.card, borderColor: C.border }]}>
+                <View style={S.halfCardHeader}>
+                  <Ionicons name="calendar-outline" size={15} color="#3b82f6" />
+                  <Text style={[S.halfCardTitle, { color: C.text }]}>Requirements</Text>
+                </View>
+                <BulletList text={internship.requirements} color="#3b82f6" />
+              </View>
+            ) : null}
           </View>
-        )}
+        ) : null}
 
-        {/* Skills */}
-        {internship.skills_required && internship.skills_required.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Skills Required</Text>
-            <View style={styles.skillsRow}>
-              {internship.skills_required.map((skill, i) => (
-                <View key={i} style={styles.skillChip}>
-                  <Text style={styles.skillText}>{skill}</Text>
+        {/* ── Skills Required ── */}
+        {internship.skills_required && internship.skills_required.length > 0 ? (
+          <View style={[S.card, { backgroundColor: C.card, borderColor: C.border }]}>
+            <Text style={[S.sectionLabel, { color: C.text }]}>SKILLS REQUIRED</Text>
+            <View style={S.skillsRow}>
+              {internship.skills_required.map((skill: string, i: number) => (
+                <View key={i} style={[S.skillChip, { backgroundColor: Colors.primary + '15', borderColor: Colors.primary + '40' }]}>
+                  <Text style={{ fontSize: FontSize.sm, color: Colors.primary, fontWeight: '600' }}>{skill}</Text>
                 </View>
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
-        <View style={{ height: 100 }} />
+        {/* ── About the Company ── */}
+        {companyName ? (
+          <View style={[S.card, { backgroundColor: C.card, borderColor: C.border }]}>
+            <Text style={[S.sectionLabel, { color: C.text }]}>ABOUT {companyName.toUpperCase()}</Text>
+            <Text style={[S.bodyText, { color: C.textSecondary }]}>
+              {companyAbout ||
+                `${companyName} is a leading company in the industry, committed to innovation and excellence. We provide a supportive environment where interns can learn, grow, and make meaningful contributions to our team.`}
+            </Text>
+          </View>
+        ) : null}
+
       </ScrollView>
 
-      {/* Bottom CTA */}
-      <View style={styles.bottomBar}>
+      {/* ── Sticky bottom Apply bar ── */}
+      <View style={[S.bottomBar, { backgroundColor: C.card, borderTopColor: C.border }]}>
         <TouchableOpacity
-          style={[styles.applyBtn, (hasApplied || applying) && styles.applyBtnDisabled]}
+          style={[S.applyBtn, applying && { opacity: 0.7 }]}
           onPress={handleApply}
-          disabled={hasApplied || applying}
+          disabled={applying}
           activeOpacity={0.85}
         >
           {applying
-            ? <ActivityIndicator color={Colors.white} />
-            : <Text style={styles.applyBtnText}>{hasApplied ? 'Applied' : 'Apply Now'}</Text>}
+            ? <ActivityIndicator color="#fff" />
+            : <Text style={S.applyBtnText}>Apply Now</Text>}
         </TouchableOpacity>
       </View>
+
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.background },
-  loadingContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.background },
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const S = StyleSheet.create({
   navBar: {
     flexDirection: 'row', alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 56 : 40,
     paddingBottom: 12, paddingHorizontal: Spacing.md,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1, borderBottomColor: Colors.border,
+    borderBottomWidth: 1,
   },
-  navBtn: { padding: 4 },
-  navTitle: { flex: 1, fontSize: FontSize.base, fontWeight: '700', color: Colors.text, textAlign: 'center', marginHorizontal: 8 },
-  scrollContent: { padding: Spacing.md },
+  navBtn: { padding: 6, width: 38 },
+  navTitle: {
+    flex: 1, fontSize: FontSize.base, fontWeight: '700',
+    textAlign: 'center', marginHorizontal: 4,
+  },
+
+  // Hero card
   heroCard: {
-    backgroundColor: Colors.white, borderRadius: Radius.lg,
-    padding: Spacing.lg, marginBottom: Spacing.md,
-    alignItems: 'center', ...Shadow.sm,
-    borderWidth: 1, borderColor: Colors.border,
+    margin: Spacing.md, borderRadius: Radius.lg,
+    padding: Spacing.lg, alignItems: 'center',
+    borderWidth: 1.5, ...Shadow.sm,
   },
-  companyInitialBox: {
-    width: 64, height: 64, borderRadius: 16,
-    backgroundColor: Colors.primary + '20',
-    alignItems: 'center', justifyContent: 'center',
-    marginBottom: 12,
-  },
-  companyInitial: { fontSize: FontSize['2xl'], fontWeight: '900', color: Colors.primary },
-  heroTitle: { fontSize: FontSize.xl, fontWeight: '800', color: Colors.text, textAlign: 'center', marginBottom: 4 },
-  heroCompany: { fontSize: FontSize.base, color: Colors.textSecondary, marginBottom: 12 },
+  heroTitle: { fontSize: FontSize.xl, fontWeight: '900', textAlign: 'center', marginBottom: 4 },
+  heroCompany: { fontSize: FontSize.base, marginBottom: 12 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 16 },
   tag: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 4,
-    backgroundColor: Colors.gray100, borderRadius: Radius.full,
-    borderWidth: 1, borderColor: Colors.border,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: Radius.full, borderWidth: 1,
   },
-  tagText: { fontSize: FontSize.xs, color: Colors.textSecondary },
-  typeTag: { backgroundColor: Colors.primary + '18', borderColor: Colors.primary + '40' },
-  typeTagText: { fontSize: FontSize.xs, color: Colors.primary, fontWeight: '600' },
-  paidTag: { backgroundColor: '#d1fae5', borderColor: '#a7f3d0' },
-  paidTagText: { fontSize: FontSize.xs, color: '#065f46', fontWeight: '600' },
-  statsRow: { flexDirection: 'row', gap: 16, flexWrap: 'wrap', justifyContent: 'center' },
-  stat: { alignItems: 'center', gap: 4 },
-  statLabel: { fontSize: FontSize.xs, color: Colors.textSecondary },
-  statValue: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.text },
-  section: {
-    backgroundColor: Colors.white, borderRadius: Radius.lg,
-    padding: Spacing.lg, marginBottom: Spacing.md,
-    borderWidth: 1, borderColor: Colors.border,
+  tagText: { fontSize: FontSize.xs },
+  divider: { height: 1, width: '100%', marginBottom: 16 },
+
+  // Apply button inside hero
+  applyHeroBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: Colors.primary,
+    paddingHorizontal: 28, paddingVertical: 12,
+    borderRadius: Radius.md,
   },
-  sectionTitle: { fontSize: FontSize.lg, fontWeight: '800', color: Colors.text, marginBottom: 10 },
-  bodyText: { fontSize: FontSize.base, color: Colors.textSecondary, lineHeight: 24 },
+  applyHeroBtnText: { color: '#fff', fontSize: FontSize.base, fontWeight: '800' },
+
+  // Content cards
+  card: {
+    marginHorizontal: Spacing.md, marginBottom: Spacing.md,
+    borderRadius: Radius.lg, padding: Spacing.lg,
+    borderWidth: 1.5, ...Shadow.sm,
+  },
+  sectionLabel: {
+    fontSize: 11, fontWeight: '900', letterSpacing: 0.8,
+    marginBottom: 12,
+  },
+  bodyText: { fontSize: FontSize.base, lineHeight: 24 },
+
+  // 2-col cards (Responsibilities + Requirements)
+  twoCol: {
+    flexDirection: 'row', gap: Spacing.sm,
+    paddingHorizontal: Spacing.md, marginBottom: Spacing.md,
+  },
+  halfCard: {
+    flex: 1, borderRadius: Radius.lg, padding: Spacing.md,
+    borderWidth: 1.5, ...Shadow.sm,
+  },
+  halfCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+  halfCardTitle: { fontSize: FontSize.sm, fontWeight: '800' },
+
+  // Skills
   skillsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   skillChip: {
     paddingHorizontal: 12, paddingVertical: 6,
-    backgroundColor: Colors.primary + '15', borderRadius: Radius.full,
+    borderRadius: Radius.full, borderWidth: 1,
   },
-  skillText: { fontSize: FontSize.sm, color: Colors.primary, fontWeight: '600' },
+
+  // Bottom bar
   bottomBar: {
-    backgroundColor: Colors.white, padding: Spacing.md,
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    padding: Spacing.md,
     paddingBottom: Platform.OS === 'ios' ? 32 : Spacing.md,
-    borderTopWidth: 1, borderTopColor: Colors.border,
+    borderTopWidth: 1,
   },
   applyBtn: {
     backgroundColor: Colors.primary, borderRadius: Radius.md,
     height: 52, alignItems: 'center', justifyContent: 'center',
   },
-  applyBtnDisabled: { backgroundColor: Colors.gray400 },
-  applyBtnText: { color: Colors.white, fontSize: FontSize.md, fontWeight: '700' },
+  applyBtnText: { color: '#fff', fontSize: FontSize.md, fontWeight: '800' },
 });

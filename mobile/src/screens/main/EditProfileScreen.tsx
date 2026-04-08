@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
-  Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image,
+  Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image, Linking,
 } from 'react-native';
+
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -49,30 +50,46 @@ export default function EditProfileScreen() {
         {
           text: '📷 Camera',
           onPress: async () => {
-            const { status } = await ImagePicker.requestCameraPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert('Permission Required', 'Camera access is needed to take a photo.');
-              return;
+            try {
+              const perm = await ImagePicker.requestCameraPermissionsAsync();
+              if (perm.status !== 'granted') {
+                Alert.alert('Permission Required', 'Please enable camera access in Settings → FutureIntern.');
+                return;
+              }
+              const result = await ImagePicker.launchCameraAsync({
+                allowsEditing: true, aspect: [1, 1], quality: 0.8,
+              });
+              if (!result.canceled && result.assets?.[0]) doUpload(result.assets[0]);
+            } catch (e: any) {
+              Alert.alert('Camera Error', e?.message || 'Could not open camera.');
             }
-            const result = await ImagePicker.launchCameraAsync({
-              allowsEditing: true, aspect: [1, 1], quality: 0.8,
-            });
-            if (!result.canceled && result.assets[0]) doUpload(result.assets[0]);
           },
         },
         {
           text: '🖼️ Photo Library',
           onPress: async () => {
-            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-              Alert.alert('Permission Required', 'Photo library access is needed. Please enable it in Settings → FutureIntern → Photos.');
-              return;
+            try {
+              // Request both permission types for max compatibility
+              const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+              if (perm.status !== 'granted') {
+                Alert.alert(
+                  'Permission Required',
+                  'Please enable Photos access: Settings → Privacy → Photos → FutureIntern → All Photos.',
+                  [
+                    { text: 'OK' },
+                    { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                  ]
+                );
+                return;
+              }
+              const result = await ImagePicker.launchImageLibraryAsync({
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true, aspect: [1, 1], quality: 0.8,
+              });
+              if (!result.canceled && result.assets?.[0]) doUpload(result.assets[0]);
+            } catch (e: any) {
+              Alert.alert('Gallery Error', e?.message || 'Could not open photo library.');
             }
-            const result = await ImagePicker.launchImageLibraryAsync({
-              mediaTypes: ImagePicker.MediaTypeOptions.Images,
-              allowsEditing: true, aspect: [1, 1], quality: 0.8,
-            });
-            if (!result.canceled && result.assets[0]) doUpload(result.assets[0]);
           },
         },
       ]
@@ -87,11 +104,15 @@ export default function EditProfileScreen() {
       const token = await getAuthToken();
       if (!token) throw new Error('Not authenticated. Please log in again.');
 
+      // Normalize URI — Android sometimes returns content:// URI
+      let uri = asset.uri;
+      if (Platform.OS === 'android' && !uri.startsWith('file://') && !uri.startsWith('http')) {
+        uri = 'file://' + uri;
+      }
+
       const form = new FormData();
-      // Backend field: 'logo', endpoint: /users/upload-logo
-      // On both iOS and Android, React Native fetch handles the file:// URI correctly
       form.append('logo', {
-        uri: asset.uri,   // keep file:// as-is — RN fetch handles it
+        uri,
         type: asset.mimeType || 'image/jpeg',
         name: 'profile.jpg',
       } as any);
@@ -100,7 +121,7 @@ export default function EditProfileScreen() {
         method: 'POST',
         body: form,
         headers: {
-          // Do NOT set Content-Type — let fetch add multipart/form-data boundary automatically
+          // Do NOT set Content-Type — fetch appends multipart boundary automatically
           Authorization: `Bearer ${token}`,
         },
       });
@@ -113,8 +134,7 @@ export default function EditProfileScreen() {
       await refreshUserData?.();
       Alert.alert('✅ Photo Updated', 'Your profile photo has been updated successfully!');
     } catch (err: any) {
-      // Keep the local preview even if upload fails
-      Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please check your connection.');
+      Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
     } finally {
       setUploadingPhoto(false);
     }
