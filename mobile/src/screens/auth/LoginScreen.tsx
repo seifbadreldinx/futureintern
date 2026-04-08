@@ -11,8 +11,9 @@ import * as Google from 'expo-auth-session/providers/google';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius } from '../../constants/theme';
-import { AuthStackParamList } from '../../types';
+import { AuthStackParamList, RootStackParamList } from '../../types';
 import GoogleLogo from '../../components/GoogleLogo';
+import { useNavigation } from '@react-navigation/native';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -25,6 +26,7 @@ type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'
 export default function LoginScreen({ navigation }: Props) {
   const { login, loginWithGoogle } = useAuth();
   const { isDark, toggleTheme, C } = useTheme();
+  const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,6 +79,16 @@ export default function LoginScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={S.safe}>
+      {/* Chatbot FAB */}
+      <TouchableOpacity
+        style={S.fab}
+        onPress={() => { try { rootNav.navigate('Chatbot'); } catch {} }}
+        activeOpacity={0.85}
+      >
+        <Ionicons name="hardware-chip-outline" size={22} color="#fff" />
+        <View style={S.fabBadge}><Text style={S.fabBadgeText}>AI</Text></View>
+      </TouchableOpacity>
+
       {/* Theme toggle — top right */}
       <TouchableOpacity style={S.themeBtn} onPress={toggleTheme} activeOpacity={0.8}>
         <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={20} color={C.textSecondary} />
@@ -361,4 +373,25 @@ const makeStyles = (C: any, isDark: boolean) => StyleSheet.create({
   signupRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   signupPrompt: { fontSize: FontSize.sm, color: C.textSecondary },
   signupLink: { fontSize: FontSize.sm, fontWeight: '800', color: '#f43f5e' },
+
+  // Chatbot FAB
+  fab: {
+    position: 'absolute',
+    bottom: Platform.OS === 'ios' ? 40 : 28, right: 20,
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: '#f43f5e',
+    alignItems: 'center', justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 8,
+    zIndex: 999,
+  },
+  fabBadge: {
+    position: 'absolute', top: 0, right: 0,
+    minWidth: 18, height: 18, borderRadius: 9,
+    backgroundColor: '#f59e0b',
+    alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1.5, borderColor: '#fff',
+    paddingHorizontal: 2,
+  },
+  fabBadgeText: { fontSize: 8, fontWeight: '900', color: '#fff', letterSpacing: 0.2 },
 });

@@ -17,14 +17,24 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.futureintern.app"
+      "bundleIdentifier": "com.futureintern.app",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "FutureIntern needs access to your photo library to update your profile picture.",
+        "NSCameraUsageDescription": "FutureIntern needs access to your camera to take a profile photo.",
+        "NSPhotoLibraryAddUsageDescription": "FutureIntern saves your profile photo to your library."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/futureintern-logo.jpg",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.futureintern.app"
+      "package": "com.futureintern.app",
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "CAMERA"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -37,7 +47,14 @@
           "color": "#f43f5e"
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FutureIntern needs access to your photos to update your profile picture.",
+          "cameraPermission": "FutureIntern needs camera access to take a profile photo."
+        }
+      ]
     ],
     "extra": {
       "apiBaseUrl": "https://futureintern-production.up.railway.app/api"

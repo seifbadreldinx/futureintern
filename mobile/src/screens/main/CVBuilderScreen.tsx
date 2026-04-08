@@ -15,7 +15,7 @@ import { RootStackParamList, CVSection } from '../../types';
 
 type Nav = NativeStackNavigationProp<RootStackParamList, 'CVBuilder'>;
 
-// ─── ATS Section Config ───────────────────────────────────────────────────────
+// â”€â”€â”€ ATS Section Config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type SectionType = 'education' | 'experience' | 'skills' | 'projects' | 'certifications';
 
@@ -32,12 +32,12 @@ const SECTION_CONFIG: Record<SectionType, {
 
 const SECTION_TYPES = Object.keys(SECTION_CONFIG) as SectionType[];
 
-// ─── Header (name + email from profile, editable fields) ─────────────────────
+// â”€â”€â”€ Header (name + email from profile, editable fields) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface CVHeader { headline: string; summary: string; phone: string; linkedin: string; github: string; website: string; }
 const emptyHeader = (): CVHeader => ({ headline: '', summary: '', phone: '', linkedin: '', github: '', website: '' });
 
-// ─── Field Input ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Field Input â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Field({ label, value, onChange, multiline, placeholder, C }: {
   label: string; value: string; onChange: (v: string) => void;
@@ -67,7 +67,7 @@ function Field({ label, value, onChange, multiline, placeholder, C }: {
   );
 }
 
-// ─── Section Card ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Section Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function SectionCard({ section, onEdit, onDelete, onMoveUp, onMoveDown, C }: {
   section: CVSection; onEdit: () => void; onDelete: () => void;
@@ -85,7 +85,7 @@ function SectionCard({ section, onEdit, onDelete, onMoveUp, onMoveDown, C }: {
           <Text style={[sCardStyles.title, { color: C.text }]} numberOfLines={1}>{section.title || 'Untitled'}</Text>
           {(section.subtitle || section.start_date) ? (
             <Text style={[sCardStyles.sub, { color: C.textSecondary }]} numberOfLines={1}>
-              {[section.subtitle, section.start_date && `${section.start_date}${section.end_date ? ` – ${section.end_date}` : ''}`].filter(Boolean).join(' · ')}
+              {[section.subtitle, section.start_date && `${section.start_date}${section.end_date ? ` â€“ ${section.end_date}` : ''}`].filter(Boolean).join(' Â· ')}
             </Text>
           ) : null}
         </View>
@@ -120,7 +120,7 @@ const sCardStyles = StyleSheet.create({
   btn: { padding: 6 },
 });
 
-// ─── Add / Edit Modal ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Add / Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface ModalState {
   visible: boolean;
@@ -195,7 +195,7 @@ function SectionModal({ state, onClose, onSave, C }: {
           )}
 
           <Field label="Location (optional)" value={location} onChange={setLocation} placeholder="Cairo, Egypt" C={C} />
-          <Field label="Description" value={description} onChange={setDescription} multiline placeholder={`Describe your ${cfg.label.toLowerCase()}…`} C={C} />
+          <Field label="Description" value={description} onChange={setDescription} multiline placeholder={`Describe your ${cfg.label.toLowerCase()}â€¦`} C={C} />
 
           {/* ATS tip */}
           <View style={[mStyles.tip, { backgroundColor: '#2563eb12', borderColor: '#2563eb30' }]}>
@@ -220,7 +220,7 @@ const mStyles = StyleSheet.create({
   tipText: { flex: 1, fontSize: FontSize.xs, lineHeight: 16 },
 });
 
-// ─── Type Picker Modal ────────────────────────────────────────────────────────
+// â”€â”€â”€ Type Picker Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TypePickerModal({ visible, onClose, onSelect, C }: {
   visible: boolean; onClose: () => void; onSelect: (t: SectionType) => void; C: any;
@@ -268,19 +268,20 @@ function TypePickerModal({ visible, onClose, onSelect, C }: {
   );
 }
 
-// ─── Save Status ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Save Status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
-const STATUS_TEXT: Record<SaveStatus, string> = { idle: '', saving: 'Saving…', saved: 'Saved', error: 'Save failed' };
+const STATUS_TEXT: Record<SaveStatus, string> = { idle: '', saving: 'Savingâ€¦', saved: 'Saved', error: 'Save failed' };
 const STATUS_COLOR: Record<SaveStatus, string> = { idle: '', saving: '#f59e0b', saved: '#16a34a', error: '#dc2626' };
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Screen â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
   const { user } = useAuth();
   const { C } = useTheme();
   const styles = makeStyles(C);
 
+  const [activeTab, setActiveTab] = useState<'editor' | 'preview'>('editor');
   const [header, setHeader] = useState<CVHeader>(emptyHeader());
   const [sections, setSections] = useState<CVSection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -289,7 +290,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
   const [showTypePicker, setShowTypePicker] = useState(false);
   const [modal, setModal] = useState<ModalState>({ visible: false, editing: null, type: 'education', title: '', subtitle: '', location: '', startDate: '', endDate: '', description: '' });
 
-  // ── Load CV ──────────────────────────────────────────────────────────────
+  // â”€â”€ Load CV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     (async () => {
       try {
@@ -310,7 +311,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     })();
   }, []);
 
-  // ── Debounced header save ────────────────────────────────────────────────
+  // â”€â”€ Debounced header save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const saveTimeoutRef = React.useRef<any>(null);
   const handleHeaderChange = (updated: CVHeader) => {
     setHeader(updated);
@@ -322,14 +323,14 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     }, 1500);
   };
 
-  // ── Add section ──────────────────────────────────────────────────────────
+  // â”€â”€ Add section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleAddSection = async (data: Omit<CVSection, 'id' | 'order_index'>) => {
     const res = await api.cv.addSection({ ...data, order_index: sections.length });
     const s = res.section;
     setSections(prev => [...prev, { id: s.id, section_type: s.section_type, title: s.title ?? '', subtitle: s.subtitle ?? '', location: s.location ?? '', start_date: s.start_date ?? '', end_date: s.end_date ?? '', description: s.description ?? '', order_index: s.order_index ?? prev.length }]);
   };
 
-  // ── Edit section ─────────────────────────────────────────────────────────
+  // â”€â”€ Edit section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleEditSection = async (data: Omit<CVSection, 'id' | 'order_index'>) => {
     if (!modal.editing) return;
     const res = await api.cv.updateSection(modal.editing.id, data);
@@ -337,7 +338,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     setSections(prev => prev.map(sec => sec.id === modal.editing!.id ? { ...sec, ...s, title: s.title ?? '', subtitle: s.subtitle ?? '', location: s.location ?? '', start_date: s.start_date ?? '', end_date: s.end_date ?? '', description: s.description ?? '' } : sec));
   };
 
-  // ── Delete section ───────────────────────────────────────────────────────
+  // â”€â”€ Delete section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleDelete = (section: CVSection) => {
     Alert.alert('Delete Section', `Delete "${section.title || 'this section'}"?`, [
       { text: 'Cancel', style: 'cancel' },
@@ -350,7 +351,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     ]);
   };
 
-  // ── Reorder ──────────────────────────────────────────────────────────────
+  // â”€â”€ Reorder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const moveSection = async (index: number, dir: 'up' | 'down') => {
     const newIdx = dir === 'up' ? index - 1 : index + 1;
     if (newIdx < 0 || newIdx >= sections.length) return;
@@ -361,7 +362,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     await Promise.all(updated.map(s => api.cv.updateSection(s.id, { order_index: s.order_index }).catch(() => {})));
   };
 
-  // ── Open modal ───────────────────────────────────────────────────────────
+  // â”€â”€ Open modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const openAdd = (type: SectionType) => {
     setShowTypePicker(false);
     setModal({ visible: true, editing: null, type, title: '', subtitle: '', location: '', startDate: '', endDate: '', description: '' });
@@ -371,7 +372,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
     setModal({ visible: true, editing: section, type: section.section_type as SectionType, title: section.title, subtitle: section.subtitle ?? '', location: section.location ?? '', startDate: section.start_date ?? '', endDate: section.end_date ?? '', description: section.description ?? '' });
   };
 
-  // ── Export PDF ───────────────────────────────────────────────────────────
+  // â”€â”€ Export PDF â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleExportPDF = async () => {
     setExporting(true);
     try {
@@ -397,7 +398,7 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
 
   return (
     <View style={styles.container}>
-      {/* Nav bar */}
+      {/* â”€â”€ Nav bar â”€â”€ */}
       <View style={styles.navBar}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.navBtn}>
           <Ionicons name="arrow-back" size={22} color={C.text} />
@@ -419,99 +420,164 @@ export default function CVBuilderScreen({ navigation }: { navigation: Nav }) {
         </TouchableOpacity>
       </View>
 
+      {/* â”€â”€ Editor / Preview tab toggle â”€â”€ */}
+      <View style={[styles.tabRow, { backgroundColor: C.card, borderBottomColor: C.border }]}>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'editor' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('editor')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="pencil-outline" size={15} color={activeTab === 'editor' ? C.primary : C.textSecondary} />
+          <Text style={[styles.tabLabel, { color: activeTab === 'editor' ? C.primary : C.textSecondary }]}>Editor</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tabBtn, activeTab === 'preview' && styles.tabBtnActive]}
+          onPress={() => setActiveTab('preview')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="eye-outline" size={15} color={activeTab === 'preview' ? C.primary : C.textSecondary} />
+          <Text style={[styles.tabLabel, { color: activeTab === 'preview' ? C.primary : C.textSecondary }]}>Preview</Text>
+        </TouchableOpacity>
+      </View>
+
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+        {activeTab === 'editor' ? (
+          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-          {/* ── Personal Info ── */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>👤 Personal Info</Text>
-
-            {/* Read-only from profile */}
-            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Full Name</Text>
-                <View style={[styles.readOnly, { backgroundColor: C.gray100, borderColor: C.border }]}>
-                  <Text style={{ fontSize: FontSize.sm, color: C.textSecondary }}>{user?.name || '—'}</Text>
+            {/* â”€â”€ Personal Info â”€â”€ */}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Personal Info &amp; Header</Text>
+              <View style={{ flexDirection: 'row', gap: 10, marginBottom: 14 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Full Name</Text>
+                  <View style={[styles.readOnly, { backgroundColor: C.gray100, borderColor: C.border }]}>
+                    <Text style={{ fontSize: FontSize.sm, color: C.textSecondary }}>{user?.name || 'â€”'}</Text>
+                  </View>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Email</Text>
+                  <View style={[styles.readOnly, { backgroundColor: C.gray100, borderColor: C.border }]}>
+                    <Text style={{ fontSize: FontSize.sm, color: C.textSecondary }} numberOfLines={1}>{user?.email || 'â€”'}</Text>
+                  </View>
                 </View>
               </View>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Email</Text>
-                <View style={[styles.readOnly, { backgroundColor: C.gray100, borderColor: C.border }]}>
-                  <Text style={{ fontSize: FontSize.sm, color: C.textSecondary }} numberOfLines={1}>{user?.email || '—'}</Text>
-                </View>
+              <Field label="Professional Headline" value={header.headline} onChange={v => handleHeaderChange({ ...header, headline: v })} placeholder="e.g. CS Student | Seeking Software Internship" C={C} />
+              <Field label="Professional Summary" value={header.summary} onChange={v => handleHeaderChange({ ...header, summary: v })} multiline placeholder="2â€“3 sentences about your background and goals." C={C} />
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}><Field label="Phone" value={header.phone} onChange={v => handleHeaderChange({ ...header, phone: v })} placeholder="+20 1XX XXX XXXX" C={C} /></View>
+                <View style={{ flex: 1 }}><Field label="LinkedIn" value={header.linkedin} onChange={v => handleHeaderChange({ ...header, linkedin: v })} placeholder="linkedin.com/in/you" C={C} /></View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}><Field label="GitHub" value={header.github} onChange={v => handleHeaderChange({ ...header, github: v })} placeholder="github.com/you" C={C} /></View>
+                <View style={{ flex: 1 }}><Field label="Portfolio" value={header.website} onChange={v => handleHeaderChange({ ...header, website: v })} placeholder="yoursite.com" C={C} /></View>
               </View>
             </View>
 
-            <Field label="Professional Headline" value={header.headline} onChange={v => handleHeaderChange({ ...header, headline: v })} placeholder="e.g. CS Student | Seeking Software Internship" C={C} />
-            <Field label="Professional Summary" value={header.summary} onChange={v => handleHeaderChange({ ...header, summary: v })} multiline placeholder="2–3 sentences about your background and goals." C={C} />
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1 }}><Field label="Phone" value={header.phone} onChange={v => handleHeaderChange({ ...header, phone: v })} placeholder="+20 1XX XXX XXXX" C={C} /></View>
-              <View style={{ flex: 1 }}><Field label="LinkedIn" value={header.linkedin} onChange={v => handleHeaderChange({ ...header, linkedin: v })} placeholder="linkedin.com/in/you" C={C} /></View>
+            {/* â”€â”€ Sections â”€â”€ */}
+            <View style={styles.card}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <Text style={[styles.cardTitle, { marginBottom: 0 }]}>CV Sections</Text>
+                <TouchableOpacity onPress={() => setShowTypePicker(true)} style={[styles.addBtn, { backgroundColor: C.primary }]}>
+                  <Ionicons name="add" size={16} color="#fff" />
+                  <Text style={styles.addBtnText}>Add</Text>
+                </TouchableOpacity>
+              </View>
+              {sections.length === 0 ? (
+                <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+                  <Ionicons name="document-text-outline" size={40} color={C.gray300} />
+                  <Text style={{ marginTop: 10, fontSize: FontSize.base, color: C.textSecondary, textAlign: 'center' }}>No sections yet.{'\n'}Add Education, Experience, Skills and more.</Text>
+                </View>
+              ) : (
+                sections.map((section, i) => (
+                  <SectionCard
+                    key={section.id}
+                    section={section}
+                    onEdit={() => openEdit(section)}
+                    onDelete={() => handleDelete(section)}
+                    onMoveUp={() => moveSection(i, 'up')}
+                    onMoveDown={() => moveSection(i, 'down')}
+                    C={C}
+                  />
+                ))
+              )}
             </View>
-            <View style={{ flexDirection: 'row', gap: 10 }}>
-              <View style={{ flex: 1 }}><Field label="GitHub" value={header.github} onChange={v => handleHeaderChange({ ...header, github: v })} placeholder="github.com/you" C={C} /></View>
-              <View style={{ flex: 1 }}><Field label="Portfolio" value={header.website} onChange={v => handleHeaderChange({ ...header, website: v })} placeholder="yoursite.com" C={C} /></View>
-            </View>
-          </View>
 
-          {/* ── Sections ── */}
-          <View style={styles.card}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <Text style={[styles.cardTitle, { marginBottom: 0 }]}>📄 Sections</Text>
-              <TouchableOpacity onPress={() => setShowTypePicker(true)} style={[styles.addBtn, { backgroundColor: C.primary }]}>
-                <Ionicons name="add" size={16} color="#fff" />
-                <Text style={styles.addBtnText}>Add</Text>
-              </TouchableOpacity>
+            {/* â”€â”€ ATS banner â”€â”€ */}
+            <View style={[styles.atsBanner, { backgroundColor: '#2563eb12', borderColor: '#2563eb30' }]}>
+              <Ionicons name="shield-checkmark-outline" size={16} color="#2563eb" />
+              <Text style={{ flex: 1, fontSize: FontSize.xs, color: '#2563eb', lineHeight: 16 }}>
+                <Text style={{ fontWeight: '700' }}>ATS-compliant output:</Text> Standard headings Â· Single-column PDF Â· Machine-readable fonts
+              </Text>
+            </View>
+
+            {/* â”€â”€ Export â”€â”€ */}
+            <TouchableOpacity onPress={handleExportPDF} disabled={exporting} style={[styles.exportLarge, { backgroundColor: C.primary }]}>
+              {exporting ? <ActivityIndicator color="#fff" /> : <>
+                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Text style={styles.exportLargeText}>Download PDF</Text>
+              </>}
+            </TouchableOpacity>
+          </ScrollView>
+        ) : (
+          /* â”€â”€ Preview tab â”€â”€ */
+          <ScrollView contentContainerStyle={{ padding: Spacing.md, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
+            <View style={[styles.card, { marginBottom: 8 }]}>
+              <Text style={{ fontSize: 20, fontWeight: '900', color: C.text, marginBottom: 2 }}>{user?.name || 'â€”'}</Text>
+              {header.headline ? <Text style={{ fontSize: FontSize.sm, color: C.primary, fontWeight: '700', marginBottom: 4 }}>{header.headline}</Text> : null}
+              {header.summary ? <Text style={{ fontSize: FontSize.sm, color: C.textSecondary, lineHeight: 20, marginBottom: 8 }}>{header.summary}</Text> : null}
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                {user?.email ? <Text style={{ fontSize: 11, color: C.textSecondary }}>{user.email}</Text> : null}
+                {header.phone ? <Text style={{ fontSize: 11, color: C.textSecondary }}>Â· {header.phone}</Text> : null}
+                {header.linkedin ? <Text style={{ fontSize: 11, color: '#2563eb' }}>Â· LinkedIn</Text> : null}
+              </View>
             </View>
 
             {sections.length === 0 ? (
               <View style={{ alignItems: 'center', paddingVertical: 32 }}>
                 <Ionicons name="document-text-outline" size={40} color={C.gray300} />
-                <Text style={{ marginTop: 10, fontSize: FontSize.base, color: C.textSecondary, textAlign: 'center' }}>No sections yet.{'\n'}Add Education, Experience, Skills and more.</Text>
+                <Text style={{ marginTop: 10, fontSize: FontSize.sm, color: C.textSecondary, textAlign: 'center' }}>No sections yet. Switch to Editor to add content.</Text>
               </View>
             ) : (
-              sections.map((section, i) => (
-                <SectionCard
-                  key={section.id}
-                  section={section}
-                  onEdit={() => openEdit(section)}
-                  onDelete={() => handleDelete(section)}
-                  onMoveUp={() => moveSection(i, 'up')}
-                  onMoveDown={() => moveSection(i, 'down')}
-                  C={C}
-                />
-              ))
+              sections.map(sec => {
+                const cfg = SECTION_CONFIG[sec.section_type as SectionType];
+                return (
+                  <View key={sec.id} style={[styles.card, { marginBottom: 8, borderLeftWidth: 3, borderLeftColor: cfg?.color || C.primary }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+                      <Ionicons name={(cfg?.icon || 'document-outline') as any} size={14} color={cfg?.color || C.primary} />
+                      <Text style={{ fontSize: 10, fontWeight: '800', color: cfg?.color || C.primary, textTransform: 'uppercase', letterSpacing: 0.5 }}>{cfg?.label || sec.section_type}</Text>
+                    </View>
+                    <Text style={{ fontSize: FontSize.sm, fontWeight: '800', color: C.text }}>{sec.title}</Text>
+                    {sec.subtitle ? <Text style={{ fontSize: FontSize.xs, color: C.textSecondary, marginTop: 2 }}>{sec.subtitle}</Text> : null}
+                    {(sec.start_date || sec.end_date) ? (
+                      <Text style={{ fontSize: FontSize.xs, color: C.gray400, marginTop: 2 }}>
+                        {sec.start_date}{sec.end_date ? ` â€“ ${sec.end_date}` : ''}
+                      </Text>
+                    ) : null}
+                    {sec.description ? <Text style={{ fontSize: FontSize.sm, color: C.textSecondary, lineHeight: 20, marginTop: 6 }}>{sec.description}</Text> : null}
+                  </View>
+                );
+              })
             )}
-          </View>
 
-          {/* ── ATS Info ── */}
-          <View style={[styles.atsBanner, { backgroundColor: '#2563eb12', borderColor: '#2563eb30' }]}>
-            <Ionicons name="shield-checkmark-outline" size={16} color="#2563eb" />
-            <Text style={{ flex: 1, fontSize: FontSize.xs, color: '#2563eb', lineHeight: 16 }}>
-              <Text style={{ fontWeight: '700' }}>ATS-compliant output:</Text> Standard headings · Single-column PDF · Machine-readable fonts · Logical reading order
-            </Text>
-          </View>
+            <View style={[styles.atsBanner, { backgroundColor: '#2563eb12', borderColor: '#2563eb30' }]}>
+              <Ionicons name="shield-checkmark-outline" size={16} color="#2563eb" />
+              <Text style={{ flex: 1, fontSize: FontSize.xs, color: '#2563eb', lineHeight: 16 }}>
+                <Text style={{ fontWeight: '700' }}>ATS-compliant output: </Text>Standard headings · Single-column PDF · Machine-readable fonts
+              </Text>
+            </View>
 
-          {/* ── Export button ── */}
-          <TouchableOpacity
-            onPress={handleExportPDF}
-            disabled={exporting}
-            style={[styles.exportLarge, { backgroundColor: C.primary }]}
-          >
-            {exporting
-              ? <ActivityIndicator color="#fff" />
-              : <>
-                  <Ionicons name="download-outline" size={20} color="#fff" />
-                  <Text style={styles.exportLargeText}>Download PDF</Text>
-                </>}
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity onPress={handleExportPDF} disabled={exporting} style={[styles.exportLarge, { backgroundColor: C.primary }]}>
+              {exporting ? <ActivityIndicator color="#fff" /> : <>
+                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Text style={styles.exportLargeText}>Download PDF</Text>
+              </>}
+            </TouchableOpacity>
+          </ScrollView>
+        )}
       </KeyboardAvoidingView>
 
-      {/* Section type picker */}
+      {/* Modals */}
       <TypePickerModal visible={showTypePicker} onClose={() => setShowTypePicker(false)} onSelect={openAdd} C={C} />
-
-      {/* Add / Edit modal */}
       <SectionModal
         state={modal}
         onClose={() => setModal(m => ({ ...m, visible: false }))}
@@ -534,6 +600,16 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
   navBtn: { padding: 6, width: 40 },
   navTitle: { fontSize: FontSize.md, fontWeight: '800', textAlign: 'center' },
   exportBtn: { width: 38, height: 38, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+  tabRow: {
+    flexDirection: 'row', borderBottomWidth: 1, paddingHorizontal: Spacing.md,
+  },
+  tabBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 6, paddingVertical: 10,
+    borderBottomWidth: 2.5, borderBottomColor: 'transparent',
+  },
+  tabBtnActive: { borderBottomColor: C.primary },
+  tabLabel: { fontSize: FontSize.sm, fontWeight: '700', color: C.textSecondary },
   scroll: { padding: Spacing.md, paddingBottom: 40 },
   card: { backgroundColor: C.card, borderRadius: Radius.lg, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: C.border, ...Shadow.sm },
   cardTitle: { fontSize: FontSize.base, fontWeight: '800', color: C.text, marginBottom: 14 },

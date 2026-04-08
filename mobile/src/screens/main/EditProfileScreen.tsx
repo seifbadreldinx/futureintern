@@ -41,47 +41,82 @@ export default function EditProfileScreen() {
     : '?';
 
   const pickPhoto = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Required', 'Please allow access to your photo library to upload a profile photo.');
-      return;
-    }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets[0]) {
-      const asset = result.assets[0];
-      setPhotoUri(asset.uri);
-      setUploadingPhoto(true);
-      try {
-        const token = await (await import('../../services/api')).getAuthToken();
-        const form = new FormData();
-        // Backend expects field name 'logo' at endpoint /users/upload-logo
-        form.append('logo', {
-          uri: Platform.OS === 'ios' ? asset.uri.replace('file://', '') : asset.uri,
-          type: asset.mimeType || 'image/jpeg',
-          name: 'profile.jpg',
-        } as any);
-        const res = await fetch('https://futureintern-production.up.railway.app/api/users/upload-logo', {
-          method: 'POST',
-          body: form,
-          // Do NOT set Content-Type – let fetch set it with the correct boundary
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.error || errData.message || `Upload failed (${res.status})`);
-        }
-        await refreshUserData?.();
-        Alert.alert('✅ Photo Updated', 'Your profile photo has been updated successfully.');
-      } catch (err: any) {
-        Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
-      } finally {
-        setUploadingPhoto(false);
+    Alert.alert(
+      'Update Profile Photo',
+      'Choose a source:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '📷 Camera',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Required', 'Camera access is needed to take a photo.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              allowsEditing: true, aspect: [1, 1], quality: 0.8,
+            });
+            if (!result.canceled && result.assets[0]) doUpload(result.assets[0]);
+          },
+        },
+        {
+          text: '🖼️ Photo Library',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Required', 'Photo library access is needed. Please enable it in Settings → FutureIntern → Photos.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true, aspect: [1, 1], quality: 0.8,
+            });
+            if (!result.canceled && result.assets[0]) doUpload(result.assets[0]);
+          },
+        },
+      ]
+    );
+  };
+
+  const doUpload = async (asset: ImagePicker.ImagePickerAsset) => {
+    setPhotoUri(asset.uri);
+    setUploadingPhoto(true);
+    try {
+      const { getAuthToken } = await import('../../services/api');
+      const token = await getAuthToken();
+      if (!token) throw new Error('Not authenticated. Please log in again.');
+
+      const form = new FormData();
+      // Backend field: 'logo', endpoint: /users/upload-logo
+      // On both iOS and Android, React Native fetch handles the file:// URI correctly
+      form.append('logo', {
+        uri: asset.uri,   // keep file:// as-is — RN fetch handles it
+        type: asset.mimeType || 'image/jpeg',
+        name: 'profile.jpg',
+      } as any);
+
+      const res = await fetch('https://futureintern-production.up.railway.app/api/users/upload-logo', {
+        method: 'POST',
+        body: form,
+        headers: {
+          // Do NOT set Content-Type — let fetch add multipart/form-data boundary automatically
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || errData.message || `Upload failed (HTTP ${res.status})`);
       }
+
+      await refreshUserData?.();
+      Alert.alert('✅ Photo Updated', 'Your profile photo has been updated successfully!');
+    } catch (err: any) {
+      // Keep the local preview even if upload fails
+      Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please check your connection.');
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 

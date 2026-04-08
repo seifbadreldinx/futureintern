@@ -1,68 +1,75 @@
 /**
- * GoogleLogo — renders the official 4-color Google "G" logo
- * using pure React Native Views (no SVG dependency required).
- * 
- * Official Google brand colors:
- * Blue: #4285F4, Red: #EA4335, Yellow: #FBBC05, Green: #34A853
+ * GoogleLogo — renders the official Google "G" logo.
+ * Uses expo-image (bundled with Expo SDK 54) which supports remote PNG.
+ * Falls back to a styled View representation if image fails.
  */
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
 
 interface Props {
   size?: number;
 }
 
-export default function GoogleLogo({ size = 22 }: Props) {
+// Official Google G PNG from Google's own CDN (always available on devices with internet)
+const GOOGLE_G_URL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/Google_%22G%22_Logo.svg/64px-Google_%22G%22_Logo.svg.png';
+
+// Pure RN fallback — 4 coloured quadrants + white donut + blue crossbar
+function FallbackG({ size }: { size: number }) {
   const r = size / 2;
-  const inner = size * 0.55;
+  const inner = size * 0.6;
   const innerR = inner / 2;
-  const cutout = size * 0.38;
+  const armTop = size * 0.375;
+  const armH = size * 0.25;
 
   return (
-    <View style={{ width: size, height: size, position: 'relative' }}>
-      {/* Four quadrant circles */}
-      {/* Blue — top-right */}
-      <View style={[styles.quad, { top: 0, right: 0, borderTopRightRadius: r, backgroundColor: '#4285F4' }]} />
+    <View style={{ width: size, height: size, position: 'relative', overflow: 'hidden', borderRadius: r }}>
       {/* Red — top-left */}
-      <View style={[styles.quad, { top: 0, left: 0, borderTopLeftRadius: r, backgroundColor: '#EA4335' }]} />
+      <View style={[s.quad, { top: 0, left: 0, borderTopLeftRadius: r, backgroundColor: '#EA4335' }]} />
+      {/* Blue — top-right */}
+      <View style={[s.quad, { top: 0, right: 0, borderTopRightRadius: r, backgroundColor: '#4285F4' }]} />
       {/* Yellow — bottom-left */}
-      <View style={[styles.quad, { bottom: 0, left: 0, borderBottomLeftRadius: r, backgroundColor: '#FBBC05' }]} />
+      <View style={[s.quad, { bottom: 0, left: 0, borderBottomLeftRadius: r, backgroundColor: '#FBBC05' }]} />
       {/* Green — bottom-right */}
-      <View style={[styles.quad, { bottom: 0, right: 0, borderBottomRightRadius: r, backgroundColor: '#34A853' }]} />
-
-      {/* White circle cutout center */}
-      <View style={[styles.center, {
-        width: inner, height: inner, borderRadius: innerR,
+      <View style={[s.quad, { bottom: 0, right: 0, borderBottomRightRadius: r, backgroundColor: '#34A853' }]} />
+      {/* White donut center */}
+      <View style={{
+        position: 'absolute',
         top: (size - inner) / 2, left: (size - inner) / 2,
-      }]} />
-
-      {/* Blue "G" arm — horizontal right extension */}
-      <View style={{
-        position: 'absolute',
-        right: 0, top: size * 0.37,
-        width: size * 0.5, height: size * 0.26,
-        backgroundColor: '#4285F4',
-      }} />
-      {/* White mask over G arm inner part */}
-      <View style={{
-        position: 'absolute',
-        right: size * 0.04, top: size * 0.37,
-        width: size * 0.42, height: size * 0.26,
+        width: inner, height: inner, borderRadius: innerR,
         backgroundColor: '#fff',
-        borderTopLeftRadius: 2,
-        borderBottomLeftRadius: 2,
+      }} />
+      {/* Blue G crossbar (right extension) */}
+      <View style={{
+        position: 'absolute',
+        top: armTop, left: r, right: 0,
+        height: armH, backgroundColor: '#4285F4',
+      }} />
+      {/* White mask — creates the open notch inside the G arm */}
+      <View style={{
+        position: 'absolute',
+        top: armTop, left: r,
+        right: size * 0.06, height: armH,
+        backgroundColor: '#fff',
       }} />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  quad: {
-    position: 'absolute',
-    width: '50%', height: '50%',
-  },
-  center: {
-    position: 'absolute',
-    backgroundColor: '#fff',
-  },
+const s = StyleSheet.create({
+  quad: { position: 'absolute', width: '50%', height: '50%' },
 });
+
+export default function GoogleLogo({ size = 22 }: Props) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) return <FallbackG size={size} />;
+
+  return (
+    <Image
+      source={{ uri: GOOGLE_G_URL }}
+      style={{ width: size, height: size }}
+      resizeMode="contain"
+      onError={() => setFailed(true)}
+    />
+  );
+}

@@ -68,7 +68,10 @@ export default function AppNavigator() {
             <Stack.Screen name="Chatbot" component={ChatbotScreen} options={{ headerShown: false }} />
           </>
         ) : (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <>
+            <Stack.Screen name="Auth" component={AuthNavigator} />
+            <Stack.Screen name="Chatbot" component={ChatbotScreen} options={{ headerShown: false }} />
+          </>
         )}
       </Stack.Navigator>
     </NavigationContainer>
