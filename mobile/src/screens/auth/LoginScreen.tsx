@@ -10,6 +10,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import { useAuth } from '../../context/AuthContext';
 import { Colors, FontSize, Spacing, Radius } from '../../constants/theme';
 import { AuthStackParamList } from '../../types';
+import GoogleLogo from '../../components/GoogleLogo';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -108,9 +109,7 @@ export default function LoginScreen({ navigation }: Props) {
               <ActivityIndicator color={Colors.text} />
             ) : (
               <>
-                <View style={styles.googleLogoBox}>
-                  <Text style={styles.googleLogoG}>G</Text>
-                </View>
+                <GoogleLogo size={22} />
                 <Text style={styles.googleBtnText}>SIGN IN WITH GOOGLE</Text>
               </>
             )}

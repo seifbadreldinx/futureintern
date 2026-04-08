@@ -1,22 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, ActivityIndicator, Alert, Linking,
+  Platform, ActivityIndicator, Alert, Image, Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 
 import { api } from '../../services/api';
+import { Internship } from '../../types';
+import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
+import { RootStackParamList } from '../../types';
 
 const getCompanyName = (company: any): string => {
   if (!company) return '';
   if (typeof company === 'object') return company.name || '';
   return String(company);
 };
-import { Internship } from '../../types';
-import { Colors, FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
-import { RootStackParamList } from '../../types';
+
+const API_BASE = 'https://futureintern-production.up.railway.app';
+
+function resolveLogoUrl(raw: string | undefined | null): string | null {
+  if (!raw) return null;
+  if (raw.startsWith('http')) return raw;
+  return `${API_BASE}${raw.startsWith('/') ? '' : '/'}${raw}`;
+}
+
+function CompanyLogo({ internship }: { internship: Internship }) {
+  const companyName = getCompanyName((internship as any).company) || (internship as any).company_name || 'C';
+  const rawLogo = (internship as any).company_logo_url
+    || (internship as any).logo_url
+    || (internship as any).company_logo
+    || ((internship as any).company && typeof (internship as any).company === 'object' && ((internship as any).company.logo_url || (internship as any).company.profile_image))
+    || null;
+  const fallbackUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=ffe4e6&color=f43f5e&size=128&bold=true`;
+  const [src, setSrc] = useState<string>(resolveLogoUrl(rawLogo) || fallbackUrl);
+
+  return (
+    <View style={logoStyles.wrap}>
+      <Image
+        source={{ uri: src }}
+        style={logoStyles.img}
+        resizeMode="contain"
+        onError={() => setSrc(fallbackUrl)}
+      />
+    </View>
+  );
+}
+
+const logoStyles = StyleSheet.create({
+  wrap: {
+    width: 72, height: 72, borderRadius: 16,
+    backgroundColor: '#fff', borderWidth: 3, borderColor: Colors.black,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+    shadowColor: Colors.black, shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 1, shadowRadius: 0, elevation: 4,
+    overflow: 'hidden',
+  },
+  img: { width: 62, height: 62, borderRadius: 13 },
+});
 
 type Props = {
   navigation: NativeStackNavigationProp<RootStackParamList, 'InternshipDetail'>;
@@ -81,20 +123,20 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
   const handleApply = async () => {
     if (hasApplied) return;
 
-    // Check deadline before submitting
-    if (internship?.deadline) {
-      const deadlineMs = new Date(internship.deadline).getTime();
-      if (deadlineMs < Date.now()) {
-        const deadlineStr = new Date(internship.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-        Alert.alert(
-          'Deadline Passed',
-          `The application deadline for this internship was ${deadlineStr}. Unfortunately, applications are no longer being accepted.`,
-          [{ text: 'OK' }]
-        );
+    // If the internship has an external application URL, open it directly (like website behaviour)
+    const applyUrl = internship?.application_url || internship?.apply_url || internship?.external_url;
+    if (applyUrl) {
+      const canOpen = await Linking.canOpenURL(applyUrl);
+      if (canOpen) {
+        await Linking.openURL(applyUrl);
+        // Also record the application internally (best-effort)
+        api.applications.apply(id).catch(() => {});
+        setHasApplied(true);
         return;
       }
     }
 
+    // Fallback: internal application
     Alert.alert(
       'Apply Now',
       `Apply for "${internship?.title}" at ${getCompanyName(internship?.company)}?`,
@@ -161,9 +203,7 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* Hero card */}
         <View style={styles.heroCard}>
-          <View style={styles.companyInitialBox}>
-            <Text style={styles.companyInitial}>{(getCompanyName(internship.company) || 'C')[0].toUpperCase()}</Text>
-          </View>
+          <CompanyLogo internship={internship} />
           <Text style={styles.heroTitle}>{internship.title}</Text>
           <Text style={styles.heroCompany}>{getCompanyName(internship.company)}</Text>
 

@@ -13,6 +13,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { Colors, FontSize, Spacing, Radius } from '../../constants/theme';
 import { AuthStackParamList } from '../../types';
+import GoogleLogo from '../../components/GoogleLogo';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -29,35 +30,7 @@ const INTEREST_OPTIONS = [
 type UserType = 'student' | 'company';
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignUp'> };
 
-// ── Google G SVG Logo (official colors) ──────────────────────────────────────
-function GoogleLogo({ size = 20 }: { size?: number }) {
-  return (
-    <View style={{ width: size, height: size, marginRight: 10 }}>
-      {/* Blue top-right quarter */}
-      <View style={{ position: 'absolute', top: 0, right: 0, width: size / 2, height: size / 2, backgroundColor: '#4285F4', borderTopRightRadius: size / 2 }} />
-      {/* Red top-left quarter */}
-      <View style={{ position: 'absolute', top: 0, left: 0, width: size / 2, height: size / 2, backgroundColor: '#EA4335', borderTopLeftRadius: size / 2 }} />
-      {/* Yellow bottom-left quarter */}
-      <View style={{ position: 'absolute', bottom: 0, left: 0, width: size / 2, height: size / 2, backgroundColor: '#FBBC05', borderBottomLeftRadius: size / 2 }} />
-      {/* Green bottom-right quarter */}
-      <View style={{ position: 'absolute', bottom: 0, right: 0, width: size / 2, height: size / 2, backgroundColor: '#34A853', borderBottomRightRadius: size / 2 }} />
-      {/* White center cutout */}
-      <View style={{
-        position: 'absolute', top: size * 0.2, left: size * 0.2,
-        width: size * 0.6, height: size * 0.6, borderRadius: size * 0.3,
-        backgroundColor: '#fff',
-      }} />
-      {/* G cutout  */}
-      <View style={{
-        position: 'absolute', top: size * 0.3, left: size * 0.3,
-        width: size * 0.4, height: size * 0.4, borderRadius: size * 0.2,
-        backgroundColor: 'transparent',
-        borderWidth: size * 0.08, borderColor: '#4285F4',
-        borderRightColor: 'transparent', borderBottomColor: 'transparent',
-      }} />
-    </View>
-  );
-}
+
 
 export default function SignUpScreen({ navigation }: Props) {
   const { loginWithGoogle } = useAuth();
@@ -362,9 +335,7 @@ export default function SignUpScreen({ navigation }: Props) {
                   <ActivityIndicator color={Colors.text} />
                 ) : (
                   <>
-                    <View style={styles.googleLogoBox}>
-                      <Text style={styles.googleLogoBlue}>G</Text>
-                    </View>
+                    <GoogleLogo size={22} />
                     <Text style={styles.googleBtnText}>SIGN UP WITH GOOGLE</Text>
                   </>
                 )}

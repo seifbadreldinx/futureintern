@@ -33,6 +33,7 @@ export interface Internship {
   title: string;
   company: string;
   company_id?: number;
+  company_name?: string;
   location: string;
   type: string;           // Remote, On-site, Hybrid, Full-time, Part-time
   duration?: string;
@@ -40,6 +41,8 @@ export interface Internship {
   description?: string;
   requirements?: string;
   application_url?: string;
+  apply_url?: string;
+  external_url?: string;
   logo_url?: string;
   company_logo?: string;
   is_active?: boolean;
@@ -109,6 +112,7 @@ export type RootStackParamList = {
   PrivacyPolicy: undefined;
   TermsOfService: undefined;
   CompanyOpenings: { companyId: number; companyName: string };
+  Chatbot: undefined;
 };
 
 // Composite nav type for screens that live inside the tab navigator

@@ -244,17 +244,30 @@ export const api = {
       }),
   },
 
-  // ── Points ───────────────────────────────────────────────────────────────
+  // ── Points ─────────────────────────────────────────────────────────────
   points: {
     balance: async () => apiRequest<{ balance: number }>('/points/balance'),
 
-    getBalance: async () => apiRequest<{ balance: number }>('/points/balance'),
+    getBalance: async () => apiRequest<{ balance: number; total_earned: number; total_spent: number }>('/points/balance'),
 
     getPricing: async () => apiRequest<{ services: any[] }>('/points/pricing'),
 
     getTransactions: async () => apiRequest<any>('/points/transactions'),
 
     getStore: async () => apiRequest<any>('/points/store'),
+
+    purchase: async (packageId: number) =>
+      apiRequest<any>('/points/purchase', {
+        method: 'POST',
+        body: JSON.stringify({ package_id: packageId }),
+      }),
+
+    getMyPurchases: async () => apiRequest<any>('/points/my-purchases'),
+
+    getEarningActivities: async () => apiRequest<any>('/points/earning-activities'),
+
+    claimDaily: async () =>
+      apiRequest<any>('/points/claim-daily', { method: 'POST' }),
   },
 
   // ── Notifications ────────────────────────────────────────────────────────
