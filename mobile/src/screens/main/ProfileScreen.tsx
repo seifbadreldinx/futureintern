@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, Alert, Switch, ActivityIndicator, Linking,
+  Platform, Alert, Switch, ActivityIndicator, Linking, Image
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -14,6 +14,20 @@ import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { RootStackParamList } from '../../types';
 
+const API_BASE = 'https://futureintern-production.up.railway.app';
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
+
+function resolveLogoUrl(url: string | undefined | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
+  return null;
+}
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
@@ -47,6 +61,7 @@ export default function ProfileScreen() {
   const initials = user?.name
     ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
+  const profileImageUrl = resolveLogoUrl(user?.profile_image);
 
   return (
     <>
@@ -58,9 +73,13 @@ export default function ProfileScreen() {
       >
         {/* Hero header */}
         <View style={styles.header}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{initials}</Text>
-          </View>
+          {profileImageUrl ? (
+            <Image source={{ uri: profileImageUrl }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 12, borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)' }} />
+          ) : (
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>{initials}</Text>
+            </View>
+          )}
           <Text style={styles.name}>{user?.name || 'Student'}</Text>
           <Text style={styles.email}>{user?.email || ''}</Text>
           {(user?.university || user?.major) && (

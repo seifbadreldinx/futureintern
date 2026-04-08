@@ -15,6 +15,21 @@ import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { RootStackParamList } from '../../types';
 
+const API_BASE = 'https://futureintern-production.up.railway.app';
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
+
+function resolveLogoUrl(url: string | undefined | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
+  return null;
+}
+
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function EditProfileScreen() {
@@ -34,7 +49,7 @@ export default function EditProfileScreen() {
   );
   const [linkedin, setLinkedin] = useState('');
   const [saving, setSaving] = useState(false);
-  const [photoUri, setPhotoUri] = useState<string | null>(user?.profile_image || null);
+  const [photoUri, setPhotoUri] = useState<string | null>(resolveLogoUrl(user?.profile_image) || null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const initials = user?.name

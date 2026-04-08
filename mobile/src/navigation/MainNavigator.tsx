@@ -71,7 +71,7 @@ export default function MainNavigator() {
       </Tab.Navigator>
 
       {/* Chatbot FAB — always visible, bottom-right, like the website */}
-      <ChatbotFAB />
+      <ChatbotFAB bottom={100} />
     </View>
   );
 }
