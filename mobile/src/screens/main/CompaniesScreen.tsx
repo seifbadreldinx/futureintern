@@ -10,12 +10,11 @@ import { Company } from '../../types';
 import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
 
-const getInitial = (name: string) => name?.[0]?.toUpperCase() || 'C';
-
 const INITIAL_COLORS = ['#f43f5e', '#2563eb', '#059669', '#7c3aed', '#f59e0b', '#0891b2'];
 const colorFor = (name: string) => INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
 
 const API_BASE = 'https://futureintern-production.up.railway.app';
+const FRONTEND_BASE = 'https://futureintern.vercel.app';
 
 const resolveLogoUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -25,34 +24,28 @@ const resolveLogoUrl = (url: string | null | undefined): string | null => {
     return url;
   }
   if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
   return null;
 };
 
 // ─── Company card (separate component so it can use useState for img error) ───
 
 function CompanyCard({ item, styles, C }: { item: Company; styles: any; C: any }) {
-  const [imgError, setImgError] = useState(false);
   const logoColor = colorFor(item.name);
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=eff6ff&color=2563eb&size=128&bold=true`;
+  const [logoSrc, setLogoSrc] = useState<string>(item.logo_url || avatarUrl);
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         {/* Logo */}
         <View style={[styles.logoWrap, { borderColor: logoColor + '30' }]}>
-          {item.logo_url && !imgError ? (
-            <Image
-              source={{ uri: item.logo_url }}
-              style={styles.logo}
-              resizeMode="contain"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <View style={[styles.logoPlaceholder, { backgroundColor: logoColor + '18' }]}>
-              <Text style={[styles.logoInitial, { color: logoColor }]}>
-                {getInitial(item.name)}
-              </Text>
-            </View>
-          )}
+          <Image
+            source={{ uri: logoSrc }}
+            style={styles.logo}
+            resizeMode="contain"
+            onError={() => setLogoSrc(avatarUrl)}
+          />
         </View>
 
         {/* Info */}
@@ -250,13 +243,6 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
     backgroundColor: C.gray50,
   },
   logo: { width: '100%', height: '100%' },
-  logoPlaceholder: {
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoInitial: { fontSize: FontSize.xl, fontWeight: '900' },
   cardInfo: { flex: 1 },
   companyName: { fontSize: FontSize.base, fontWeight: '800', color: C.text, marginBottom: 2 },
   industry: { fontSize: FontSize.xs, color: C.primary, fontWeight: '600', marginBottom: 2 },

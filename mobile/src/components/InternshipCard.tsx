@@ -26,19 +26,17 @@ const getCompanyName = (company: any): string => {
   return String(company);
 };
 
-const getCompanyInitial = (company: any): string => {
-  const name = getCompanyName(company);
-  return name[0]?.toUpperCase() || 'C';
-};
-
 const API_BASE = 'https://futureintern-production.up.railway.app';
+// Frontend origin where public/logos/ assets are served from.
+// Update this to match your Vercel deployment URL if different.
+const FRONTEND_BASE = 'https://futureintern.vercel.app';
 
 /**
  * Converts any logo URL to an absolute URL the mobile Image component can load.
  * Backend stores 3 formats:
  *  1. Full https:// URL  → use as-is (normalise old Railway paths)
  *  2. /uploads/logos/…  → prepend backend origin
- *  3. /logos/…          → static asset served from frontend (skip on mobile)
+ *  3. /logos/…          → static asset served from frontend origin
  */
 const resolveLogoUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -49,7 +47,8 @@ const resolveLogoUrl = (url: string | null | undefined): string | null => {
     return url;
   }
   if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
-  // /logos/ static paths are frontend-only — not available on mobile
+  // /logos/ static paths are served from the frontend's public folder
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
   return null;
 };
 
@@ -68,26 +67,22 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
   const { C } = useTheme();
   const styles = makeStyles(C);
   const typeColor = TYPE_COLORS[internship.type] || C.primary;
-  const logoUrl = getLogoUrl(internship);
-  const [imgError, setImgError] = useState(false);
+  const resolvedLogoUrl = getLogoUrl(internship);
+  const companyName = getCompanyName(internship.company) || 'Company';
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128&bold=true`;
+  const [logoUrl, setLogoUrl] = useState<string>(resolvedLogoUrl || avatarUrl);
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.9}>
       {/* Header row */}
       <View style={styles.header}>
         <View style={styles.logoBox}>
-          {logoUrl && !imgError ? (
-            <Image
-              source={{ uri: logoUrl }}
-              style={styles.logo}
-              resizeMode="contain"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <View style={styles.logoPlaceholder}>
-              <Text style={styles.logoInitial}>{getCompanyInitial(internship.company)}</Text>
-            </View>
-          )}
+          <Image
+            source={{ uri: logoUrl }}
+            style={styles.logo}
+            resizeMode="contain"
+            onError={() => setLogoUrl(avatarUrl)}
+          />
         </View>
         <View style={styles.headerInfo}>
           <Text style={styles.company} numberOfLines={1}>
@@ -163,15 +158,6 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
     borderRadius: Radius.sm,
     backgroundColor: C.gray100,
   },
-  logoPlaceholder: {
-    width: 44,
-    height: 44,
-    borderRadius: Radius.sm,
-    backgroundColor: C.primary + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoInitial: { fontSize: FontSize.lg, fontWeight: '800', color: C.primary },
   headerInfo: { flex: 1 },
   company: { fontSize: FontSize.sm, color: C.textSecondary, marginBottom: 2 },
   title: { fontSize: FontSize.base, fontWeight: '700', color: C.text, lineHeight: 20 },
