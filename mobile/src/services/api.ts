@@ -175,6 +175,12 @@ export const api = {
       }
       return response.json();
     },
+
+    resendVerification: async (email: string) =>
+      apiRequest<any>('/auth/resend-verification', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      }),
   },
 
   // ── Internships ──────────────────────────────────────────────────────────

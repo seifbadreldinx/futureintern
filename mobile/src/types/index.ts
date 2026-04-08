@@ -108,6 +108,7 @@ export type RootStackParamList = {
   ContactSupport: undefined;
   PrivacyPolicy: undefined;
   TermsOfService: undefined;
+  CompanyOpenings: { companyId: number; companyName: string };
 };
 
 // Composite nav type for screens that live inside the tab navigator

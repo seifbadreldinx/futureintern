@@ -19,6 +19,7 @@ import HelpCenterScreen from '../screens/main/HelpCenterScreen';
 import ContactSupportScreen from '../screens/main/ContactSupportScreen';
 import PrivacyPolicyScreen from '../screens/main/PrivacyPolicyScreen';
 import TermsOfServiceScreen from '../screens/main/TermsOfServiceScreen';
+import CompanyOpeningsScreen from '../screens/main/CompanyOpeningsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -62,6 +63,7 @@ export default function AppNavigator() {
             <Stack.Screen name="ContactSupport" component={ContactSupportScreen} options={{ headerShown: false }} />
             <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ headerShown: false }} />
             <Stack.Screen name="TermsOfService" component={TermsOfServiceScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="CompanyOpenings" component={CompanyOpeningsScreen} options={{ headerShown: false }} />
           </>
         ) : (
           <Stack.Screen name="Auth" component={AuthNavigator} />

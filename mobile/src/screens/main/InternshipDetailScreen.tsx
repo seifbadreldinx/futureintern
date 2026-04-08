@@ -80,6 +80,21 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
 
   const handleApply = async () => {
     if (hasApplied) return;
+
+    // Check deadline before submitting
+    if (internship?.deadline) {
+      const deadlineMs = new Date(internship.deadline).getTime();
+      if (deadlineMs < Date.now()) {
+        const deadlineStr = new Date(internship.deadline).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        Alert.alert(
+          'Deadline Passed',
+          `The application deadline for this internship was ${deadlineStr}. Unfortunately, applications are no longer being accepted.`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
+    }
+
     Alert.alert(
       'Apply Now',
       `Apply for "${internship?.title}" at ${getCompanyName(internship?.company)}?`,
@@ -92,9 +107,17 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
             try {
               await api.applications.apply(id);
               setHasApplied(true);
-              Alert.alert('Success!', 'Your application has been submitted.');
+              Alert.alert('🎉 Application Submitted!', 'Your application has been successfully submitted. Good luck!');
             } catch (err: any) {
-              Alert.alert('Failed', err.message || 'Could not submit application.');
+              const msg = err.message || '';
+              if (msg.toLowerCase().includes('deadline')) {
+                Alert.alert('Deadline Passed', 'The application deadline for this internship has passed. Applications are closed.');
+              } else if (msg.toLowerCase().includes('already')) {
+                Alert.alert('Already Applied', 'You have already applied for this internship.');
+                setHasApplied(true);
+              } else {
+                Alert.alert('Application Failed', msg || 'Could not submit application. Please try again.');
+              }
             } finally {
               setApplying(false);
             }

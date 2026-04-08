@@ -9,6 +9,9 @@ import { api } from '../../services/api';
 import { Company } from '../../types';
 import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { useTheme } from '../../context/ThemeContext';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../types';
 
 const INITIAL_COLORS = ['#f43f5e', '#2563eb', '#059669', '#7c3aed', '#f59e0b', '#0891b2'];
 const colorFor = (name: string) => INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
@@ -34,9 +37,14 @@ function CompanyCard({ item, styles, C }: { item: Company; styles: any; C: any }
   const logoColor = colorFor(item.name);
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(item.name)}&background=eff6ff&color=2563eb&size=128&bold=true`;
   const [logoSrc, setLogoSrc] = useState<string>(item.logo_url || avatarUrl);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('CompanyOpenings', { companyId: item.id, companyName: item.name })}
+    >
       <View style={styles.cardHeader}>
         {/* Logo */}
         <View style={[styles.logoWrap, { borderColor: logoColor + '30' }]}>
@@ -74,7 +82,12 @@ function CompanyCard({ item, styles, C }: { item: Company; styles: any; C: any }
       {item.description ? (
         <Text style={styles.description} numberOfLines={2}>{item.description}</Text>
       ) : null}
-    </View>
+
+      <View style={styles.viewOpenings}>
+        <Text style={styles.viewOpeningsText}>View Openings</Text>
+        <Ionicons name="arrow-forward" size={14} color={C.primary} />
+      </View>
+    </TouchableOpacity>
   );
 }
 
@@ -99,7 +112,7 @@ export default function CompaniesScreen() {
         id: c.id,
         name: c.company_name || c.name || 'Company',
         description: c.company_description || c.bio || c.description || '',
-        logo_url: resolveLogoUrl(c.profile_image || c.logo_url || c.company_logo),
+        logo_url: resolveLogoUrl(c.profile_image || c.logo_url || c.company_logo) ?? undefined,
         website: c.company_website || c.website || '',
         industry: c.industry || '',
         location: c.company_location || c.location || '',
@@ -260,6 +273,8 @@ const makeStyles = (C: ReturnType<typeof useTheme>['C']) => StyleSheet.create({
   badgeText: { fontSize: FontSize.md, fontWeight: '900', color: C.primary },
   badgeLabel: { fontSize: 9, color: C.primary, fontWeight: '600', textTransform: 'uppercase' },
   description: { fontSize: FontSize.sm, color: C.textSecondary, lineHeight: 18 },
+  viewOpenings: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 10, gap: 4 },
+  viewOpeningsText: { fontSize: FontSize.xs, fontWeight: '700', color: C.primary },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
   emptyText: { marginTop: 12, fontSize: FontSize.base, color: C.textSecondary, textAlign: 'center' },
 });
