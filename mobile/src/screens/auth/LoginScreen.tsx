@@ -5,10 +5,9 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
-import { makeRedirectUri } from 'expo-auth-session';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -90,7 +89,7 @@ export default function LoginScreen({ navigation }: Props) {
         onPress={() => { try { rootNav.navigate('Chatbot'); } catch {} }}
         activeOpacity={0.85}
       >
-        <Ionicons name="hardware-chip-outline" size={22} color="#fff" />
+        <MaterialCommunityIcons name="robot" size={24} color="#fff" />
         <View style={S.fabBadge}><Text style={S.fabBadgeText}>AI</Text></View>
       </TouchableOpacity>
 
@@ -389,20 +388,22 @@ const makeStyles = (C: any, isDark: boolean) => StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: Platform.OS === 'ios' ? 40 : 28, right: 20,
-    width: 52, height: 52, borderRadius: 26,
-    backgroundColor: '#f43f5e',
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: '#0f172a',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 8,
+    shadowColor: '#f43f5e',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3, shadowRadius: 8, elevation: 8,
     zIndex: 999,
+    borderWidth: 2, borderColor: '#f43f5e',
   },
   fabBadge: {
-    position: 'absolute', top: 0, right: 0,
-    minWidth: 18, height: 18, borderRadius: 9,
-    backgroundColor: '#f59e0b',
+    position: 'absolute', top: -2, right: -4,
+    minWidth: 20, height: 18, borderRadius: 9,
+    backgroundColor: '#f43f5e',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#fff',
-    paddingHorizontal: 2,
+    borderWidth: 2, borderColor: '#0f172a',
+    paddingHorizontal: 3,
   },
   fabBadgeText: { fontSize: 8, fontWeight: '900', color: '#fff', letterSpacing: 0.2 },
 });
