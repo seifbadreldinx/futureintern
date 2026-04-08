@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { api, getAuthToken, removeAuthToken } from '../services/api';
+import { api, getAuthToken, removeAuthToken, saveAuthToken, saveRefreshToken } from '../services/api';
 import { User } from '../types';
 
 interface AuthContextType {
@@ -7,6 +7,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<any>;
   loginWithGoogle: (accessToken: string) => Promise<any>;
+  loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
@@ -54,6 +55,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data;
   };
 
+  // Used by the mobile server-side OAuth flow: JWT tokens come via deep link
+  const loginWithTokens = async (accessToken: string, refreshToken: string) => {
+    await saveAuthToken(accessToken);
+    await saveRefreshToken(refreshToken);
+    await refreshUserData();
+  };
+
   const logout = async () => {
     // Unregister push token before clearing auth
     try {
@@ -65,7 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout, refreshUserData }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, loginWithTokens, logout, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

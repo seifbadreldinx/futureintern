@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Alert,
@@ -6,10 +6,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
-
-WebBrowser.maybeCompleteAuthSession();
 import * as DocumentPicker from 'expo-document-picker';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -19,12 +16,7 @@ import { AuthStackParamList, RootStackParamList } from '../../types';
 import GoogleLogo from '../../components/GoogleLogo';
 import { useNavigation } from '@react-navigation/native';
 
-
-WebBrowser.maybeCompleteAuthSession();
-
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '';
-const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '';
+const GOOGLE_OAUTH_URL = 'https://futureintern-production.up.railway.app/api/auth/google/mobile';
 
 const INTEREST_OPTIONS = [
   'Web Development', 'AI', 'Cyber Security', 'Business',
@@ -38,7 +30,7 @@ type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignUp
 
 
 export default function SignUpScreen({ navigation }: Props) {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithTokens } = useAuth();
   const { isDark, toggleTheme, C } = useTheme();
   // Rebuild styles whenever theme changes
   const styles = makeSignupStyles(C);
@@ -68,23 +60,26 @@ export default function SignUpScreen({ navigation }: Props) {
   const [industry, setIndustry] = useState('');
   const [location, setLocation] = useState('');
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const token = response.authentication?.accessToken;
-      if (token) {
-        setGoogleLoading(true);
-        loginWithGoogle(token)
-          .catch((err: any) => Alert.alert('Google Sign Up Failed', err.message || 'Please try again.'))
-          .finally(() => setGoogleLoading(false));
+  const handleGoogleSignUp = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(GOOGLE_OAUTH_URL, 'futureintern://');
+      if (result.type === 'success') {
+        const url = result.url;
+        const query = url.includes('?') ? url.split('?')[1] : '';
+        const params = Object.fromEntries(query.split('&').map(p => p.split('=').map(decodeURIComponent)));
+        if (params.error) {
+          Alert.alert('Google Sign Up Failed', params.error);
+        } else if (params.token) {
+          await loginWithTokens(params.token, params.refresh_token || '');
+        }
       }
+    } catch (err: any) {
+      Alert.alert('Google Sign Up Failed', err.message || 'Please try again.');
+    } finally {
+      setGoogleLoading(false);
     }
-  }, [response]);
+  };
 
   // ── Password strength checks ──────────────────────────────────────────────
   const pwdChecks = [
@@ -379,9 +374,9 @@ export default function SignUpScreen({ navigation }: Props) {
 
               {/* Google button — official design */}
               <TouchableOpacity
-                style={[styles.googleBtn, (googleLoading || !request) && styles.btnDisabled]}
-                onPress={() => promptAsync()}
-                disabled={googleLoading || !request}
+                style={[styles.googleBtn, googleLoading && styles.btnDisabled]}
+                onPress={handleGoogleSignUp}
+                disabled={googleLoading}
                 activeOpacity={0.85}
               >
                 {googleLoading ? (

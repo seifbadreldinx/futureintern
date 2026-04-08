@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
@@ -7,11 +7,6 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
-
-WebBrowser.maybeCompleteAuthSession();
-
-WebBrowser.maybeCompleteAuthSession();
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius } from '../../constants/theme';
@@ -19,16 +14,12 @@ import { AuthStackParamList, RootStackParamList } from '../../types';
 import GoogleLogo from '../../components/GoogleLogo';
 import { useNavigation } from '@react-navigation/native';
 
-WebBrowser.maybeCompleteAuthSession();
-
-const GOOGLE_WEB_CLIENT_ID     = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
-const GOOGLE_IOS_CLIENT_ID     = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '';
-const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '';
+const GOOGLE_OAUTH_URL = 'https://futureintern-production.up.railway.app/api/auth/google/mobile';
 
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'> };
 
 export default function LoginScreen({ navigation }: Props) {
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithTokens } = useAuth();
   const { isDark, toggleTheme, C } = useTheme();
   const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -40,23 +31,26 @@ export default function LoginScreen({ navigation }: Props) {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const [request, response, promptAsync] = Google.useAuthRequest({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-  });
-
-  useEffect(() => {
-    if (response?.type === 'success') {
-      const token = response.authentication?.accessToken;
-      if (token) {
-        setGoogleLoading(true);
-        loginWithGoogle(token)
-          .catch((err: any) => Alert.alert('Google Login Failed', err.message || 'Please try again.'))
-          .finally(() => setGoogleLoading(false));
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(GOOGLE_OAUTH_URL, 'futureintern://');
+      if (result.type === 'success') {
+        const url = result.url;
+        const query = url.includes('?') ? url.split('?')[1] : '';
+        const params = Object.fromEntries(query.split('&').map(p => p.split('=').map(decodeURIComponent)));
+        if (params.error) {
+          Alert.alert('Google Login Failed', params.error);
+        } else if (params.token) {
+          await loginWithTokens(params.token, params.refresh_token || '');
+        }
       }
+    } catch (err: any) {
+      Alert.alert('Google Login Failed', err.message || 'Please try again.');
+    } finally {
+      setGoogleLoading(false);
     }
-  }, [response]);
+  };
 
   const validate = () => {
     const e: typeof errors = {};
@@ -206,9 +200,9 @@ export default function LoginScreen({ navigation }: Props) {
 
             {/* Google button */}
             <TouchableOpacity
-              style={[S.googleBtn, (googleLoading || !request) && S.btnDisabled]}
-              onPress={() => promptAsync()}
-              disabled={googleLoading || !request}
+              style={[S.googleBtn, googleLoading && S.btnDisabled]}
+              onPress={handleGoogleLogin}
+              disabled={googleLoading}
               activeOpacity={0.85}
             >
               {googleLoading

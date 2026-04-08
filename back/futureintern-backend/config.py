@@ -75,6 +75,7 @@ class Config:
     
     # Google OAuth
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
 
     # OpenAI (optional, fallback AI)
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')

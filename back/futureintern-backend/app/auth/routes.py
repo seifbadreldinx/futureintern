@@ -659,6 +659,124 @@ def get_current_user():
 
 
 # ────────────────────────────────────────────────────────
+# Google OAuth — Mobile (server-side redirect flow)
+# ────────────────────────────────────────────────────────
+
+MOBILE_CALLBACK_URL = 'https://futureintern-production.up.railway.app/api/auth/google/mobile-callback'
+
+@auth_bp.route("/google/mobile", methods=["GET"])
+def google_mobile_initiate():
+    """Redirect mobile app to Google's OAuth consent screen."""
+    import urllib.parse
+    from flask import redirect
+    client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
+    params = {
+        'client_id': client_id,
+        'redirect_uri': MOBILE_CALLBACK_URL,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'access_type': 'online',
+        'prompt': 'select_account',
+    }
+    url = 'https://accounts.google.com/o/oauth2/v2/auth?' + urllib.parse.urlencode(params)
+    return redirect(url)
+
+
+@auth_bp.route("/google/mobile-callback", methods=["GET"])
+def google_mobile_callback():
+    """Handle Google OAuth callback: exchange code → issue JWT → deep-link back to app."""
+    import urllib.parse
+    from flask import redirect
+
+    error = request.args.get('error')
+    if error:
+        return redirect('futureintern://auth?error=' + urllib.parse.quote(error))
+
+    code = request.args.get('code')
+    if not code:
+        return redirect('futureintern://auth?error=no_code')
+
+    client_id = current_app.config.get('GOOGLE_CLIENT_ID', '')
+    client_secret = current_app.config.get('GOOGLE_CLIENT_SECRET', '')
+
+    # Exchange authorization code for tokens
+    token_resp = http_requests.post('https://oauth2.googleapis.com/token', data={
+        'code': code,
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'redirect_uri': MOBILE_CALLBACK_URL,
+        'grant_type': 'authorization_code',
+    })
+    if token_resp.status_code != 200:
+        return redirect('futureintern://auth?error=token_exchange_failed')
+
+    access_token = token_resp.json().get('access_token')
+    if not access_token:
+        return redirect('futureintern://auth?error=no_access_token')
+
+    # Fetch Google user info
+    userinfo_resp = http_requests.get(
+        'https://www.googleapis.com/oauth2/v3/userinfo',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    if userinfo_resp.status_code != 200:
+        return redirect('futureintern://auth?error=userinfo_failed')
+
+    google_data = userinfo_resp.json()
+    google_id = google_data.get('sub')
+    email = google_data.get('email')
+    name = google_data.get('name', email.split('@')[0] if email else 'User')
+
+    if not google_id or not email:
+        return redirect('futureintern://auth?error=missing_user_info')
+
+    # Find or create user
+    user = User.query.filter_by(google_id=google_id).first()
+    if not user:
+        user = User.query.filter_by(email=email).first()
+
+    if user:
+        if not user.google_id:
+            user.google_id = google_id
+            user.auth_provider = 'google'
+        user.email_verified = True
+        db.session.commit()
+    else:
+        from werkzeug.security import generate_password_hash
+        import secrets as _secrets
+        user = User(
+            name=name,
+            email=email,
+            password_hash=generate_password_hash(_secrets.token_urlsafe(32)),
+            role='student',
+            google_id=google_id,
+            auth_provider='google',
+            email_verified=True,
+            points=0,
+        )
+        db.session.add(user)
+        db.session.flush()
+        from app.utils.points import grant_signup_bonus
+        grant_signup_bonus(user, bonus=50)
+        db.session.commit()
+
+    # Issue JWT pair
+    access_jwt = create_access_token(
+        identity=str(user.id),
+        additional_claims={'role': user.role, 'email': user.email}
+    )
+    refresh_jwt = create_refresh_token(identity=str(user.id))
+    log_audit('google_login_mobile', resource='user', resource_id=user.id, user_id=user.id)
+
+    # Deep-link back to the mobile app
+    deep_link = 'futureintern://auth?' + urllib.parse.urlencode({
+        'token': access_jwt,
+        'refresh_token': refresh_jwt,
+    })
+    return redirect(deep_link)
+
+
+# ────────────────────────────────────────────────────────
 # Google OAuth Login / Register
 # ────────────────────────────────────────────────────────
 @auth_bp.route("/google", methods=["POST"])
