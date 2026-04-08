@@ -4,7 +4,7 @@ import {
   KeyboardAvoidingView, Platform, FlatList, ActivityIndicator,
   SafeAreaView, Keyboard, Animated, StatusBar,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '../../context/ThemeContext';
 import { FontSize, Spacing, Radius } from '../../constants/theme';
@@ -233,16 +233,16 @@ export default function ChatbotScreen() {
       <View style={S.header}>
         <View style={S.headerLeft}>
           {/* Pink AI avatar */}
-          <View style={S.headerAvatar}>
-            <Ionicons name="hardware-chip-outline" size={20} color="#fff" />
+          <View style={[S.headerAvatar, { backgroundColor: '#0f172a', borderColor: '#f43f5e', borderWidth: 2 }]}>
+            <MaterialCommunityIcons name="robot-outline" size={24} color="#f43f5e" />
             {/* Online dot badge */}
-            <View style={S.onlineBadge} />
+            <View style={[S.onlineBadge, { backgroundColor: '#10b981', bottom: -2, right: -4 }]} />
           </View>
           <View>
-            <Text style={S.headerTitle}>FutureIntern AI</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ade80' }} />
-              <Text style={S.headerSub}>Online · Powered by AI</Text>
+            <Text style={[S.headerTitle, { color: '#fff' }]}>FutureIntern AI</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <Text style={{ fontSize: 10 }}>✨</Text>
+              <Text style={[S.headerSub, { color: '#94a3b8', fontSize: 10, fontWeight: '700', letterSpacing: 0.5, textTransform: 'uppercase' }]}>POWERED BY HUGGING FACE</Text>
             </View>
           </View>
         </View>
@@ -357,17 +357,16 @@ const makeStyles = (C: any, isDark: boolean) => StyleSheet.create({
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   headerAvatar: {
-    width: 42, height: 42, borderRadius: 21,
-    backgroundColor: '#f43f5e',
+    width: 44, height: 44, borderRadius: 12,
+    backgroundColor: '#0f172a',
     alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2.5, borderColor: '#fda4af',
-    shadowColor: '#f43f5e', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5, shadowRadius: 8, elevation: 6,
+    shadowColor: '#f43f5e', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3, shadowRadius: 4, elevation: 4,
   },
   onlineBadge: {
-    position: 'absolute', bottom: 1, right: 1,
-    width: 11, height: 11, borderRadius: 5.5,
-    backgroundColor: '#4ade80', borderWidth: 2, borderColor: '#0f172a',
+    position: 'absolute', bottom: -2, right: -4,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: '#10b981', borderWidth: 2, borderColor: '#0f172a',
   },
   headerTitle: { fontSize: FontSize.base, fontWeight: '900', color: '#fff', letterSpacing: 0.2 },
   headerSub: { fontSize: 10, fontWeight: '600', color: '#64748b', marginTop: 1 },

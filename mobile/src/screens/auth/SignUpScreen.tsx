@@ -73,9 +73,6 @@ export default function SignUpScreen({ navigation }: Props) {
     webClientId: GOOGLE_WEB_CLIENT_ID,
     iosClientId: GOOGLE_IOS_CLIENT_ID,
     androidClientId: GOOGLE_ANDROID_CLIENT_ID,
-    redirectUri: makeRedirectUri({
-      scheme: 'futureintern',
-    }),
   });
 
   useEffect(() => {
