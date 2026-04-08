@@ -570,10 +570,16 @@ function FieldLabel({ label, error }: { label: string; error?: string }) {
 
 function InputBox({ icon, placeholder, value, onChangeText, keyboardType, autoCapitalize, secure, rightIcon, onRightPress, error }: any) {
   return (
-    <View style={[styles.inputBox, error && styles.inputBoxError]}>
+    <View style={{
+      flexDirection: 'row', alignItems: 'center',
+      backgroundColor: Colors.white, borderWidth: 2,
+      borderColor: error ? Colors.red : Colors.border,
+      borderRadius: Radius.md, paddingHorizontal: 12, height: 52,
+      marginBottom: 4,
+    }}>
       <Ionicons name={icon} size={18} color={Colors.gray400} style={{ marginRight: 8 }} />
       <TextInput
-        style={styles.inputText}
+        style={{ flex: 1, fontSize: FontSize.base, color: Colors.text }}
         placeholder={placeholder}
         placeholderTextColor={Colors.gray400}
         value={value}
@@ -591,6 +597,7 @@ function InputBox({ icon, placeholder, value, onChangeText, keyboardType, autoCa
     </View>
   );
 }
+
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
