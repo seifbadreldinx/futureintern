@@ -97,7 +97,7 @@ export default function LoginScreen({ navigation }: Props) {
           <Text style={styles.title}>Welcome back</Text>
           <Text style={styles.subtitle}>Sign in to your account</Text>
 
-          {/* Google Sign In */}
+          {/* Google Sign In — official design */}
           <TouchableOpacity
             style={[styles.googleBtn, (googleLoading || !request) && styles.btnDisabled]}
             onPress={() => promptAsync()}
@@ -108,8 +108,10 @@ export default function LoginScreen({ navigation }: Props) {
               <ActivityIndicator color={Colors.text} />
             ) : (
               <>
-                <Ionicons name="logo-google" size={20} color="#DB4437" style={{ marginRight: 10 }} />
-                <Text style={styles.googleBtnText}>Continue with Google</Text>
+                <View style={styles.googleLogoBox}>
+                  <Text style={styles.googleLogoG}>G</Text>
+                </View>
+                <Text style={styles.googleBtnText}>SIGN IN WITH GOOGLE</Text>
               </>
             )}
           </TouchableOpacity>
@@ -231,13 +233,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: Colors.white,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderWidth: 2,
+    borderColor: '#dadce0',
     borderRadius: Radius.md,
     height: 52,
     marginBottom: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
   },
-  googleBtnText: { fontSize: FontSize.base, fontWeight: '600', color: Colors.text },
+  googleLogoBox: {
+    width: 22, height: 22, borderRadius: 11, marginRight: 10,
+    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
+    borderWidth: 1, borderColor: '#dadce0',
+  },
+  googleLogoG: { fontSize: 15, fontWeight: '900', color: '#4285F4' },
+  googleBtnText: { fontSize: FontSize.sm, fontWeight: '800', color: '#3c4043', letterSpacing: 0.3 },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
