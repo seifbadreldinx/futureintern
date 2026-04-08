@@ -116,21 +116,12 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
             <Text style={styles.tagText}>{internship.location}</Text>
           </View>
         )}
-        {internship.is_paid && (
-          <View style={styles.paidTag}>
-            <Text style={styles.paidTagText}>Paid</Text>
-          </View>
-        )}
       </View>
 
       {/* Footer */}
       <View style={styles.footer}>
-        {internship.stipend ? (
-          <Text style={styles.stipend}>{internship.stipend}</Text>
-        ) : (
-          <Text style={styles.unpaid}>Unpaid</Text>
-        )}
         <Text style={styles.deadline}>
+
           {internship.deadline
             ? `Deadline: ${new Date(internship.deadline).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
             : ''}

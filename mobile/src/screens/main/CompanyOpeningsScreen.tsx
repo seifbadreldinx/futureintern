@@ -66,23 +66,6 @@ export default function CompanyOpeningsScreen() {
         <View style={styles.tag}>
           <Text style={styles.tagText}>{item.type}</Text>
         </View>
-        {item.is_paid && (
-          <View style={[styles.tag, styles.paidTag]}>
-            <Text style={[styles.tagText, styles.paidTagText]}>Paid</Text>
-          </View>
-        )}
-        {item.duration && (
-          <View style={styles.tag}>
-            <Ionicons name="time-outline" size={11} color={C.textSecondary} />
-            <Text style={styles.tagText}> {item.duration}</Text>
-          </View>
-        )}
-        {item.stipend && (
-          <View style={styles.tag}>
-            <Ionicons name="cash-outline" size={11} color={C.textSecondary} />
-            <Text style={styles.tagText}> {item.stipend}</Text>
-          </View>
-        )}
       </View>
     </TouchableOpacity>
   );

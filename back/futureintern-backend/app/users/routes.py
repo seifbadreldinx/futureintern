@@ -270,7 +270,7 @@ def delete_cv_route():
 
 @users_bp.route("/upload-logo", methods=["POST"])
 @jwt_required()
-@role_required('company')
+@role_required('company', 'student', 'admin')
 def upload_logo():
     """Upload logo for company"""
     try:
@@ -313,7 +313,7 @@ def upload_logo():
 
 @users_bp.route("/delete-logo", methods=["DELETE"])
 @jwt_required()
-@role_required('company')
+@role_required('company', 'student', 'admin')
 def delete_logo_route():
     """Delete logo for company"""
     try:

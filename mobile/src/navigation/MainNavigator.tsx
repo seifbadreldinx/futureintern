@@ -15,6 +15,7 @@ import CompaniesScreen from '../screens/main/CompaniesScreen';
 import SavedScreen     from '../screens/main/SavedScreen';
 import DashboardScreen from '../screens/main/DashboardScreen';
 import ProfileScreen   from '../screens/main/ProfileScreen';
+import ChatbotFAB      from '../components/ChatbotFAB';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -28,23 +29,7 @@ const TAB_ICONS: Record<keyof MainTabParamList, { active: IoniconName; inactive:
   Profile:   { active: 'person-circle',  inactive: 'person-circle-outline' },
 };
 
-/** Floating AI chatbot button — appears on every main screen like the website */
-function ChatbotFAB() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  return (
-    <TouchableOpacity
-      onPress={() => navigation.navigate('Chatbot')}
-      style={styles.fab}
-      activeOpacity={0.9}
-    >
-      <Ionicons name="hardware-chip-outline" size={22} color="#fff" />
-      {/* Amber "AI" badge — identical to the design seen logged-out */}
-      <View style={styles.fabBadge}>
-        <Text style={{ fontSize: 8, fontWeight: '900', color: '#fff' }}>AI</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+
 
 
 export default function MainNavigator() {
@@ -96,35 +81,5 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xs,
     fontWeight: '600',
     marginTop: 2,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 100 : 72,
-    right: 20,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#f43f5e',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#f43f5e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-
-  fabBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#f59e0b',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#fff',
   },
 });

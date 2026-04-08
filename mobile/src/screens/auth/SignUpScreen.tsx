@@ -684,25 +684,26 @@ const makeSignupStyles = (C: any) => StyleSheet.create({
   },
   backNavText: { fontSize: FontSize.sm, fontWeight: '700', color: Colors.text },
 
+  googleBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    height: 52, borderRadius: Radius.md,
+    backgroundColor: '#fff', gap: 10,
+    marginBottom: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1, shadowRadius: 4, elevation: 2,
+    borderWidth: 1, borderColor: '#e2e8f0',
+  },
+  googleBtnText: {
+    fontSize: FontSize.base, fontWeight: '900',
+    color: '#0f172a', letterSpacing: 0,
+  },
   btnDisabled: { opacity: 0.6 },
 
   // Divider + Google
   dividerRow: { flexDirection: 'row', alignItems: 'center', marginVertical: Spacing.md },
   dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
   dividerText: { marginHorizontal: 12, fontSize: FontSize.xs, color: Colors.textSecondary, fontWeight: '700', letterSpacing: 0.5 },
-  googleBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: Colors.white, borderWidth: 2, borderColor: '#dadce0',
-    borderRadius: Radius.md, height: 52, marginBottom: Spacing.md,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 3, elevation: 2,
-  },
-  googleLogoBox: {
-    width: 22, height: 22, borderRadius: 11, marginRight: 10,
-    backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: '#dadce0',
-  },
-  googleLogoBlue: { fontSize: 15, fontWeight: '900', color: '#4285F4' },
-  googleBtnText: { fontSize: FontSize.sm, fontWeight: '800', color: '#3c4043', letterSpacing: 0.3 },
+
 
   // Login row
   loginRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: Spacing.md },

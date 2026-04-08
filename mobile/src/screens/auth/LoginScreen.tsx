@@ -358,13 +358,19 @@ const makeStyles = (C: any, isDark: boolean) => StyleSheet.create({
   googleBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     height: 52, borderRadius: Radius.md,
-    borderWidth: 2, borderColor: C.black,
-    backgroundColor: C.card, gap: 12,
+    backgroundColor: '#fff', gap: 10,
     marginBottom: 20,
+    // Add subtle shadow instead of heavy border
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    borderWidth: 1, borderColor: '#e2e8f0', // Very light border that blends in
   },
   googleBtnText: {
-    fontSize: FontSize.sm, fontWeight: '800',
-    color: C.text, letterSpacing: 0.5,
+    fontSize: FontSize.base, fontWeight: '900', // Made bold/heavy like screenshot
+    color: '#0f172a', letterSpacing: 0, // Solid dark blue/black
   },
 
   bottomLine: { height: 1.5, backgroundColor: C.black, opacity: 0.08 },

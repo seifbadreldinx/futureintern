@@ -23,10 +23,18 @@ const getCompanyName = (company: any): string => {
   return String(company);
 };
 
-function resolveLogoUrl(raw: string | undefined | null): string | null {
-  if (!raw) return null;
-  if (raw.startsWith('http')) return raw;
-  return `${API_BASE}${raw.startsWith('/') ? '' : '/'}${raw}`;
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
+
+function resolveLogoUrl(url: string | undefined | null): string | null {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
+  return null;
 }
 
 // ─── Company Logo ─────────────────────────────────────────────────────────────
@@ -175,6 +183,7 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
     try {
       // Pick first available external URL
       const externalUrl =
+        internship?.application_link ||
         internship?.application_url ||
         internship?.apply_url ||
         internship?.external_url ||

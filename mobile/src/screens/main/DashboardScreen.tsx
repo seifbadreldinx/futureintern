@@ -10,7 +10,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
-import { FontSize, Spacing, Radius } from '../../constants/theme';
+import { FontSize, Spacing, Radius, Shadow } from '../../constants/theme';
 import { RootStackParamList } from '../../types';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
@@ -132,25 +132,36 @@ export default function DashboardScreen() {
           />
         </View>
 
-        {/* ── CV Builder Card ── */}
-        <TouchableOpacity
-          style={[S.cvCard, { backgroundColor: C.card, borderColor: C.border }]}
-          onPress={() => navigation.navigate('CVBuilder')}
-          activeOpacity={0.85}
-        >
-          <View style={S.cvCardLeft}>
-            <View style={S.cvIcon}>
-              <Ionicons name="document-text" size={22} color="#f43f5e" />
+        <View style={{ flexDirection: 'row', gap: 12, marginBottom: Spacing.lg }}>
+          <TouchableOpacity
+            style={[S.cvCardSmall, { backgroundColor: C.card, borderColor: C.border }]}
+            onPress={() => navigation.navigate('CVBuilder')}
+            activeOpacity={0.85}
+          >
+            <View style={S.cvIconSmall}>
+              <Ionicons name="document-text" size={20} color="#f43f5e" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[S.cvTitle, { color: C.text }]}>CV BUILDER</Text>
-              <Text style={[S.cvSub, { color: C.textSecondary }]}>
-                Build your professional CV with ATS scoring &amp; 3 templates
-              </Text>
+              <Text style={[S.cvTitleSmall, { color: C.text }]}>CV Builder</Text>
+              <Text style={[S.cvSubSmall, { color: C.textSecondary }]}>Edit & Build ATS</Text>
             </View>
-          </View>
-          <Text style={S.cvLink}>Build Now →</Text>
-        </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={16} color={C.gray400} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[S.cvCardSmall, { backgroundColor: C.primary, borderColor: C.primary }]}
+            onPress={() => navigation.navigate('CVBuilder')}
+            activeOpacity={0.85}
+          >
+            <View style={[S.cvIconSmall, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <Ionicons name="eye" size={20} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[S.cvTitleSmall, { color: '#fff' }]}>CV Preview</Text>
+              <Text style={[S.cvSubSmall, { color: 'rgba(255,255,255,0.8)' }]}>Preview & Download</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Recent Applications ── */}
         <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
@@ -289,20 +300,18 @@ const S = StyleSheet.create({
   },
 
   // CV Builder card
-  cvCard: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    borderRadius: Radius.md, borderWidth: 2,
-    padding: 16, marginBottom: 12,
+  cvCardSmall: {
+    flex: 1, borderRadius: Radius.lg, borderWidth: 1,
+    padding: 12, alignItems: 'flex-start',
+    ...Shadow.sm, gap: 8,
   },
-  cvCardLeft: { flexDirection: 'row', alignItems: 'center', flex: 1, gap: 12 },
-  cvIcon: {
-    width: 44, height: 44, borderRadius: 10,
-    backgroundColor: '#fff0f3', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#fecdd3',
+  cvIconSmall: {
+    width: 36, height: 36, borderRadius: 10,
+    backgroundColor: '#fff1f2', alignItems: 'center', justifyContent: 'center',
+    marginBottom: 4,
   },
-  cvTitle: { fontSize: FontSize.base, fontWeight: '900', letterSpacing: 0.5, marginBottom: 2 },
-  cvSub: { fontSize: 11, lineHeight: 16 },
-  cvLink: { fontSize: FontSize.sm, fontWeight: '800', color: '#f43f5e' },
+  cvTitleSmall: { fontSize: FontSize.sm, fontWeight: '800', marginBottom: 2 },
+  cvSubSmall: { fontSize: FontSize.xs, lineHeight: 14 },
 
   // Sections
   section: {
