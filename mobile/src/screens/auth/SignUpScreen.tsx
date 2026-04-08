@@ -1,25 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   KeyboardAvoidingView, Platform, ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../services/api';
 import { Colors, FontSize, Spacing, Radius } from '../../constants/theme';
 import { AuthStackParamList } from '../../types';
 
+WebBrowser.maybeCompleteAuthSession();
+
+// TODO: Replace with your Google Web Client ID (the value of VITE_GOOGLE_CLIENT_ID from the web app)
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
+
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'SignUp'> };
 
 export default function SignUpScreen({ navigation }: Props) {
-  const { refreshUserData } = useAuth();
+  const { refreshUserData, loginWithGoogle } = useAuth();
   const [form, setForm] = useState({
     name: '', email: '', password: '', university: '', major: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+  });
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const token = response.authentication?.accessToken;
+      if (token) {
+        setGoogleLoading(true);
+        loginWithGoogle(token)
+          .catch((err: any) => Alert.alert('Google Sign Up Failed', err.message || 'Please try again.'))
+          .finally(() => setGoogleLoading(false));
+      }
+    }
+  }, [response]);
 
   const set = (key: string) => (val: string) => setForm(f => ({ ...f, [key]: val }));
 
@@ -80,6 +104,29 @@ export default function SignUpScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.form}>
+          {/* Google Sign Up */}
+          <TouchableOpacity
+            style={[styles.googleBtn, (googleLoading || !request) && styles.btnDisabled]}
+            onPress={() => promptAsync()}
+            disabled={googleLoading || !request}
+            activeOpacity={0.85}
+          >
+            {googleLoading ? (
+              <ActivityIndicator color={Colors.text} />
+            ) : (
+              <>
+                <Ionicons name="logo-google" size={20} color="#DB4437" style={{ marginRight: 10 }} />
+                <Text style={styles.googleBtnText}>Continue with Google</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.dividerRow}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or sign up with email</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
           {fields.map(({ key, label, placeholder, keyboard, secure, icon }) => (
             <View key={key} style={styles.fieldGroup}>
               <Text style={styles.label}>{label}</Text>
@@ -144,6 +191,21 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: FontSize['2xl'], fontWeight: '900', color: Colors.white },
   headerSub: { fontSize: FontSize.sm, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   form: { padding: Spacing.lg, paddingTop: Spacing.xl },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: Colors.white,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    borderRadius: Radius.md,
+    height: 52,
+    marginBottom: Spacing.md,
+  },
+  googleBtnText: { fontSize: FontSize.base, fontWeight: '600', color: Colors.text },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: Spacing.lg },
+  dividerLine: { flex: 1, height: 1, backgroundColor: Colors.border },
+  dividerText: { marginHorizontal: 12, fontSize: FontSize.sm, color: Colors.textSecondary },
   fieldGroup: { marginBottom: Spacing.md },
   label: { fontSize: FontSize.sm, fontWeight: '600', color: Colors.text, marginBottom: 6 },
   inputWrapper: {

@@ -14,7 +14,7 @@ const INITIAL_COLORS = ['#f43f5e', '#2563eb', '#059669', '#7c3aed', '#f59e0b', '
 const colorFor = (name: string) => INITIAL_COLORS[name.charCodeAt(0) % INITIAL_COLORS.length];
 
 const API_BASE = 'https://futureintern-production.up.railway.app';
-const FRONTEND_BASE = 'https://futureintern.vercel.app';
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
 
 const resolveLogoUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;

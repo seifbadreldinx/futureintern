@@ -29,7 +29,7 @@ const getCompanyName = (company: any): string => {
 const API_BASE = 'https://futureintern-production.up.railway.app';
 // Frontend origin where public/logos/ assets are served from.
 // Update this to match your Vercel deployment URL if different.
-const FRONTEND_BASE = 'https://futureintern.vercel.app';
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
 
 /**
  * Converts any logo URL to an absolute URL the mobile Image component can load.

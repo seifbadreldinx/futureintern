@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, Alert, Switch, ActivityIndicator,
+  Platform, Alert, Switch, ActivityIndicator, Linking,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
@@ -142,13 +142,13 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Support</Text>
           <View style={styles.card}>
-            <MenuItem C={C} icon="help-circle-outline" label="Help Center" onPress={() => {}} />
+            <MenuItem C={C} icon="help-circle-outline" label="Help Center" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/get-help')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="chatbubble-outline" label="Contact Support" onPress={() => {}} />
+            <MenuItem C={C} icon="chatbubble-outline" label="Contact Support" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/contact')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="document-outline" label="Privacy Policy" onPress={() => {}} />
+            <MenuItem C={C} icon="document-outline" label="Privacy Policy" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/privacy-policy')} />
             <Divider C={C} />
-            <MenuItem C={C} icon="shield-checkmark-outline" label="Terms of Service" onPress={() => {}} />
+            <MenuItem C={C} icon="shield-checkmark-outline" label="Terms of Service" onPress={() => Linking.openURL('https://futureintern-two.vercel.app/terms-of-service')} />
           </View>
         </View>
 

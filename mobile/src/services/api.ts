@@ -121,6 +121,16 @@ export const api = {
       }
     },
 
+    googleLogin: async (accessToken: string) => {
+      const data = await apiRequest<any>('/auth/google', {
+        method: 'POST',
+        body: JSON.stringify({ access_token: accessToken }),
+      });
+      if (data.access_token) await saveAuthToken(data.access_token);
+      if (data.refresh_token) await saveRefreshToken(data.refresh_token);
+      return data;
+    },
+
     forgotPassword: async (email: string) => {
       return apiRequest<any>('/auth/forgot-password', {
         method: 'POST',

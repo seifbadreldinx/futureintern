@@ -65,7 +65,8 @@ export default function PointsScreen() {
       }
       if (storeRes.status === 'fulfilled') {
         const raw = (storeRes.value as any);
-        setStoreItems(raw.items || raw.services || raw || []);
+        const items = raw.items || raw.services;
+        setStoreItems(Array.isArray(items) ? items : Array.isArray(raw) ? raw : []);
       }
     } finally {
       setLoading(false);

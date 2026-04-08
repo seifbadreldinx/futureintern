@@ -6,11 +6,13 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<any>;
+  loginWithGoogle: (accessToken: string) => Promise<any>;
   logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -44,6 +46,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return data;
   };
 
+  const loginWithGoogle = async (accessToken: string) => {
+    const data = await api.auth.googleLogin(accessToken);
+    if (data.access_token) {
+      await refreshUserData();
+    }
+    return data;
+  };
+
   const logout = async () => {
     // Unregister push token before clearing auth
     try {
@@ -55,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUserData }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, logout, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );

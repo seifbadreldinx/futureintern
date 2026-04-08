@@ -37,16 +37,25 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
 
   const loadData = async () => {
     try {
-      const [detail, saved, apps] = await Promise.all([
+      const [detailRes, savedRes, appsRes] = await Promise.allSettled([
         api.internships.detail(id),
         api.internships.saved(),
         api.applications.list(),
       ]);
-      setInternship(detail);
-      const savedIds = (saved.saved_internships || []).map((i: Internship) => i.id);
-      setIsSaved(savedIds.includes(id));
-      const appliedIds = (apps.applications || []).map((a: any) => a.internship_id);
-      setHasApplied(appliedIds.includes(id));
+      if (detailRes.status === 'rejected') {
+        Alert.alert('Error', 'Failed to load internship details.');
+        navigation.goBack();
+        return;
+      }
+      setInternship(detailRes.value);
+      if (savedRes.status === 'fulfilled') {
+        const savedIds = (savedRes.value.saved_internships || []).map((i: Internship) => i.id);
+        setIsSaved(savedIds.includes(id));
+      }
+      if (appsRes.status === 'fulfilled') {
+        const appliedIds = (appsRes.value.applications || []).map((a: any) => a.internship_id);
+        setHasApplied(appliedIds.includes(id));
+      }
     } catch {
       Alert.alert('Error', 'Failed to load internship details.');
       navigation.goBack();
