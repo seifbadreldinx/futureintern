@@ -13,8 +13,12 @@ import { AuthStackParamList } from '../../types';
 
 WebBrowser.maybeCompleteAuthSession();
 
-// TODO: Replace with your Google Web Client ID (the value of VITE_GOOGLE_CLIENT_ID from the web app)
+// Web Client ID from Google Cloud Console (same as VITE_GOOGLE_CLIENT_ID in the web app)
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID || '';
+// iOS Client ID: create an "iOS" OAuth 2.0 client in Google Cloud Console → APIs & Services → Credentials
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || '';
+// Android Client ID: create an "Android" OAuth 2.0 client in Google Cloud Console
+const GOOGLE_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || '';
 
 type Props = { navigation: NativeStackNavigationProp<AuthStackParamList, 'Login'> };
 
@@ -29,6 +33,8 @@ export default function LoginScreen({ navigation }: Props) {
 
   const [request, response, promptAsync] = Google.useAuthRequest({
     webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID,
   });
 
   useEffect(() => {
