@@ -33,8 +33,8 @@ def _get_sbert_model(model_name: str):
             logger.info(f"Loading SBERT model: {model_name}")
             _cached_sbert_model = SentenceTransformer(model_name)
             logger.info("SBERT model loaded and cached")
-        except ImportError:
-            logger.warning("sentence-transformers not installed — SBERT disabled")
+        except Exception as e:
+            logger.warning(f"SBERT unavailable ({type(e).__name__}: {e}) — falling back to TF-IDF only")
     return _cached_sbert_model
 
 
