@@ -327,6 +327,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
         , document.body)}
 
         {activeTab === 'overview' && (
+          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all overflow-hidden">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
