@@ -956,6 +956,11 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [profileToast, setProfileToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  // Bumped after a profile photo upload to bust the browser's image cache
+  const [profileImageKey, setProfileImageKey] = useState(() => Date.now());
+  const profileImageSrc = user?.profile_image
+    ? `${resolveLogoUrl(user.profile_image)}?v=${profileImageKey}`
+    : null;
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -1405,7 +1410,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                       if (e.target.files?.[0]) {
                         try {
                           await api.auth.uploadProfileImage(e.target.files[0]);
-                          await refreshUserData();
+                          setProfileImageKey(Date.now());
+                          refreshUserData();
                         } catch (err) {
                           alert('Failed to upload image');
                         }

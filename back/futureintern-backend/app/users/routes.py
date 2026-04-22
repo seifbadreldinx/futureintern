@@ -293,8 +293,11 @@ def upload_logo():
         if error:
             return jsonify({'error': error}), 400
         
-        # Delete old logo if exists
-        if user.profile_image:
+        # Only delete the old logo if it has a different filename.
+        # When the filename is the same (e.g. both uploads use profile.jpg),
+        # save_logo already overwrote the file in-place — deleting here would
+        # erase the freshly saved image.
+        if user.profile_image and user.profile_image != logo_path:
             delete_logo(user.profile_image)
         
         # Update user's profile image with relative path

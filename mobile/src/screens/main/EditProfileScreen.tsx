@@ -190,8 +190,9 @@ export default function EditProfileScreen() {
       // Refresh user context in background — don't await, never block the UI
       refreshUserData?.().catch(() => {});
     } catch (err: any) {
-      // Revert preview on failure
-      setPhotoUri(resolveLogoUrl(user?.profile_image) || null);
+      // Revert preview to server photo; guard against undefined profile_image
+      const serverUri = user?.profile_image ? resolveLogoUrl(user.profile_image) : null;
+      setPhotoUri(serverUri);
       showToast(err?.message || 'Could not upload photo. Please try again.', false);
     } finally {
       setUploadingPhoto(false);
