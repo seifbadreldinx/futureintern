@@ -19,6 +19,26 @@ from sklearn.metrics.pairwise import cosine_similarity
 logger = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────
+# SBERT MODEL CACHE (loaded once, reused across requests)
+# ─────────────────────────────────────────────
+
+_cached_sbert_model = None
+
+def _get_sbert_model(model_name: str):
+    """Load SentenceTransformer once and cache it for the process lifetime."""
+    global _cached_sbert_model
+    if _cached_sbert_model is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            logger.info(f"Loading SBERT model: {model_name}")
+            _cached_sbert_model = SentenceTransformer(model_name)
+            logger.info("SBERT model loaded and cached")
+        except ImportError:
+            logger.warning("sentence-transformers not installed — SBERT disabled")
+    return _cached_sbert_model
+
+
+# ─────────────────────────────────────────────
 # TEXT PREPROCESSING
 # ─────────────────────────────────────────────
 
@@ -86,13 +106,12 @@ class TransformerMatcher:
 
     def __init__(self, model_name: str = DEFAULT_MODEL):
         self.corpus_embeddings: Optional[np.ndarray] = None
-        try:
-            from sentence_transformers import SentenceTransformer
-            logger.info(f"Loading SBERT model: {model_name}")
-            self.model = SentenceTransformer(model_name)
-            self.model_name = model_name
+        self.model_name = model_name
+        cached = _get_sbert_model(model_name)
+        if cached is not None:
+            self.model = cached
             self.available = True
-        except ImportError:
+        else:
             logger.warning("sentence-transformers not installed — SBERT disabled, TF-IDF only")
             self.model = None
             self.available = False
