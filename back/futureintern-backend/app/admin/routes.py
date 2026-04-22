@@ -20,8 +20,8 @@ def index():
 @admin_bp.route("/grant-points", methods=["POST"])
 @jwt_required()
 @role_required('admin')
-def grant_points():
-    """Admin: manually grant or deduct points for a user (e.g. refunds)."""
+def grant_points_by_email():
+    """Admin: manually grant or deduct points for a user by email (e.g. refunds)."""
     data = request.get_json() or {}
     email = data.get('email')
     amount = data.get('amount')
