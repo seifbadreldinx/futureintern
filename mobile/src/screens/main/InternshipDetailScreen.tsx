@@ -272,7 +272,9 @@ export default function InternshipDetailScreen({ navigation, route }: Props) {
             {internship.type ? (
               <View style={[S.tag, { backgroundColor: Colors.primary + '18', borderColor: Colors.primary + '50' }]}>
                 <Text style={{ fontSize: FontSize.xs, color: Colors.primary, fontWeight: '700' }}>
-                  {internship.type}
+                  {internship.type?.toLowerCase() === internship.location?.toLowerCase()
+                    ? 'Full-time'
+                    : internship.type}
                 </Text>
               </View>
             ) : null}

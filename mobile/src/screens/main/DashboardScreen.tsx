@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  Platform, ActivityIndicator, RefreshControl,
+  Platform, ActivityIndicator, RefreshControl, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -43,6 +43,12 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // AI Recommendations
+  const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
+  const [recommendError, setRecommendError] = useState<string | null>(null);
+
   const loadData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     else setRefreshing(true);
@@ -64,6 +70,24 @@ export default function DashboardScreen() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  const loadRecommendations = async () => {
+    if (recommendationsLoaded || isLoadingRecommendations) return;
+    setIsLoadingRecommendations(true);
+    setRecommendError(null);
+    try {
+      const recommended = await api.internships.listRecommendations();
+      setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
+      setRecommendationsLoaded(true);
+      const balRes = await api.points.balance().catch(() => ({ balance: 0 }));
+      setPoints((balRes as any).balance ?? 0);
+    } catch (err: any) {
+      setRecommendedInternships([]);
+      setRecommendError(err?.message || 'Could not load recommendations. Please try again.');
+    } finally {
+      setIsLoadingRecommendations(false);
+    }
+  };
 
   const total    = applications.length;
   const saved    = savedCount;
@@ -186,6 +210,93 @@ export default function DashboardScreen() {
           )}
         </View>
 
+        {/* ── AI Recommendations ── */}
+        <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <Text style={[S.sectionTitle, { color: C.text, marginBottom: 0 }]}>AI RECOMMENDATIONS</Text>
+            <Ionicons name="sparkles" size={18} color="#3b82f6" />
+          </View>
+
+          {!recommendationsLoaded && !isLoadingRecommendations && !recommendError ? (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <Ionicons name="sparkles-outline" size={48} color="#93c5fd" />
+              <Text style={{ color: C.textSecondary, marginTop: 8, marginBottom: 16, textAlign: 'center', fontSize: 13 }}>
+                AI recommendations cost 10 points per request.
+              </Text>
+              <TouchableOpacity
+                style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                onPress={loadRecommendations}
+                activeOpacity={0.85}
+              >
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Get AI Recommendations</Text>
+              </TouchableOpacity>
+            </View>
+          ) : isLoadingRecommendations ? (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <ActivityIndicator size="large" color="#2563eb" />
+              <Text style={{ color: C.textSecondary, marginTop: 12, fontWeight: '600', textAlign: 'center' }}>
+                Finding your best matches…
+              </Text>
+              <Text style={{ color: C.gray400, marginTop: 4, fontSize: 12, textAlign: 'center' }}>
+                This may take up to 30 seconds while the AI processes your profile.
+              </Text>
+            </View>
+          ) : recommendError ? (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <Ionicons name="sparkles-outline" size={48} color={C.gray400} />
+              {recommendError.toLowerCase().includes('complete your profile') ? (
+                <>
+                  <Text style={{ color: C.text, fontWeight: '800', fontSize: 16, marginTop: 12 }}>Profile Incomplete</Text>
+                  <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                    onPress={() => navigation.navigate('Main', { screen: 'Profile' } as any)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Complete Profile</Text>
+                  </TouchableOpacity>
+                </>
+              ) : recommendError.toLowerCase().includes('insufficient points') ? (
+                <>
+                  <Text style={{ color: C.text, fontWeight: '800', fontSize: 16, marginTop: 12 }}>Not Enough Points</Text>
+                  <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>
+                    You need 10 points to get AI recommendations. Earn points by completing your profile, applying to internships, and daily logins.
+                  </Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                    onPress={() => navigation.navigate('Points')}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Earn Points</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={{ color: '#ef4444', textAlign: 'center', marginTop: 12, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Try Again</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          ) : recommendedInternships.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 24 }}>
+              <Ionicons name="sparkles-outline" size={48} color={C.gray400} />
+              <Text style={{ color: C.textSecondary, marginTop: 8, textAlign: 'center', fontSize: 13 }}>
+                No specific recommendations yet. Try updating your profile or uploading a CV!
+              </Text>
+            </View>
+          ) : (
+            recommendedInternships.map((rec: any) => (
+              <RecCard key={rec.internship?.id} rec={rec} C={C} onPress={() => navigation.navigate('InternshipDetail', { id: rec.internship?.id })} />
+            ))
+          )}
+        </View>
+
         {/* ── Quick Actions (keeping as secondary) ── */}
         <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
           <Text style={[S.sectionTitle, { color: C.text }]}>QUICK ACTIONS</Text>
@@ -274,6 +385,67 @@ function QuickAction({ icon, label, color, onPress, C }: {
   );
 }
 
+const API_BASE = 'https://futureintern-production.up.railway.app';
+const FRONTEND_BASE = 'https://futureintern-two.vercel.app';
+const resolveLogoUrl = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    const match = url.match(/\/uploads\/logos\/(.+)$/);
+    if (match) return `${API_BASE}/uploads/logos/${match[1]}`;
+    return url;
+  }
+  if (url.startsWith('/uploads/')) return `${API_BASE}${url}`;
+  if (url.startsWith('/logos/')) return `${FRONTEND_BASE}${url}`;
+  return null;
+};
+
+function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void }) {
+  const internship = rec.internship || {};
+  const company = internship.company || {};
+  const companyName = company.name || '';
+  const logoUrl = resolveLogoUrl(company.profile_image);
+  const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName || 'C')}&background=eff6ff&color=2563eb&size=128&bold=true`;
+  const [imgSrc, setImgSrc] = useState<string>(logoUrl || avatarUrl);
+
+  return (
+    <TouchableOpacity
+      style={[S.recCard, { borderColor: C.border, backgroundColor: C.background }]}
+      onPress={onPress}
+      activeOpacity={0.85}
+    >
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        <Image
+          source={{ uri: imgSrc }}
+          style={S.recLogo}
+          resizeMode="contain"
+          onError={() => setImgSrc(avatarUrl)}
+        />
+        <View style={{ flex: 1 }}>
+          <Text style={{ color: C.text, fontWeight: '800', fontSize: 14 }} numberOfLines={1}>
+            {internship.title || 'Internship'}
+          </Text>
+          {companyName ? (
+            <Text style={{ color: C.textSecondary, fontSize: 12, marginTop: 1 }} numberOfLines={1}>
+              {companyName}
+            </Text>
+          ) : null}
+        </View>
+        <View style={S.matchBadge}>
+          <Text style={{ fontSize: 11, fontWeight: '900', color: '#065f46' }}>
+            {Math.round(rec.score ?? 0)}% Match
+          </Text>
+        </View>
+      </View>
+      {internship.location ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+          <Ionicons name="location-outline" size={12} color={C.textSecondary} />
+          <Text style={{ color: C.textSecondary, fontSize: 12 }}>{internship.location}</Text>
+        </View>
+      ) : null}
+    </TouchableOpacity>
+  );
+}
+
 // ── Styles ────────────────────────────────────────────────────────────────────
 const S = StyleSheet.create({
   // Header
@@ -353,4 +525,15 @@ const S = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   quickLabel: { fontSize: FontSize.xs, fontWeight: '700' },
+
+  // Rec cards
+  recCard: {
+    borderWidth: 1.5, borderRadius: Radius.md,
+    padding: 12, marginBottom: 10,
+  },
+  recLogo: { width: 40, height: 40, borderRadius: 8 },
+  matchBadge: {
+    backgroundColor: '#d1fae5', borderRadius: 20,
+    paddingHorizontal: 8, paddingVertical: 3,
+  },
 });

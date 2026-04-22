@@ -66,7 +66,11 @@ const getLogoUrl = (internship: Internship): string | null => {
 export default function InternshipCard({ internship, onPress, onSave, isSaved }: Props) {
   const { C } = useTheme();
   const styles = makeStyles(C);
-  const typeColor = TYPE_COLORS[internship.type] || C.primary;
+  const displayType =
+    internship.type?.toLowerCase() === internship.location?.toLowerCase()
+      ? 'Full-time'
+      : internship.type;
+  const typeColor = TYPE_COLORS[displayType] || C.primary;
   const resolvedLogoUrl = getLogoUrl(internship);
   const companyName = getCompanyName(internship.company) || 'Company';
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=eff6ff&color=2563eb&size=128&bold=true`;
@@ -108,7 +112,7 @@ export default function InternshipCard({ internship, onPress, onSave, isSaved }:
       {/* Tags */}
       <View style={styles.tags}>
         <View style={[styles.tag, { backgroundColor: typeColor + '18', borderColor: typeColor + '40' }]}>
-          <Text style={[styles.tagText, { color: typeColor }]}>{internship.type}</Text>
+          <Text style={[styles.tagText, { color: typeColor }]}>{displayType}</Text>
         </View>
         {internship.location && (
           <View style={styles.tag}>
