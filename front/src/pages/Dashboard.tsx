@@ -421,7 +421,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
               {!recommendationsLoaded && !isLoadingRecommendations && !recommendError ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-16 h-16 text-blue-200 dark:text-blue-900 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-slate-400 mb-4">AI recommendations use 10 points per request.</p>
+                  <p className="text-gray-600 dark:text-slate-400 mb-4">AI recommendations use 5 points per request (first use is free).</p>
                   <button
                     onClick={loadRecommendations}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"

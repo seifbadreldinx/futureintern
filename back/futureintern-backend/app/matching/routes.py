@@ -70,11 +70,29 @@ def get_recommendations():
         student_interests = parse_field(student.interests)
 
         # 4️⃣ Build student profile for the AI matcher
+        # Include CV builder data (summary, headline, section descriptions)
+        from app.models.cv import CV
+        cv = CV.query.filter_by(student_id=student.id).first()
+        cv_text_parts = []
+        if cv:
+            if cv.headline:
+                cv_text_parts.append(cv.headline)
+            if cv.summary:
+                cv_text_parts.append(cv.summary)
+            for section in (cv.sections or []):
+                if section.title:
+                    cv_text_parts.append(section.title)
+                if section.subtitle:
+                    cv_text_parts.append(section.subtitle)
+                if section.description:
+                    cv_text_parts.append(section.description)
+
         student_profile = {
             'skills': student_skills,
             'interests': student_interests,
             'bio': student.bio or '',
             'major': student.major or '',
+            'cv_text': ' '.join(cv_text_parts),
         }
 
         # 5️⃣ Prepare internship dicts for the AI matcher

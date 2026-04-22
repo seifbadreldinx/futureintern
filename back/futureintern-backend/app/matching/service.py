@@ -236,6 +236,7 @@ class HybridMatcher:
             to_str(profile.get("major", "")),
             to_str(profile.get("courses", "")),
             to_str(profile.get("projects", "")),
+            to_str(profile.get("cv_text", "")),
         ]
         return " ".join(p for p in parts if p)
 
