@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Briefcase, BookOpen, FileText, Settings, LogOut, User, PlusCircle, Users, BarChart, Camera, X, Sparkles, MapPin, Clock, Github, Linkedin, Globe, Calendar, Phone, Award, Coins } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -314,8 +315,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
           </div>
         )}
         {/* Profile Update Toast */}
-        {profileToast && (
-          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
+        {profileToast && createPortal(
+          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[9999] flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
             profileToast.ok
               ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
               : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
@@ -323,11 +324,9 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
             <span className="font-bold">{profileToast.msg}</span>
             <button onClick={() => setProfileToast(null)} className="font-bold opacity-60 hover:opacity-100">✕</button>
           </div>
-        )}
+        , document.body)}
 
         {activeTab === 'overview' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-5 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_#0f172a] transition-all overflow-hidden">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
@@ -1013,8 +1012,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
 
       <div className="lg:col-span-3">
         {/* Profile Update Toast (Company) */}
-        {profileToast && (
-          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
+        {profileToast && createPortal(
+          <div className={`fixed top-20 left-1/2 -translate-x-1/2 z-[9999] flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
             profileToast.ok
               ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
               : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
@@ -1022,7 +1021,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
             <span className="font-bold">{profileToast.msg}</span>
             <button onClick={() => setProfileToast(null)} className="font-bold opacity-60 hover:opacity-100">✕</button>
           </div>
-        )}
+        , document.body)}
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
