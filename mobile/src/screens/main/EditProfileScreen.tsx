@@ -76,14 +76,17 @@ export default function EditProfileScreen() {
   const [skills, setSkills] = useState(() => parseSkillsToString(user?.skills));
   const [linkedin, setLinkedin] = useState('');
   const [saving, setSaving] = useState(false);
-  const [photoUri, setPhotoUri] = useState<string | null>(resolveLogoUrl(user?.profile_image) || null);
+  // photoKey is bumped after each upload to bust React Native's image cache
+  const [photoKey, setPhotoKey] = useState(() => Date.now());
+  const [photoUri, setPhotoUri] = useState<string | null>(() => {
+    const url = resolveLogoUrl(user?.profile_image);
+    return url ? `${url}?k=${Date.now()}` : null;
+  });
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // Keep photoUri in sync when user context updates (e.g. after upload + refreshUserData)
-  useEffect(() => {
-    const url = resolveLogoUrl(user?.profile_image);
-    if (url) setPhotoUri(url);
-  }, [user?.profile_image]);
+  // NOTE: no useEffect syncing photoUri from user context —
+  // we keep the local asset.uri preview after upload so the
+  // image never flickers to a cached server URL.
 
   const initials = user?.name
     ? user.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -179,10 +182,12 @@ export default function EditProfileScreen() {
         throw new Error(errData.error || errData.message || `Upload failed (HTTP ${res.status})`);
       }
 
-      // Use the server-returned URL directly so the photo updates immediately
-      const resData = await res.json().catch(() => ({}));
-      const serverUrl = resolveLogoUrl(resData.profile_image);
-      if (serverUrl) setPhotoUri(serverUrl);
+      // Keep showing the local asset.uri — it already has the correct new image.
+      // DO NOT switch to the server URL here: React Native caches by URL and the
+      // filename is the same on every upload (logo_{id}_profile.jpg), so loading
+      // the server URL would show the old cached photo.
+      // Bump photoKey so ProfileScreen will also reload with cache-busting.
+      setPhotoKey(Date.now());
 
       await refreshUserData?.();
       showToast('Photo updated successfully!', true);

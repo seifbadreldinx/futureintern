@@ -62,6 +62,11 @@ export default function ProfileScreen() {
     ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
     : '?';
   const profileImageUrl = resolveLogoUrl(user?.profile_image);
+  // Append a cache-busting param so React Native always reloads after a photo change.
+  // We use the profile_image path itself as the key — it changes when a new file is saved.
+  const profileImageSrc = profileImageUrl
+    ? { uri: `${profileImageUrl}?k=${encodeURIComponent(user?.profile_image || '')}` }
+    : null;
 
   return (
     <>
@@ -73,8 +78,8 @@ export default function ProfileScreen() {
       >
         {/* Hero header */}
         <View style={styles.header}>
-          {profileImageUrl ? (
-            <Image source={{ uri: profileImageUrl }} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 12, borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)' }} />
+          {profileImageSrc ? (
+            <Image source={profileImageSrc} style={{ width: 80, height: 80, borderRadius: 40, marginBottom: 12, borderWidth: 3, borderColor: 'rgba(255,255,255,0.5)' }} />
           ) : (
             <View style={styles.avatar}>
               <Text style={styles.avatarText}>{initials}</Text>
