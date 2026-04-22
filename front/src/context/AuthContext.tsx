@@ -59,6 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
       return;
     }
+    // Start rendering the app immediately; update user when response arrives
+    setLoading(false);
     try {
       const res = await api.auth.getCurrentUser();
       const userData = res?.user || res?.profile || res;
@@ -78,10 +80,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         msg.includes('Invalid token');
       if (isDefinitiveAuthFailure) {
         removeAuthToken();
+        setUser(null);
       }
-      setUser(null);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
