@@ -229,14 +229,6 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1">
@@ -514,7 +506,11 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
         {activeTab === 'applications' && (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
             <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">My Applications</h2>
-            {applications.length === 0 ? (
+            {applications.length === 0 && isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+            ) : applications.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-slate-400 mb-4">You haven't applied to any internships yet.</p>
@@ -551,7 +547,11 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
         {activeTab === 'saved' && (
           <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
             <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6 uppercase tracking-tight">Saved Internships</h2>
-            {savedInternships.length === 0 ? (
+            {savedInternships.length === 0 && isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              </div>
+            ) : savedInternships.length === 0 ? (
               <div className="text-center py-12">
                 <BookOpen className="w-16 h-16 text-gray-400 dark:text-slate-600 mx-auto mb-4" />
                 <p className="text-gray-600 dark:text-slate-400 mb-4">You haven't saved any internships yet.</p>
@@ -895,14 +895,6 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
 
     fetchData();
   }, [user?.id]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
