@@ -23,7 +23,14 @@ def get_recommendations():
 
         if not student:
             return jsonify({'error': 'Student not found'}), 404
-            
+
+        # Require at least one profile field before spending points
+        _profile_fields = [student.skills, student.interests, student.bio, student.major]
+        if not any(bool(str(f).strip()) for f in _profile_fields if f):
+            return jsonify({
+                'error': 'Please complete your profile (add skills, interests, major, or bio) before requesting AI recommendations.'
+            }), 422
+
         # Check Points Balance and charge via utility
         from app.utils.points import check_and_charge
         from app.models import db

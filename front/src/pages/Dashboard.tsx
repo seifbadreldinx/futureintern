@@ -452,6 +452,18 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
+                            {rec.internship.company?.profile_image ? (
+                              <img
+                                src={resolveLogoUrl(rec.internship.company.profile_image)}
+                                alt={rec.internship.company?.name || 'Company'}
+                                className="w-10 h-10 rounded-lg object-contain border-[2px] border-slate-200 dark:border-slate-600 bg-white flex-shrink-0"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-lg border-[2px] border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                                <Briefcase className="w-5 h-5 text-slate-400" />
+                              </div>
+                            )}
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors">
                               {rec.internship.title}
                             </h3>
@@ -461,10 +473,12 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                           </div>
 
                           <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-slate-400 mb-4 font-medium">
-                            <div className="flex items-center gap-1.5">
-                              <Briefcase className="w-4 h-4" />
-                              <span>{rec.internship.company_name}</span>
-                            </div>
+                            {rec.internship.company?.name && (
+                              <div className="flex items-center gap-1.5">
+                                <Briefcase className="w-4 h-4" />
+                                <span className="font-semibold">{rec.internship.company.name}</span>
+                              </div>
+                            )}
                             <div className="flex items-center gap-1.5">
                               <MapPin className="w-4 h-4" />
                               <span>{rec.internship.location}</span>
