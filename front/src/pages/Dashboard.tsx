@@ -473,6 +473,28 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                         Earn Points
                       </Link>
                     </>
+                  ) : recommendError?.toLowerCase().includes('still being processed') ? (
+                    <>
+                      <p className="text-yellow-700 dark:text-yellow-400 font-bold text-lg mb-2">Still Processing…</p>
+                      <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">{recommendError}</p>
+                      <button
+                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        className="px-6 py-3 bg-yellow-500 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
+                      >
+                        Check Result
+                      </button>
+                    </>
+                  ) : recommendError?.toLowerCase().includes('refunded') ? (
+                    <>
+                      <p className="text-gray-900 dark:text-white font-bold text-lg mb-2">Matching Failed — Points Refunded</p>
+                      <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">{recommendError}</p>
+                      <button
+                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
+                      >
+                        Try Again
+                      </button>
+                    </>
                   ) : (
                     <>
                       <p className="text-red-600 dark:text-red-400 mb-6">{recommendError}</p>

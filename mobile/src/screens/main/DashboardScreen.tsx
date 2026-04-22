@@ -270,6 +270,32 @@ export default function DashboardScreen() {
                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Earn Points</Text>
                   </TouchableOpacity>
                 </>
+              ) : recommendError?.toLowerCase().includes('still being processed') ? (
+                <>
+                  <Ionicons name="time-outline" size={48} color="#f59e0b" />
+                  <Text style={{ color: C.text, fontWeight: '800', fontSize: 16, marginTop: 12 }}>Still Processing…</Text>
+                  <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Check Result</Text>
+                  </TouchableOpacity>
+                </>
+              ) : recommendError?.toLowerCase().includes('refunded') ? (
+                <>
+                  <Ionicons name="refresh-circle-outline" size={48} color="#22c55e" />
+                  <Text style={{ color: C.text, fontWeight: '800', fontSize: 16, marginTop: 12 }}>Matching Failed — Points Refunded</Text>
+                  <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
+                  <TouchableOpacity
+                    style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
+                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Try Again</Text>
+                  </TouchableOpacity>
+                </>
               ) : (
                 <>
                   <Text style={{ color: '#ef4444', textAlign: 'center', marginTop: 12, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
