@@ -315,13 +315,13 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
         )}
         {/* Profile Update Toast */}
         {profileToast && (
-          <div className={`fixed top-6 right-6 z-50 flex items-center justify-between px-5 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] max-w-sm ${
+          <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
             profileToast.ok
               ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
               : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
           }`}>
             <span className="font-bold">{profileToast.msg}</span>
-            <button onClick={() => setProfileToast(null)} className="ml-4 font-bold opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setProfileToast(null)} className="font-bold opacity-60 hover:opacity-100">✕</button>
           </div>
         )}
 
@@ -1014,13 +1014,13 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
       <div className="lg:col-span-3">
         {/* Profile Update Toast (Company) */}
         {profileToast && (
-          <div className={`fixed top-6 right-6 z-50 flex items-center justify-between px-5 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] max-w-sm ${
+          <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center justify-between gap-4 px-6 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] whitespace-nowrap ${
             profileToast.ok
               ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
               : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
           }`}>
             <span className="font-bold">{profileToast.msg}</span>
-            <button onClick={() => setProfileToast(null)} className="ml-4 font-bold opacity-60 hover:opacity-100">✕</button>
+            <button onClick={() => setProfileToast(null)} className="font-bold opacity-60 hover:opacity-100">✕</button>
           </div>
         )}
         {activeTab === 'overview' && (
