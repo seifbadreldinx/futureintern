@@ -78,6 +78,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
+  const [profileToast, setProfileToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [cvBuilderData, setCvBuilderData] = useState<{ headline?: string; summary?: string; sections_count: number } | null>(null);
   const [cvBuilderLoading, setCvBuilderLoading] = useState(false);
   const [uploadingCV, setUploadingCV] = useState(false);
@@ -312,6 +313,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
             <button onClick={() => setDailyRewardToast(null)} className="text-amber-600 dark:text-amber-400 hover:text-amber-800">✕</button>
           </div>
         )}
+        {/* Profile Update Toast */}
+        {profileToast && (
+          <div className={`mb-4 flex items-center justify-between px-5 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] ${
+            profileToast.ok
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
+          }`}>
+            <span className="font-bold">{profileToast.msg}</span>
+            <button onClick={() => setProfileToast(null)} className="ml-4 font-bold opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
 
         {activeTab === 'overview' && (
           <div className="space-y-6">
@@ -504,10 +516,6 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                               <MapPin className="w-4 h-4" />
                               <span>{rec.internship.location}</span>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Clock className="w-4 h-4" />
-                              <span>{rec.internship.type}</span>
-                            </div>
                           </div>
 
                           <div className="space-y-2">
@@ -639,9 +647,11 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   interests: parseList(formData.get('interests')),
                 });
                 await refreshUserData();
-                alert('Profile updated successfully!');
+                setProfileToast({ msg: 'Profile updated successfully!', ok: true });
+                setTimeout(() => setProfileToast(null), 4000);
               } catch (err) {
-                alert('Failed to update profile');
+                setProfileToast({ msg: 'Failed to update profile. Please try again.', ok: false });
+                setTimeout(() => setProfileToast(null), 4000);
               }
             }} className="space-y-6">
               <div className="flex items-center space-x-6 mb-8">
@@ -904,6 +914,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
   const [applications, setApplications] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
+  const [profileToast, setProfileToast] = useState<{ msg: string; ok: boolean } | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -990,6 +1001,17 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
       </div>
 
       <div className="lg:col-span-3">
+        {/* Profile Update Toast (Company) */}
+        {profileToast && (
+          <div className={`mb-4 flex items-center justify-between px-5 py-3 rounded-xl border-[3px] shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] ${
+            profileToast.ok
+              ? 'bg-green-50 dark:bg-green-900/20 border-green-600 text-green-800 dark:text-green-300'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-600 text-red-800 dark:text-red-300'
+          }`}>
+            <span className="font-bold">{profileToast.msg}</span>
+            <button onClick={() => setProfileToast(null)} className="ml-4 font-bold opacity-60 hover:opacity-100">✕</button>
+          </div>
+        )}
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1320,9 +1342,11 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   // Industry support could be added if backend supports it in updateProfile
                 });
                 await refreshUserData();
-                alert('Profile updated successfully!');
+                setProfileToast({ msg: 'Profile updated successfully!', ok: true });
+                setTimeout(() => setProfileToast(null), 4000);
               } catch (err) {
-                alert('Failed to update profile');
+                setProfileToast({ msg: 'Failed to update profile. Please try again.', ok: false });
+                setTimeout(() => setProfileToast(null), 4000);
               }
             }} className="space-y-6">
               <div className="flex items-center space-x-6 mb-8">
