@@ -360,12 +360,4 @@ def create_app():
     if BULK_UPLOAD_BP_AVAILABLE:
         app.register_blueprint(bulk_upload_bp, url_prefix="/api/admin")
 
-    # Pre-warm the SBERT model at startup so the first request never times out
-    try:
-        from app.matching.service import _get_sbert_model, TransformerMatcher
-        _get_sbert_model(TransformerMatcher.DEFAULT_MODEL)
-        print("✅ SBERT model pre-loaded and cached successfully")
-    except Exception as e:
-        print(f"⚠️ SBERT pre-warm skipped: {e}")
-
     return app
