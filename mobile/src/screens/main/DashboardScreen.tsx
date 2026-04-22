@@ -75,11 +75,14 @@ export default function DashboardScreen() {
   // reset a "profile incomplete" error so the user can retry without extra taps.
   useFocusEffect(
     useCallback(() => {
-      if (recommendError?.toLowerCase().includes('complete your profile')) {
-        setRecommendError(null);
-        setRecommendationsLoaded(false);
-      }
-    }, [recommendError])
+      setRecommendError(prev => {
+        if (prev?.toLowerCase().includes('complete your profile')) {
+          setRecommendationsLoaded(false);
+          return null;
+        }
+        return prev;
+      });
+    }, []) // empty deps — only fires on actual screen focus, not on state change
   );
 
   const loadRecommendations = async () => {
