@@ -21,3 +21,5 @@ nltk
 fuzzywuzzy
 python-Levenshtein
 huggingface_hub
+sentence-transformers
+torch

@@ -1,326 +1,249 @@
-# Enhanced Matching Service with NLP and Fuzzy Matching
-# خدمة المطابقة المحسّنة باستخدام معالجة اللغات الطبيعية والمطابقة الذكية
+"""
+AI Internship Matching Service
+================================
+Hybrid TF-IDF + Sentence-BERT (SBERT) matching engine.
+Replaces rule-based matching with semantic similarity scoring.
 
-from typing import List, Dict
+Architecture:
+  Student Profile Text → TF-IDF (30%) + SBERT (70%) → Cosine Similarity → Match Score
+  Falls back to 100% TF-IDF if sentence-transformers is not installed.
+"""
+
 import re
 import logging
-from fuzzywuzzy import fuzz
+import numpy as np
+from typing import List, Dict, Tuple, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import numpy as np
 
-# Setup logging
 logger = logging.getLogger(__name__)
 
-class MatchingService:
-    
-    # أوزان محسّنة لكل معيار
-    WEIGHTS = {
-        'skills': 0.35,           # 35% - مطابقة المهارات
-        'text_similarity': 0.25,  # 25% - تشابه النصوص (الوصف والمتطلبات)
-        'major': 0.20,            # 20% - التخصص
-        'location': 0.10,         # 10% - الموقع
-        'availability': 0.10      # 10% - التوفر
-    }
-    
-    # عتبة المطابقة الضبابية (Fuzzy Threshold)
-    FUZZY_THRESHOLD = 75  # 75% similarity minimum
-    
-    def __init__(self):
-        """Initialize the matching service"""
+# ─────────────────────────────────────────────
+# TEXT PREPROCESSING
+# ─────────────────────────────────────────────
+
+STOPWORDS = {
+    "a","an","the","and","or","but","in","on","at","to","for","of","with",
+    "is","are","was","were","be","been","being","have","has","had","do","does",
+    "did","will","would","could","should","may","might","i","we","you","he","she",
+    "they","it","this","that","these","those","our","your","their","my","his","her"
+}
+
+def preprocess_text(text: str) -> str:
+    """Clean and normalize text for NLP processing."""
+    if not text or not isinstance(text, str):
+        return ""
+    text = text.lower()
+    text = re.sub(r"http\S+|www\S+", "", text)
+    text = re.sub(r"[^a-z0-9\s\+\#]", " ", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    tokens = [w for w in text.split() if w not in STOPWORDS and len(w) > 1]
+    return " ".join(tokens)
+
+
+# ─────────────────────────────────────────────
+# TF-IDF MODULE
+# ─────────────────────────────────────────────
+
+class TFIDFMatcher:
+    """TF-IDF based lexical similarity engine."""
+
+    def __init__(self, max_features: int = 10000, ngram_range: Tuple = (1, 2)):
         self.vectorizer = TfidfVectorizer(
-            lowercase=True,
-            stop_words='english',
-            ngram_range=(1, 2),  # unigrams and bigrams
-            max_features=100
+            max_features=max_features,
+            ngram_range=ngram_range,
+            sublinear_tf=True,
+            strip_accents="unicode",
+            analyzer="word",
         )
-    
-    def normalize_text(self, text: str) -> str:
-        """
-        تنظيف وتوحيد النص
-        Normalize and clean text for better matching
-        """
-        if not text:
-            return ""
-        
-        # Convert to lowercase
-        text = text.lower()
-        
-        # Remove special characters but keep spaces
-        text = re.sub(r'[^a-z0-9\s+#]', ' ', text)
-        
-        # Remove extra whitespace
-        text = ' '.join(text.split())
-        
-        return text
-    
-    def fuzzy_match_skills(self, student_skills: List[str], required_skills: List[str]) -> float:
-        """
-        مطابقة المهارات باستخدام Fuzzy Matching
-        Match skills using fuzzy string matching for similar keywords
-        
-        Returns: score between 0 and 1
-        """
-        if not required_skills or not student_skills:
-            return 0.0
-        
-        # Normalize skills
-        student_skills_norm = [self.normalize_text(s) for s in student_skills]
-        required_skills_norm = [self.normalize_text(s) for s in required_skills]
-        
-        matched_count = 0
-        partial_matches = 0
-        
-        for req_skill in required_skills_norm:
-            if not req_skill:
-                continue
-                
-            best_match_score = 0
-            
-            for student_skill in student_skills_norm:
-                if not student_skill:
-                    continue
-                
-                # Exact match
-                if req_skill == student_skill:
-                    matched_count += 1
-                    best_match_score = 100
-                    break
-                
-                # Partial match (one contains the other)
-                if req_skill in student_skill or student_skill in req_skill:
-                    score = 90
-                    best_match_score = max(best_match_score, score)
-                    continue
-                
-                # Fuzzy match
-                fuzzy_score = fuzz.token_sort_ratio(req_skill, student_skill)
-                best_match_score = max(best_match_score, fuzzy_score)
-            
-            # Count as match if above threshold
-            if best_match_score >= 100:
-                continue  # Already counted
-            elif best_match_score >= self.FUZZY_THRESHOLD:
-                partial_matches += 1
-        
-        # Calculate final score
-        # Full matches count as 1.0, partial matches as 0.7
-        total_score = (matched_count * 1.0) + (partial_matches * 0.7)
-        max_possible = len(required_skills_norm)
-        
-        return min(total_score / max_possible, 1.0) if max_possible > 0 else 0.0
-    
-    def calculate_text_similarity(self, student_text: str, internship_text: str) -> float:
-        """
-        حساب التشابه بين النصوص باستخدام TF-IDF و Cosine Similarity
-        Calculate text similarity using TF-IDF and cosine similarity
-        
-        Returns: score between 0 and 1
-        """
-        if not student_text or not internship_text:
-            return 0.0
-        
-        # Normalize texts
-        student_text = self.normalize_text(student_text)
-        internship_text = self.normalize_text(internship_text)
-        
-        if not student_text or not internship_text:
-            return 0.0
-        
+        self.corpus_matrix = None
+        self.fitted = False
+
+    def fit(self, corpus: List[str]) -> "TFIDFMatcher":
+        processed = [preprocess_text(t) for t in corpus]
+        self.corpus_matrix = self.vectorizer.fit_transform(processed)
+        self.fitted = True
+        logger.info(f"TF-IDF fitted on {len(corpus)} documents")
+        return self
+
+    def score(self, query: str, top_k: int = 10) -> List[Tuple[int, float]]:
+        if not self.fitted:
+            raise RuntimeError("Call fit() before score()")
+        q_vec = self.vectorizer.transform([preprocess_text(query)])
+        scores = cosine_similarity(q_vec, self.corpus_matrix).flatten()
+        top_indices = np.argsort(scores)[::-1][:top_k]
+        return [(int(i), float(scores[i])) for i in top_indices]
+
+
+# ─────────────────────────────────────────────
+# TRANSFORMER (SBERT) MODULE
+# ─────────────────────────────────────────────
+
+class TransformerMatcher:
+    """Sentence-BERT semantic similarity engine."""
+
+    DEFAULT_MODEL = "all-MiniLM-L6-v2"
+
+    def __init__(self, model_name: str = DEFAULT_MODEL):
+        self.corpus_embeddings: Optional[np.ndarray] = None
         try:
-            # Create TF-IDF vectors
-            tfidf_matrix = self.vectorizer.fit_transform([student_text, internship_text])
-            
-            # Calculate cosine similarity
-            similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-            
-            return float(similarity)
-        except:
-            # Fallback to simple word overlap if TF-IDF fails
-            student_words = set(student_text.split())
-            internship_words = set(internship_text.split())
-            
-            if not student_words or not internship_words:
-                return 0.0
-            
-            overlap = len(student_words & internship_words)
-            total = len(student_words | internship_words)
-            
-            return overlap / total if total > 0 else 0.0
-    
-    def fuzzy_match_major(self, student_major: str, internship_major: str) -> float:
-        """
-        مطابقة التخصص باستخدام Fuzzy Matching
-        Match major/field of study with fuzzy matching
-        
-        Returns: score between 0 and 1
-        """
-        if not student_major or not internship_major:
-            return 0.0
-        
-        student_major = self.normalize_text(student_major)
-        internship_major = self.normalize_text(internship_major)
-        
-        # Exact match
-        if student_major == internship_major:
-            return 1.0
-        
-        # Partial match
-        if student_major in internship_major or internship_major in student_major:
-            return 0.9
-        
-        # Fuzzy match
-        fuzzy_score = fuzz.token_sort_ratio(student_major, internship_major)
-        
-        if fuzzy_score >= 90:
-            return 0.9
-        elif fuzzy_score >= 75:
-            return 0.7
-        elif fuzzy_score >= 60:
-            return 0.5
-        else:
-            return 0.0
-    
-    def calculate_score(self, student: Dict, internship: Dict) -> Dict:
-        """
-        حساب نقاط المطابقة الكلية
-        Calculate comprehensive matching score for an internship
-        
-        Returns: Dictionary with detailed scores
-        """
-        details = {}
-        
-        logger.info(f"\n{'='*60}")
-        logger.info(f"MATCHING DEBUG: Student vs Internship '{internship.get('title', 'Unknown')}'")
-        logger.info(f"{'='*60}")
-        
-        # ==========================================
-        # 1️⃣ Skills Matching (35%)
-        # ==========================================
-        student_skills = student.get('skills', [])
-        logger.info(f"Student Skills: {student_skills}")
-        
-        # Parse internship required skills
-        intern_skills_raw = internship.get('required_skills', '[]')
-        if isinstance(intern_skills_raw, str):
-            try:
-                import json
-                intern_req_skills = json.loads(intern_skills_raw)
-            except:
-                intern_req_skills = [s.strip() for s in intern_skills_raw.split(',') if s.strip()]
-        else:
-            intern_req_skills = intern_skills_raw if isinstance(intern_skills_raw, list) else []
-        
-        # Calculate fuzzy skills match
-        skills_score = self.fuzzy_match_skills(student_skills, intern_req_skills)
-        details['skills'] = round(skills_score * self.WEIGHTS['skills'] * 100, 1)
-        logger.info(f"✓ Skills Score: {skills_score:.2f} x {self.WEIGHTS['skills']} = {details['skills']}%")
-        
-        # ==========================================
-        # 2️⃣ Text Similarity (25%)
-        # ==========================================
-        # Combine student profile text
-        student_text_parts = []
-        student_text_parts.extend(student.get('skills', []))
-        if student.get('major'):
-            student_text_parts.append(student['major'])
-        student_profile_text = ' '.join(str(p) for p in student_text_parts)
-        
-        # Combine internship text (description + requirements + title)
-        internship_text_parts = []
-        if internship.get('title'):
-            internship_text_parts.append(internship['title'])
-        if internship.get('description'):
-            internship_text_parts.append(internship['description'])
-        if internship.get('requirements'):
-            internship_text_parts.append(internship['requirements'])
-        internship_text_parts.extend(intern_req_skills)
-        internship_full_text = ' '.join(str(p) for p in internship_text_parts)
-        
-        # Calculate text similarity
-        text_sim_score = self.calculate_text_similarity(student_profile_text, internship_full_text)
-        details['text_similarity'] = round(text_sim_score * self.WEIGHTS['text_similarity'] * 100, 1)
-        logger.info(f"✓ Text Similarity: {text_sim_score:.2f} x {self.WEIGHTS['text_similarity']} = {details['text_similarity']}%")
-        
-        # ==========================================
-        # 3️⃣ Major Matching (20%)
-        # ==========================================
-        major_score = self.fuzzy_match_major(
-            student.get('major', ''),
-            internship.get('major', '')
+            from sentence_transformers import SentenceTransformer
+            logger.info(f"Loading SBERT model: {model_name}")
+            self.model = SentenceTransformer(model_name)
+            self.model_name = model_name
+            self.available = True
+        except ImportError:
+            logger.warning("sentence-transformers not installed — SBERT disabled, TF-IDF only")
+            self.model = None
+            self.available = False
+
+    def encode_corpus(self, corpus: List[str], batch_size: int = 32) -> "TransformerMatcher":
+        if not self.available:
+            return self
+        logger.info(f"Encoding {len(corpus)} documents with SBERT...")
+        self.corpus_embeddings = self.model.encode(
+            corpus,
+            batch_size=batch_size,
+            show_progress_bar=False,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
         )
-        details['major'] = round(major_score * self.WEIGHTS['major'] * 100, 1)
-        logger.info(f"✓ Major: '{student.get('major', 'N/A')}' vs '{internship.get('major', 'N/A')}' = {major_score:.2f} x {self.WEIGHTS['major']} = {details['major']}%")
-        
-        # ==========================================
-        # 4️⃣ Location Matching (10%)
-        # ==========================================
-        student_location = self.normalize_text(student.get('location', ''))
-        intern_location = self.normalize_text(internship.get('location', ''))
-        
-        if not student_location or not intern_location:
-            location_score = 0.5  # Neutral if location not specified
-        elif student_location == intern_location:
-            location_score = 1.0
-        elif 'remote' in intern_location or 'remotely' in intern_location:
-            location_score = 0.9  # Remote is good for everyone
-        elif student_location in intern_location or intern_location in student_location:
-            location_score = 0.8
-        else:
-            # Fuzzy match for location
-            fuzzy_loc_score = fuzz.ratio(student_location, intern_location)
-            location_score = fuzzy_loc_score / 100.0 if fuzzy_loc_score >= 60 else 0.3
-        
-        details['location'] = round(location_score * self.WEIGHTS['location'] * 100, 1)
-        logger.info(f"✓ Location: '{student.get('location', 'N/A')}' vs '{internship.get('location', 'N/A')}' = {location_score:.2f} x {self.WEIGHTS['location']} = {details['location']}%")
-        
-        # ==========================================
-        # 5️⃣ Availability Matching (10%)
-        # ==========================================
-        # Simplified for now - can be enhanced based on actual availability data
-        student_availability = student.get('availability', 40)
-        intern_availability = internship.get('required_availability', 30)
-        
-        if student_availability >= intern_availability:
-            availability_score = 1.0
-        else:
-            availability_score = student_availability / intern_availability if intern_availability > 0 else 0.5
-        
-        details['availability'] = round(availability_score * self.WEIGHTS['availability'] * 100, 1)
-        logger.info(f"✓ Availability: {student_availability}hrs vs {intern_availability}hrs = {availability_score:.2f} x {self.WEIGHTS['availability']} = {details['availability']}%")
-        
-        # ==========================================
-        # 6️⃣ Total Score
-        # ==========================================
-        total_score = sum(details.values())
-        details['total_score'] = round(total_score, 1)
-        
-        logger.info(f"\n{'='*60}")
-        logger.info(f"TOTAL SCORE: {details['total_score']}%")
-        logger.info(f"Breakdown: Skills={details['skills']}% + Text={details['text_similarity']}% + Major={details['major']}% + Location={details['location']}% + Availability={details['availability']}%")
-        logger.info(f"{'='*60}\n")
-        
-        return details
-    
-    def match_student(self, student: Dict, internships: List[Dict]) -> List[Dict]:
+        return self
+
+    def score(self, query: str, top_k: int = 10) -> List[Tuple[int, float]]:
+        if not self.available or self.corpus_embeddings is None:
+            return []
+        q_emb = self.model.encode(
+            [preprocess_text(query)],
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )
+        scores = (q_emb @ self.corpus_embeddings.T).flatten()
+        top_indices = np.argsort(scores)[::-1][:top_k]
+        return [(int(i), float(scores[i])) for i in top_indices]
+
+
+# ─────────────────────────────────────────────
+# HYBRID MATCHER (TF-IDF + SBERT)
+# ─────────────────────────────────────────────
+
+class HybridMatcher:
+    """
+    Combines TF-IDF (lexical) and SBERT (semantic) scores via weighted fusion.
+    Default: 30% TF-IDF + 70% SBERT.
+    Falls back to 100% TF-IDF if sentence-transformers is unavailable.
+    """
+
+    def __init__(
+        self,
+        tfidf_weight: float = 0.3,
+        transformer_weight: float = 0.7,
+        transformer_model: str = TransformerMatcher.DEFAULT_MODEL,
+    ):
+        self.tfidf_weight = tfidf_weight
+        self.transformer_weight = transformer_weight
+        self.tfidf = TFIDFMatcher()
+        self.transformer = TransformerMatcher(transformer_model)
+        self.internships: List[Dict] = []
+        self.fitted = False
+
+        if not self.transformer.available:
+            self.tfidf_weight = 1.0
+            self.transformer_weight = 0.0
+
+    def fit(self, internships: List[Dict]) -> "HybridMatcher":
+        """Fit on internship corpus. Each dict needs: id, title, description, skills, requirements."""
+        self.internships = internships
+        corpus = [
+            (i.get("description", "") + " " +
+             i.get("title", "") + " " +
+             i.get("skills", "") + " " +
+             i.get("requirements", ""))
+            for i in internships
+        ]
+        self.tfidf.fit(corpus)
+        if self.transformer.available:
+            self.transformer.encode_corpus(corpus)
+        self.fitted = True
+        logger.info(f"HybridMatcher fitted on {len(internships)} internships")
+        return self
+
+    def match(self, student_profile: Dict, top_k: int = 10) -> List[Dict]:
         """
-        مطابقة الطالب مع جميع التدريبات المتاحة
-        Match student with all available internships and rank them
-        
-        Returns: List of internships with scores, sorted by best match
+        Match a student profile against all internships.
+        Uses: skills, interests, bio, major, courses, projects from student_profile.
+        Returns top_k internships ranked by match score (0-100).
         """
+        if not self.fitted:
+            raise RuntimeError("Call fit() before match()")
+
+        query = self._build_student_query(student_profile)
+        logger.info(f"Student query built: {query[:200]}...")
+
+        tfidf_scores = dict(self.tfidf.score(query, top_k=len(self.internships)))
+        sbert_scores = dict(self.transformer.score(query, top_k=len(self.internships))) if self.transformer.available else {}
+
+        all_indices = set(tfidf_scores) | set(sbert_scores)
+        fused = {
+            idx: self.tfidf_weight * tfidf_scores.get(idx, 0.0) +
+                 self.transformer_weight * sbert_scores.get(idx, 0.0)
+            for idx in all_indices
+        }
+
+        ranked = sorted(fused.items(), key=lambda x: x[1], reverse=True)[:top_k]
+
         results = []
-        
-        for internship in internships:
-            score_details = self.calculate_score(student, internship)
-            results.append({
-                'internship_id': internship['id'],
-                'score': score_details['total_score'],
-                'details': score_details
-            })
-        
-        # ترتيب النتائج من الأعلى للأقل
-        # Sort by score (highest first)
-        results.sort(key=lambda x: x['score'], reverse=True)
-        
+        for rank, (idx, score) in enumerate(ranked, 1):
+            internship = self.internships[idx].copy()
+            internship["match_score"] = round(score * 100, 2)
+            internship["match_rank"] = rank
+            internship["tfidf_score"] = round(tfidf_scores.get(idx, 0.0) * 100, 2)
+            internship["sbert_score"] = round(sbert_scores.get(idx, 0.0) * 100, 2)
+            results.append(internship)
+
         return results
+
+    def _build_student_query(self, profile: Dict) -> str:
+        """Build a rich query string from all student profile fields."""
+        def to_str(val):
+            if isinstance(val, list):
+                return " ".join(str(v) for v in val if v)
+            return str(val) if val else ""
+
+        parts = [
+            to_str(profile.get("skills", "")),
+            to_str(profile.get("interests", "")),
+            to_str(profile.get("bio", "")),
+            to_str(profile.get("major", "")),
+            to_str(profile.get("courses", "")),
+            to_str(profile.get("projects", "")),
+        ]
+        return " ".join(p for p in parts if p)
+
+
+# ─────────────────────────────────────────────
+# SINGLETON — reuse fitted matcher across requests
+# ─────────────────────────────────────────────
+
+_matcher_instance: Optional[HybridMatcher] = None
+
+def get_matcher() -> HybridMatcher:
+    """Return global HybridMatcher (creates once, reuses)."""
+    global _matcher_instance
+    if _matcher_instance is None:
+        _matcher_instance = HybridMatcher()
+    return _matcher_instance
+
+def reset_matcher():
+    """Force re-fit on next request (call after internship data changes)."""
+    global _matcher_instance
+    _matcher_instance = None
+
+
+# ─────────────────────────────────────────────
+# LEGACY STUB — kept for api.py compatibility
+# ─────────────────────────────────────────────
+
+class MatchingService:
+    """Deprecated stub — use HybridMatcher directly via get_matcher()."""
+    pass

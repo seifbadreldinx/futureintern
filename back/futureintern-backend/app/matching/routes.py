@@ -1,9 +1,10 @@
+import json
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from app.utils.auth import role_required, get_current_user_id
 from app.models.user import User
 from app.models.intern import Internship
-from app.matching.service import MatchingService
+from app.matching.service import HybridMatcher
 
 matching_bp = Blueprint('matching', __name__)
 
@@ -43,102 +44,84 @@ def get_recommendations():
                 'recommendations': []
             }), 200
 
-        # 3️⃣ Prepare student data
-        student_skills = []
-        if student.skills:
-            if isinstance(student.skills, str):
-                student_skills = [s.strip() for s in student.skills.split(',') if s.strip()]
-            else:
-                student_skills = student.skills if isinstance(student.skills, list) else []
-
-        # Parse interests and merge into skills
-        student_interests = []
-        if student.interests:
-            if isinstance(student.interests, str):
+        # 3️⃣ Parse student skills, interests and bio
+        def parse_field(val):
+            if not val:
+                return []
+            if isinstance(val, list):
+                return val
+            if isinstance(val, str):
                 try:
-                    import json
-                    # Only parse if it looks like a list
-                    if student.interests.startswith('['):
-                        student_interests = json.loads(student.interests)
-                    else:
-                        student_interests = [s.strip() for s in student.interests.split(',') if s.strip()]
-                except:
-                     student_interests = [s.strip() for s in student.interests.split(',') if s.strip()]
-            elif isinstance(student.interests, list):
-                student_interests = student.interests
+                    if val.startswith('['):
+                        return json.loads(val)
+                except Exception:
+                    pass
+                return [s.strip() for s in val.split(',') if s.strip()]
+            return []
 
-        # Merge unique capabilities (skills + interests)
-        all_capabilities = list(set(student_skills + student_interests))
+        student_skills = parse_field(student.skills)
+        student_interests = parse_field(student.interests)
 
-        student_data = {
-            'id': student.id,
-            'skills': all_capabilities,
+        # 4️⃣ Build student profile for the AI matcher
+        student_profile = {
+            'skills': student_skills,
+            'interests': student_interests,
+            'bio': student.bio or '',
             'major': student.major or '',
-            'location': student.location or '', 
-            'availability': 40
         }
-        
-        # DEBUG: Log student data
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"DEBUG - Student Data for Matching:")
-        logger.info(f"  ID: {student.id}")
-        logger.info(f"  Raw Skills from DB: {student.skills}")
-        logger.info(f"  Parsed Skills: {student_skills}")
-        logger.info(f"  Raw Interests from DB: {student.interests}")
-        logger.info(f"  Parsed Interests: {student_interests}")
-        logger.info(f"  Combined Capabilities: {all_capabilities}")
-        logger.info(f"  Major: {student.major}")
-        logger.info(f"  Location: {student.location}")
 
-        # 4️⃣ Prepare internships data
-        internships_data = []
+        # 5️⃣ Prepare internship dicts for the AI matcher
+        internships_for_matcher = []
         for internship in internships:
-            # Use stored JSON skills if available, otherwise fallback to parsing requirements
-            required_skills = []
+            required_skills_list = []
             if internship.required_skills:
                 try:
-                    import json
-                    required_skills = json.loads(internship.required_skills)
-                except:
-                    required_skills = [s.strip() for s in str(internship.required_skills).split(',') if s.strip()]
+                    required_skills_list = json.loads(internship.required_skills)
+                except Exception:
+                    required_skills_list = [s.strip() for s in str(internship.required_skills).split(',') if s.strip()]
             elif internship.requirements:
-                required_skills = [s.strip() for s in internship.requirements.split(',') if s.strip()]
+                required_skills_list = [s.strip() for s in internship.requirements.split(',') if s.strip()]
 
-            internships_data.append({
+            internships_for_matcher.append({
                 'id': internship.id,
-                'required_skills': required_skills,
+                'title': internship.title or '',
+                'description': internship.description or '',
+                'skills': ' '.join(required_skills_list),
+                'requirements': internship.requirements or '',
                 'major': internship.major or '',
                 'location': internship.location or '',
-                'required_availability': 30
             })
 
-        # 5️⃣ Run matching service
-        matching_service = MatchingService()
-        recommendations = matching_service.match_student(student_data, internships_data)
+        # 6️⃣ Run AI matching (TF-IDF + SBERT)
+        limit = request.args.get('limit', 10, type=int)
+        matcher = HybridMatcher()
+        matcher.fit(internships_for_matcher)
+        matches = matcher.match(student_profile, top_k=limit)
 
-        # 6️⃣ Enrich recommendations with internship details
+        # 7️⃣ Enrich results with full internship details from DB
+        internship_map = {i.id: i for i in internships}
         enriched_recommendations = []
-        for rec in recommendations:
-            internship = next((i for i in internships if i.id == rec['internship_id']), None)
-            if internship:
+        for match in matches:
+            intern_obj = internship_map.get(match['id'])
+            if intern_obj:
                 enriched_recommendations.append({
-                    'score': rec['score'],
-                    'match_details': rec['details'],
-                    'internship': internship.to_dict(include_company=True)
+                    'score': match['match_score'],
+                    'match_details': {
+                        'tfidf_score': match['tfidf_score'],
+                        'sbert_score': match['sbert_score'],
+                        'rank': match['match_rank'],
+                    },
+                    'internship': intern_obj.to_dict(include_company=True)
                 })
 
-        # 7️⃣ Optional filters
-        min_score = request.args.get('min_score', type=int)
+        # 8️⃣ Optional min_score filter
+        min_score = request.args.get('min_score', type=float)
         if min_score is not None:
             enriched_recommendations = [
                 r for r in enriched_recommendations if r['score'] >= min_score
             ]
 
-        limit = request.args.get('limit', 10, type=int)
-        enriched_recommendations = enriched_recommendations[:limit]
-
-        # 8️⃣ Final response
+        # 9️⃣ Final response
         return jsonify({
             'message': 'Recommendations generated successfully',
             'total': len(enriched_recommendations),
@@ -146,7 +129,8 @@ def get_recommendations():
                 'id': student.id,
                 'name': student.name,
                 'major': student.major,
-                'skills': student_skills
+                'skills': student_skills,
+                'interests': student_interests,
             },
             'recommendations': enriched_recommendations
         }), 200
@@ -167,9 +151,9 @@ def test_recommendations():
         student = User.query.get(student_id)
 
         return jsonify({
-            'message': 'Matching system is working',
+            'message': 'AI matching system (TF-IDF + SBERT) is working',
             'student': student.to_dict() if student else None,
-            'matching_weights': MatchingService.WEIGHTS
+            'engine': 'HybridMatcher (TF-IDF 30% + SBERT 70%)'
         }), 200
 
     except Exception as e:
