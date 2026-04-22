@@ -45,6 +45,13 @@ def get_recommendations():
         now = time.time()
         cached = _rec_cache.get(student_id)
         if cached and (now - cached['ts']) < _REC_CACHE_TTL:
+            if cached.get('pending'):
+                # Points already charged but matching is still in progress in another request.
+                # Tell the client to retry in a moment — they will NOT be charged again.
+                return jsonify({
+                    'error': 'Your request is still being processed. Please wait a moment and try again — you will not be charged again.',
+                    'retry_after': 15,
+                }), 503
             return jsonify({
                 'message': 'Recommendations generated successfully',
                 'total': len(cached['result']),
@@ -67,6 +74,10 @@ def get_recommendations():
                 'message': msg
             }), 402  # Payment Required
         db.session.commit()
+
+        # Mark this student as "charged, matching in-progress" so concurrent/retry
+        # requests within the TTL window are not charged a second time.
+        _rec_cache[student_id] = {'ts': now, 'pending': True}
 
         # 2️⃣ Get all active internships
         internships = Internship.query.filter_by(is_active=True).all()
@@ -151,7 +162,8 @@ def get_recommendations():
             matcher.fit(internships_for_matcher)
             matches = matcher.match(student_profile, top_k=limit)
         except Exception as match_err:
-            # Matching failed after points were already charged → refund
+            # Matching failed after points were already charged → refund + clear pending lock
+            _rec_cache.pop(student_id, None)
             try:
                 from app.models import db as _db
                 student.points = (student.points or 0) + cost
