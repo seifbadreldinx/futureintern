@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
-  Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image, Linking,
+  Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image, Linking, Animated,
 } from 'react-native';
 
 import { Ionicons } from '@expo/vector-icons';
@@ -37,6 +37,18 @@ export default function EditProfileScreen() {
   const { user, refreshUserData } = useAuth();
   const { C } = useTheme();
   const styles = makeStyles(C);
+
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+  const toastOpacity = useRef(new Animated.Value(0)).current;
+
+  const showToast = (msg: string, ok: boolean) => {
+    setToast({ msg, ok });
+    Animated.sequence([
+      Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(2800),
+      Animated.timing(toastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setToast(null));
+  };
 
   const [name, setName] = useState(user?.name || '');
   const [university, setUniversity] = useState(user?.university || '');
@@ -147,9 +159,9 @@ export default function EditProfileScreen() {
       }
 
       await refreshUserData?.();
-      Alert.alert('✅ Photo Updated', 'Your profile photo has been updated successfully!');
+      showToast('Photo updated successfully!', true);
     } catch (err: any) {
-      Alert.alert('Upload Failed', err?.message || 'Could not upload photo. Please try again.');
+      showToast(err?.message || 'Could not upload photo. Please try again.', false);
     } finally {
       setUploadingPhoto(false);
     }
@@ -173,17 +185,17 @@ export default function EditProfileScreen() {
         linkedin: linkedin.trim(),
       });
       await refreshUserData?.();
-      Alert.alert('Success', 'Profile updated successfully.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      showToast('Profile updated successfully!', true);
+      setTimeout(() => navigation.goBack(), 1800);
     } catch (err: any) {
-      Alert.alert('Error', err.message || 'Failed to save profile.');
+      showToast(err.message || 'Failed to save profile.', false);
     } finally {
       setSaving(false);
     }
   };
 
   return (
+    <View style={{ flex: 1 }}>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -285,6 +297,38 @@ export default function EditProfileScreen() {
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
+
+    {/* ── Toast ── */}
+    {toast && (
+      <Animated.View
+        style={[
+          {
+            position: 'absolute', bottom: 40, left: 24, right: 24,
+            flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+            paddingHorizontal: 20, paddingVertical: 14,
+            borderRadius: 14, borderWidth: 2,
+            backgroundColor: toast.ok ? '#f0fdf4' : '#fef2f2',
+            borderColor: toast.ok ? '#16a34a' : '#dc2626',
+            shadowColor: '#0f172a', shadowOffset: { width: 3, height: 3 },
+            shadowOpacity: 0.18, shadowRadius: 0, elevation: 6,
+          },
+          { opacity: toastOpacity },
+        ]}
+      >
+        <Ionicons
+          name={toast.ok ? 'checkmark-circle' : 'close-circle'}
+          size={20}
+          color={toast.ok ? '#16a34a' : '#dc2626'}
+        />
+        <Text style={{ flex: 1, marginLeft: 10, fontWeight: '700', fontSize: 14, color: toast.ok ? '#166534' : '#991b1b' }}>
+          {toast.msg}
+        </Text>
+        <TouchableOpacity onPress={() => setToast(null)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+          <Ionicons name="close" size={16} color={toast.ok ? '#166534' : '#991b1b'} />
+        </TouchableOpacity>
+      </Animated.View>
+    )}
+    </View>
   );
 }
 

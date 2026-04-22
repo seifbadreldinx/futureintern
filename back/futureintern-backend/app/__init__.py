@@ -360,4 +360,17 @@ def create_app():
     if BULK_UPLOAD_BP_AVAILABLE:
         app.register_blueprint(bulk_upload_bp, url_prefix="/api/admin")
 
+    # Pre-warm SBERT model in a background thread so the first
+    # recommendations request doesn't pay the cold-start penalty.
+    def _warm_sbert():
+        try:
+            from app.matching.service import _get_sbert_model
+            _get_sbert_model("all-MiniLM-L6-v2")
+            print("✅ SBERT model pre-warmed")
+        except Exception as e:
+            print(f"⚠️ SBERT warm-up skipped: {e}")
+
+    import threading
+    threading.Thread(target=_warm_sbert, daemon=True).start()
+
     return app
