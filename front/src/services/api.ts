@@ -522,7 +522,7 @@ export const api = {
 
     // List AI recommendations
     listRecommendations: async () => {
-      const res = await apiRequest<any>('/recommendations');
+      const res = await apiRequest<any>('/recommendations', { _timeout: 90000 } as any);
       const result = res.recommendations || res;
       return Array.isArray(result) ? result : [];
     },
