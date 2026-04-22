@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
   Platform, Alert, ActivityIndicator, KeyboardAvoidingView, Image, Linking, Animated,
@@ -32,6 +32,23 @@ function resolveLogoUrl(url: string | undefined | null): string | null {
 
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
+/** Unwrap skills regardless of how many times it was JSON-encoded by the backend */
+function parseSkillsToString(raw: any): string {
+  if (!raw) return '';
+  let val: any = raw;
+  for (let i = 0; i < 6; i++) {
+    if (Array.isArray(val)) return val.map(String).filter(Boolean).join(', ');
+    if (typeof val !== 'string') return String(val);
+    const t = val.trim();
+    if (t.startsWith('[') || t.startsWith('"')) {
+      try { val = JSON.parse(t); continue; } catch { break; }
+    }
+    return val; // plain comma-separated string
+  }
+  if (Array.isArray(val)) return val.map(String).filter(Boolean).join(', ');
+  return typeof val === 'string' ? val : '';
+}
+
 export default function EditProfileScreen() {
   const navigation = useNavigation<NavProp>();
   const { user, refreshUserData } = useAuth();
@@ -56,13 +73,17 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState(user?.bio || '');
   const [phone, setPhone] = useState(user?.phone || '');
   const [location, setLocation] = useState(user?.location || '');
-  const [skills, setSkills] = useState(
-    Array.isArray(user?.skills) ? user.skills.join(', ') : (user?.skills || '')
-  );
+  const [skills, setSkills] = useState(() => parseSkillsToString(user?.skills));
   const [linkedin, setLinkedin] = useState('');
   const [saving, setSaving] = useState(false);
   const [photoUri, setPhotoUri] = useState<string | null>(resolveLogoUrl(user?.profile_image) || null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  // Keep photoUri in sync when user context updates (e.g. after upload + refreshUserData)
+  useEffect(() => {
+    const url = resolveLogoUrl(user?.profile_image);
+    if (url) setPhotoUri(url);
+  }, [user?.profile_image]);
 
   const initials = user?.name
     ? user.name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
@@ -158,6 +179,11 @@ export default function EditProfileScreen() {
         throw new Error(errData.error || errData.message || `Upload failed (HTTP ${res.status})`);
       }
 
+      // Use the server-returned URL directly so the photo updates immediately
+      const resData = await res.json().catch(() => ({}));
+      const serverUrl = resolveLogoUrl(resData.profile_image);
+      if (serverUrl) setPhotoUri(serverUrl);
+
       await refreshUserData?.();
       showToast('Photo updated successfully!', true);
     } catch (err: any) {
@@ -181,7 +207,7 @@ export default function EditProfileScreen() {
         bio: bio.trim(),
         phone: phone.trim(),
         location: location.trim(),
-        skills: skills.split(',').map(s => s.trim()).filter(Boolean),
+        skills: skills.split(',').map(s => s.trim()).filter(Boolean).join(', '),
         linkedin: linkedin.trim(),
       });
       await refreshUserData?.();
