@@ -4,7 +4,7 @@ import {
   Platform, ActivityIndicator, RefreshControl, Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../../services/api';
@@ -70,6 +70,17 @@ export default function DashboardScreen() {
   }, []);
 
   useEffect(() => { loadData(); }, [loadData]);
+
+  // When the screen comes back into focus (e.g. after editing profile),
+  // reset a "profile incomplete" error so the user can retry without extra taps.
+  useFocusEffect(
+    useCallback(() => {
+      if (recommendError?.toLowerCase().includes('complete your profile')) {
+        setRecommendError(null);
+        setRecommendationsLoaded(false);
+      }
+    }, [recommendError])
+  );
 
   const loadRecommendations = async () => {
     if (recommendationsLoaded || isLoadingRecommendations) return;
@@ -248,13 +259,22 @@ export default function DashboardScreen() {
                 <>
                   <Text style={{ color: C.text, fontWeight: '800', fontSize: 16, marginTop: 12 }}>Profile Incomplete</Text>
                   <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
-                  <TouchableOpacity
-                    style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
-                    onPress={() => navigation.navigate('Main', { screen: 'Profile' } as any)}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Complete Profile</Text>
-                  </TouchableOpacity>
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <TouchableOpacity
+                      style={{ backgroundColor: '#2563eb', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
+                      onPress={() => navigation.navigate('Main', { screen: 'Profile' } as any)}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Complete Profile</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={{ backgroundColor: C.card, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, borderWidth: 2, borderColor: '#2563eb' }}
+                      onPress={() => { setRecommendError(null); setRecommendationsLoaded(false); }}
+                      activeOpacity={0.85}
+                    >
+                      <Text style={{ color: '#2563eb', fontWeight: '800', fontSize: 14 }}>Retry</Text>
+                    </TouchableOpacity>
+                  </View>
                 </>
               ) : recommendError.toLowerCase().includes('insufficient points') ? (
                 <>
