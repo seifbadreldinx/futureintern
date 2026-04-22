@@ -238,7 +238,7 @@ export default function DashboardScreen() {
                 Finding your best matches…
               </Text>
               <Text style={{ color: C.gray400, marginTop: 4, fontSize: 12, textAlign: 'center' }}>
-                This may take up to 30 seconds while the AI processes your profile.
+                This may take up to 60 seconds on the first request while the AI model loads.
               </Text>
             </View>
           ) : recommendError ? (

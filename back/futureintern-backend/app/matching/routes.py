@@ -1,4 +1,5 @@
 import json
+import time
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from app.utils.auth import role_required, get_current_user_id
@@ -7,6 +8,15 @@ from app.models.intern import Internship
 from app.matching.service import HybridMatcher
 
 matching_bp = Blueprint('matching', __name__)
+
+# ── Per-student result cache ──────────────────────────────────────────────────
+# Keyed by student_id → { 'ts': epoch_float, 'result': list }
+# Cached results are returned FREE within the TTL window so that:
+#  • client-side timeouts don't cost an extra charge on retry
+#  • page refreshes / state resets don't charge a second time
+_rec_cache: dict = {}
+_REC_CACHE_TTL = 300   # 5 minutes
+
 
 @matching_bp.route("/recommendations", methods=["GET"])
 @jwt_required()
@@ -31,7 +41,23 @@ def get_recommendations():
                 'error': 'Please complete your profile (add skills, interests, major, or bio) before requesting AI recommendations.'
             }), 422
 
-        # Check Points Balance and charge via utility
+        # 2️⃣ Return cached result for free if within TTL
+        now = time.time()
+        cached = _rec_cache.get(student_id)
+        if cached and (now - cached['ts']) < _REC_CACHE_TTL:
+            return jsonify({
+                'message': 'Recommendations generated successfully',
+                'total': len(cached['result']),
+                'cached': True,
+                'student': {
+                    'id': student.id,
+                    'name': student.name,
+                    'major': student.major,
+                },
+                'recommendations': cached['result']
+            }), 200
+
+        # 3️⃣ Check Points Balance and charge via utility
         from app.utils.points import check_and_charge
         from app.models import db
         success, msg, cost = check_and_charge(student, 'ai_matching')
@@ -118,10 +144,24 @@ def get_recommendations():
             })
 
         # 6️⃣ Run AI matching (TF-IDF + SBERT)
+        #    Wrap in its own try/except so we can refund points on failure
         limit = request.args.get('limit', 10, type=int)
-        matcher = HybridMatcher()
-        matcher.fit(internships_for_matcher)
-        matches = matcher.match(student_profile, top_k=limit)
+        try:
+            matcher = HybridMatcher()
+            matcher.fit(internships_for_matcher)
+            matches = matcher.match(student_profile, top_k=limit)
+        except Exception as match_err:
+            # Matching failed after points were already charged → refund
+            try:
+                from app.models import db as _db
+                student.points = (student.points or 0) + cost
+                _db.session.commit()
+            except Exception:
+                pass
+            return jsonify({
+                'error': 'AI matching failed. Your points have been refunded. Please try again in a moment.',
+                'refunded': True,
+            }), 500
 
         # 7️⃣ Enrich results with full internship details from DB
         internship_map = {i.id: i for i in internships}
@@ -146,7 +186,10 @@ def get_recommendations():
                 r for r in enriched_recommendations if r['score'] >= min_score
             ]
 
-        # 9️⃣ Final response
+        # 9️⃣ Cache the result so retries within TTL are free
+        _rec_cache[student_id] = {'ts': now, 'result': enriched_recommendations}
+
+        # 🔟 Final response
         return jsonify({
             'message': 'Recommendations generated successfully',
             'total': len(enriched_recommendations),

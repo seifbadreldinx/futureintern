@@ -446,7 +446,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-600 dark:text-slate-400 font-medium">Finding your best matches…</p>
-                  <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">This may take up to 30 seconds while the AI processes your profile.</p>
+                  <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">This may take up to 60 seconds on the first request while the AI model loads.</p>
                 </div>
               ) : recommendError ? (
                 <div className="text-center py-12">
