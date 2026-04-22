@@ -85,6 +85,12 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   const [uploadingCV, setUploadingCV] = useState(false);
   const [deletingCV, setDeletingCV] = useState(false);
   const [exportingBuilderPDF, setExportingBuilderPDF] = useState(false);
+  // Bumped after a profile photo upload to bust the browser's image cache
+  const [profileImageKey, setProfileImageKey] = useState(() => Date.now());
+  /** Wrapper that appends cache-busting key to uploaded profile photos */
+  const profileImageSrc = user?.profile_image
+    ? `${resolveLogoUrl(user.profile_image)}?v=${profileImageKey}`
+    : null;
 
   // Auto-focus a profile field when navigated from the profile completion card
   useEffect(() => {
@@ -238,7 +244,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
           <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
             <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               {user.profile_image ? (
-                <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                <img src={profileImageSrc!} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <User className="w-8 h-8 text-white" />
               )}
@@ -692,7 +698,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 <div className="relative">
                   <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
                     {user.profile_image ? (
-                      <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                      <img src={profileImageSrc!} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <User className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
@@ -703,7 +709,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                       if (e.target.files?.[0]) {
                         try {
                           await api.auth.uploadProfileImage(e.target.files[0]);
-                          await refreshUserData();
+                          setProfileImageKey(Date.now());
+                          refreshUserData();
                         } catch (err) {
                           alert('Failed to upload image');
                         }
@@ -989,7 +996,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
           <div className="flex items-center space-x-4 mb-6 pb-6 border-b-[3px] border-slate-900 dark:border-white">
             <div className="w-16 h-16 bg-blue-600 dark:bg-blue-500 rounded-2xl border-[3px] border-slate-900 dark:border-white flex items-center justify-center shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] overflow-hidden">
               {user.profile_image ? (
-                <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                <img src={profileImageSrc!} alt={user.name} className="w-full h-full object-cover" />
               ) : (
                 <PlusCircle className="w-8 h-8 text-white" />
               )}
@@ -1387,7 +1394,7 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                 <div className="relative">
                   <div className="w-24 h-24 bg-slate-200 dark:bg-slate-800 rounded-2xl flex items-center justify-center overflow-hidden border-4 border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)]">
                     {user.profile_image ? (
-                      <img src={resolveLogoUrl(user.profile_image)} alt={user.name} className="w-full h-full object-cover" />
+                      <img src={profileImageSrc!} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
                       <Briefcase className="w-12 h-12 text-slate-400 dark:text-slate-500" />
                     )}
