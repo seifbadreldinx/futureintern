@@ -241,9 +241,11 @@ export function BrowseInternships() {
                       {internship.location}
                     </div>
 
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type || '')}`}>
-                      {internship.type || 'N/A'}
-                    </span>
+                    {internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase() && (
+                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type)}`}>
+                        {internship.type}
+                      </span>
+                    )}
                   </Link>
                 </div>
               );

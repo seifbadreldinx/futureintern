@@ -162,9 +162,11 @@ export function InternshipDetail() {
                     <MapPin className="w-5 h-5 mr-2" />
                     {internship.location}
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeColor(internship.type || '')}`}>
-                    {internship.type || 'N/A'}
-                  </span>
+                  {internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase() && (
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeColor(internship.type)}`}>
+                      {internship.type}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
