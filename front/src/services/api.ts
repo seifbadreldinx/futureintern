@@ -38,7 +38,7 @@ const apiRequest = async <T>(
   endpoint: string,
   options: RequestInit & { _timeout?: number } = {}
 ): Promise<T> => {
-  const { _timeout = 12000, ...options_ } = options as RequestInit & { _timeout?: number };
+  const { _timeout = 60000, ...options_ } = options as RequestInit & { _timeout?: number };
   options = options_;
   const token = getAuthToken();
 
