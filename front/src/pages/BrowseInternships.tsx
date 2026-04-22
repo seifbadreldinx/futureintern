@@ -241,11 +241,16 @@ export function BrowseInternships() {
                       {internship.location}
                     </div>
 
-                    {internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase() && (
-                      <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(internship.type)}`}>
-                        {internship.type}
-                      </span>
-                    )}
+                    {(() => {
+                      const badge = (internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase())
+                        ? internship.type
+                        : 'Full-time';
+                      return (
+                        <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getBadgeColor(badge)}`}>
+                          {badge}
+                        </span>
+                      );
+                    })()}
                   </Link>
                 </div>
               );

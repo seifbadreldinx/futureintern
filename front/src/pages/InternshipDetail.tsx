@@ -162,11 +162,16 @@ export function InternshipDetail() {
                     <MapPin className="w-5 h-5 mr-2" />
                     {internship.location}
                   </div>
-                  {internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase() && (
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeColor(internship.type)}`}>
-                      {internship.type}
-                    </span>
-                  )}
+                  {(() => {
+                    const badge = (internship.type && internship.type.toLowerCase() !== (internship.location || '').toLowerCase())
+                      ? internship.type
+                      : 'Full-time';
+                    return (
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${getBadgeColor(badge)}`}>
+                        {badge}
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
