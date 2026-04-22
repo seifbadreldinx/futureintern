@@ -658,8 +658,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   location: parseList(formData.get('preferred_locations')),
                   interests: parseList(formData.get('interests')),
                 });
-                await refreshUserData();
                 setProfileToast({ msg: 'Profile updated successfully!', ok: true });
+                refreshUserData(); // refresh in background without blocking
                 setTimeout(() => setProfileToast(null), 4000);
               } catch (err) {
                 setProfileToast({ msg: 'Failed to update profile. Please try again.', ok: false });
@@ -1353,8 +1353,8 @@ function CompanyDashboard({ activeTab, setActiveTab, user, logout }: any) {
                   full_name: formData.get('company_name'),
                   // Industry support could be added if backend supports it in updateProfile
                 });
-                await refreshUserData();
                 setProfileToast({ msg: 'Profile updated successfully!', ok: true });
+                refreshUserData(); // refresh in background without blocking
                 setTimeout(() => setProfileToast(null), 4000);
               } catch (err) {
                 setProfileToast({ msg: 'Failed to update profile. Please try again.', ok: false });
