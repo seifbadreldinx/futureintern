@@ -433,7 +433,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
               {!recommendationsLoaded && !isLoadingRecommendations && !recommendError ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-16 h-16 text-blue-200 dark:text-blue-900 mx-auto mb-4" />
-                  <p className="text-gray-600 dark:text-slate-400 mb-4">AI recommendations use 5 points per request (first use is free).</p>
+                  <p className="text-gray-600 dark:text-slate-400 mb-4">AI recommendations cost 10 points per request.</p>
                   <button
                     onClick={loadRecommendations}
                     className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -445,7 +445,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
                   <p className="text-gray-600 dark:text-slate-400 font-medium">Finding your best matches…</p>
-                  <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">This may take up to 60 seconds on first run while the AI loads.</p>
+                  <p className="text-sm text-gray-400 dark:text-slate-500 mt-2">This may take up to 30 seconds while the AI processes your profile.</p>
                 </div>
               ) : recommendError ? (
                 <div className="text-center py-12">

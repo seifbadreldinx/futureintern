@@ -97,8 +97,8 @@ def seed_default_pricing():
         {
             'service_key': 'ai_matching',
             'display_name': 'AI Internship Matching',
-            'points_cost': 5,
-            'first_time_free': True,
+            'points_cost': 10,
+            'first_time_free': False,
             'description': 'Get AI-powered internship recommendations',
         },
         {
@@ -113,6 +113,11 @@ def seed_default_pricing():
         existing = ServicePricing.query.filter_by(service_key=d['service_key']).first()
         if not existing:
             db.session.add(ServicePricing(**d))
+        else:
+            # Always sync cost and first_time_free so code changes take effect on redeploy
+            existing.points_cost = d['points_cost']
+            existing.first_time_free = d['first_time_free']
+            existing.display_name = d['display_name']
     db.session.commit()
 
 
