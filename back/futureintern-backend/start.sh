@@ -11,4 +11,4 @@ echo "Initializing database..."
 python init_db.py
 
 # Start Gunicorn with the PORT variable
-exec gunicorn -w 4 -b "0.0.0.0:$PORT" --access-logfile - --error-logfile - run:app
+exec gunicorn -w 4 -b "0.0.0.0:$PORT" --timeout 120 --access-logfile - --error-logfile - run:app
