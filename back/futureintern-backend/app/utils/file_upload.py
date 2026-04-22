@@ -182,9 +182,11 @@ def save_logo(file, user_id):
     upload_folder = os.path.join(current_app.root_path, '..', 'uploads', 'logos')
     os.makedirs(upload_folder, exist_ok=True)
     
-    # Generate secure filename
+    # Generate secure filename — include a timestamp so every upload produces a
+    # unique path, preventing browser/React Native from serving a cached old image.
+    import time as _time
     name, ext = os.path.splitext(safe_filename)
-    unique_filename = f"logo_{user_id}_{name}{ext}"
+    unique_filename = f"logo_{user_id}_{int(_time.time())}_{name}{ext}"
     unique_filename = sanitize_filename_safe(unique_filename)
     
     # Save file

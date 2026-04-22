@@ -10,6 +10,8 @@ interface AuthContextType {
   loginWithTokens: (accessToken: string, refreshToken: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUserData: () => Promise<void>;
+  /** Immediately update user.profile_image in state (call after a successful photo upload) */
+  updateUserPhoto: (path: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -72,8 +74,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const updateUserPhoto = (path: string) => {
+    setUser(prev => prev ? { ...prev, profile_image: path } : prev);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, loginWithTokens, logout, refreshUserData }}>
+    <AuthContext.Provider value={{ user, loading, login, loginWithGoogle, loginWithTokens, logout, refreshUserData, updateUserPhoto }}>
       {children}
     </AuthContext.Provider>
   );

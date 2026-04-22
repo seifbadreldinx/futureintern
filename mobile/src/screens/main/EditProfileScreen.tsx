@@ -51,7 +51,7 @@ function parseSkillsToString(raw: any): string {
 
 export default function EditProfileScreen() {
   const navigation = useNavigation<NavProp>();
-  const { user, refreshUserData } = useAuth();
+  const { user, refreshUserData, updateUserPhoto } = useAuth();
   const { C } = useTheme();
   const styles = makeStyles(C);
 
@@ -182,12 +182,16 @@ export default function EditProfileScreen() {
         throw new Error(errData.error || errData.message || `Upload failed (HTTP ${res.status})`);
       }
 
-      // Consume response body (required before fetch GC)
-      await res.json().catch(() => {});
+      // Capture the new profile_image path from the response and update context
+      // immediately so ProfileScreen shows the new photo without waiting for a full refresh.
+      const data = await res.json().catch(() => ({}));
+      if (data.profile_image) {
+        updateUserPhoto(data.profile_image);
+      }
 
       setPhotoKey(Date.now());
       showToast('Photo updated successfully!', true);
-      // Refresh user context in background — don't await, never block the UI
+      // Full refresh in background to sync any other fields
       refreshUserData?.().catch(() => {});
     } catch (err: any) {
       // Revert preview to server photo; guard against undefined profile_image
