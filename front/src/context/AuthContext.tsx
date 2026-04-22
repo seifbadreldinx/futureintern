@@ -82,6 +82,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isDefinitiveAuthFailure) {
         removeAuthToken();
         setUser(null);
+      } else if (isInitial) {
+        // Network/timeout failure on initial load — retry once after 4s
+        // Leave user as null but delay setting initialCheckDone so ProtectedRoute keeps waiting
+        setTimeout(async () => {
+          try {
+            const res = await api.auth.getCurrentUser();
+            const userData = res?.user || res?.profile || res;
+            if (userData && userData.id) setUser(userData);
+          } catch {
+            // give up silently — user stays null, token preserved
+          } finally {
+            setInitialCheckDone(true);
+          }
+        }, 4000);
+        return; // skip the finally block's setInitialCheckDone
       }
     } finally {
       setLoading(false);
