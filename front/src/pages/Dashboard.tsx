@@ -456,7 +456,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                               {rec.internship.title}
                             </h3>
                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-400 rounded-full border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
-                              <span className="text-[11px] font-black text-slate-900">{Math.round(rec.match_score)}% Match</span>
+                              <span className="text-[11px] font-black text-slate-900">{Math.round(rec.score)}% Match</span>
                             </div>
                           </div>
 
@@ -478,11 +478,16 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                           <div className="space-y-2">
                             <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Why we recommend this:</p>
                             <div className="flex flex-wrap gap-2">
-                              {(rec.matching_reasons || []).map((reason: string, i: number) => (
-                                <span key={i} className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
-                                  {reason}
-                                </span>
-                              ))}
+                              {rec.match_details && (
+                                <>
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                                    Semantic: {rec.match_details.sbert_score?.toFixed(1)}%
+                                  </span>
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-700 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                                    Keyword: {rec.match_details.tfidf_score?.toFixed(1)}%
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>
