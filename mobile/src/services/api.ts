@@ -223,7 +223,7 @@ export const api = {
       apiRequest<any>(`/users/saved-internships/${id}/check`),
 
     listRecommendations: async () => {
-      const res = await apiRequest<any>('/matching/recommendations', { _timeout: 90000 } as any);
+      const res = await apiRequest<any>('/recommendations', { _timeout: 90000 } as any);
       return res.recommendations ?? res ?? [];
     },
   },
