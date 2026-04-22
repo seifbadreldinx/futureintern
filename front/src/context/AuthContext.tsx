@@ -51,16 +51,17 @@ export function useAuth() {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  // True only for the very first auth check (page load / refresh)
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
-  const fetchUser = useCallback(async () => {
+  const fetchUser = useCallback(async (isInitial = false) => {
     const token = getAuthToken();
     if (!token) {
       setUser(null);
       setLoading(false);
+      if (isInitial) setInitialCheckDone(true);
       return;
     }
-    // Start rendering the app immediately; update user when response arrives
-    setLoading(false);
     try {
       const res = await api.auth.getCurrentUser();
       const userData = res?.user || res?.profile || res;
@@ -82,11 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         removeAuthToken();
         setUser(null);
       }
+    } finally {
+      setLoading(false);
+      if (isInitial) setInitialCheckDone(true);
     }
   }, []);
 
   useEffect(() => {
-    fetchUser();
+    fetchUser(true);
     // Listen for storage changes (login/logout in same tab)
     const onStorage = () => fetchUser();
     window.addEventListener('storage', onStorage);
@@ -109,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchUser]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated: !!user, logout, updateUser, refreshUserData }}>
+    <AuthContext.Provider value={{ user, loading: !initialCheckDone, isAuthenticated: !!user, logout, updateUser, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
