@@ -34,7 +34,7 @@ def get_recommendations():
         # Check Points Balance and charge via utility
         from app.utils.points import check_and_charge
         from app.models import db
-        success, msg, cost = check_and_charge(student, 'ai_recommendations')
+        success, msg, cost = check_and_charge(student, 'ai_matching')
         if not success:
             return jsonify({
                 'error': 'Insufficient points',

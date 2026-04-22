@@ -438,7 +438,28 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
               ) : recommendError ? (
                 <div className="text-center py-12">
                   <Sparkles className="w-16 h-16 text-gray-300 dark:text-slate-700 mx-auto mb-4" />
-                  <p className="text-red-600 dark:text-red-400">{recommendError}</p>
+                  {recommendError.toLowerCase().includes('complete your profile') ? (
+                    <>
+                      <p className="text-gray-900 dark:text-white font-bold text-lg mb-2">Profile Incomplete</p>
+                      <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">{recommendError}</p>
+                      <button
+                        onClick={() => setActiveTab('profile')}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
+                      >
+                        Complete Profile
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-red-600 dark:text-red-400 mb-6">{recommendError}</p>
+                      <button
+                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
+                      >
+                        Try Again
+                      </button>
+                    </>
+                  )}
                 </div>
               ) : recommendedInternships.length === 0 ? (
                 <div className="text-center py-12">
