@@ -688,6 +688,11 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 });
                 setProfileToast({ msg: 'Profile updated successfully!', ok: true });
                 refreshUserData(); // refresh in background without blocking
+                // If AI recommendations were blocked due to an incomplete profile,
+                // clear that error so the user can now request recommendations.
+                setRecommendError(prev =>
+                  prev?.toLowerCase().includes('complete your profile') ? null : prev
+                );
                 setTimeout(() => setProfileToast(null), 4000);
               } catch (err) {
                 setProfileToast({ msg: 'Failed to update profile. Please try again.', ok: false });
