@@ -17,6 +17,38 @@ admin_bp = Blueprint('admin', __name__)
 def index():
     return jsonify({"message": "Admin API"})
 
+@admin_bp.route("/grant-points", methods=["POST"])
+@jwt_required()
+@role_required('admin')
+def grant_points():
+    """Admin: manually grant or deduct points for a user (e.g. refunds)."""
+    data = request.get_json() or {}
+    email = data.get('email')
+    amount = data.get('amount')
+    reason = data.get('reason', 'Manual admin adjustment')
+
+    if not email or amount is None:
+        return jsonify({'error': 'email and amount are required'}), 400
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({'error': f'User not found: {email}'}), 404
+
+    from app.utils.points import record_transaction
+    before = user.points or 0
+    txn_type = 'refund' if int(amount) > 0 else 'deduction'
+    record_transaction(user, int(amount), txn_type, description=reason)
+    db.session.commit()
+    after = user.points or 0
+
+    return jsonify({
+        'success': True,
+        'user': email,
+        'before': before,
+        'after': after,
+        'granted': int(amount),
+    }), 200
+
 @admin_bp.route("/test-email", methods=["POST"])
 @jwt_required()
 @role_required('admin')
