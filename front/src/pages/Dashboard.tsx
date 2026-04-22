@@ -464,12 +464,12 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   ) : recommendError?.toLowerCase().includes('insufficient points') ? (
                     <>
                       <p className="text-gray-900 dark:text-white font-bold text-lg mb-2">Not Enough Points</p>
-                      <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">You need 10 points to get AI recommendations. Top up your balance in the Points Store.</p>
+                      <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">You need 10 points to get AI recommendations. Earn points by completing your profile, applying to internships, and daily logins.</p>
                       <Link
                         to="/points"
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                       >
-                        Go to Points Store
+                        Earn Points
                       </Link>
                     </>
                   ) : (
