@@ -182,16 +182,16 @@ export default function EditProfileScreen() {
         throw new Error(errData.error || errData.message || `Upload failed (HTTP ${res.status})`);
       }
 
-      // Keep showing the local asset.uri — it already has the correct new image.
-      // DO NOT switch to the server URL here: React Native caches by URL and the
-      // filename is the same on every upload (logo_{id}_profile.jpg), so loading
-      // the server URL would show the old cached photo.
-      // Bump photoKey so ProfileScreen will also reload with cache-busting.
-      setPhotoKey(Date.now());
+      // Consume response body (required before fetch GC)
+      await res.json().catch(() => {});
 
-      await refreshUserData?.();
+      setPhotoKey(Date.now());
       showToast('Photo updated successfully!', true);
+      // Refresh user context in background — don't await, never block the UI
+      refreshUserData?.().catch(() => {});
     } catch (err: any) {
+      // Revert preview on failure
+      setPhotoUri(resolveLogoUrl(user?.profile_image) || null);
       showToast(err?.message || 'Could not upload photo. Please try again.', false);
     } finally {
       setUploadingPhoto(false);
