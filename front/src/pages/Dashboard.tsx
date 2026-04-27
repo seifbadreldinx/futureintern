@@ -558,20 +558,81 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                             </div>
                           </div>
 
-                          <div className="space-y-2">
+                          <div className="space-y-3">
                             <p className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Why we recommend this:</p>
-                            <div className="flex flex-wrap gap-2">
-                              {rec.match_details && (
-                                <>
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
-                                    Semantic: {rec.match_details.sbert_score?.toFixed(1)}%
-                                  </span>
-                                  <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-700 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
-                                    Keyword: {rec.match_details.tfidf_score?.toFixed(1)}%
-                                  </span>
-                                </>
-                              )}
-                            </div>
+
+                            {rec.match_details?.explanation ? (
+                              <>
+                                {/* Matched skills */}
+                                {rec.match_details.explanation.matched_skills?.length > 0 && (
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {rec.match_details.explanation.matched_skills.map((skill: string) => (
+                                      <span key={skill} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-[11px] font-bold border border-green-400 dark:border-green-700">
+                                        ✓ {skill}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+
+                                {/* Human-readable reasons */}
+                                {rec.match_details.explanation.reasons?.length > 0 && (
+                                  <ul className="space-y-1">
+                                    {rec.match_details.explanation.reasons.map((reason: string, i: number) => (
+                                      <li key={i} className="text-xs text-slate-600 dark:text-slate-400 flex items-start gap-1.5">
+                                        <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
+                                        {reason}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+
+                                {/* Score breakdown */}
+                                <div className="space-y-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">Semantic 70%</span>
+                                    <div className="flex-1 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border border-slate-300 dark:border-slate-600">
+                                      <div className="h-full rounded-full bg-blue-500" style={{ width: `${Math.min(rec.match_details.sbert_score ?? 0, 100)}%` }} />
+                                    </div>
+                                    <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 w-9 text-right">{(rec.match_details.sbert_score ?? 0).toFixed(1)}%</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 w-20 flex-shrink-0">Keyword 30%</span>
+                                    <div className="flex-1 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border border-slate-300 dark:border-slate-600">
+                                      <div className="h-full rounded-full bg-slate-600 dark:bg-slate-400" style={{ width: `${Math.min(rec.match_details.tfidf_score ?? 0, 100)}%` }} />
+                                    </div>
+                                    <span className="text-[10px] font-black text-slate-600 dark:text-slate-300 w-9 text-right">{(rec.match_details.tfidf_score ?? 0).toFixed(1)}%</span>
+                                  </div>
+                                </div>
+
+                                {/* Extra badges */}
+                                <div className="flex flex-wrap gap-1.5">
+                                  {rec.match_details.explanation.major_match && (
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-purple-600 text-white text-[11px] font-bold border-[2px] border-slate-900 dark:border-white shadow-[2px_2px_0px_0px_#0f172a]">
+                                      Major Match
+                                    </span>
+                                  )}
+                                  {rec.match_details.explanation.matched_interests?.length > 0 && (
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-500 text-white text-[11px] font-bold border-[2px] border-slate-900 dark:border-white shadow-[2px_2px_0px_0px_#0f172a]">
+                                      Interest Fit
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            ) : (
+                              /* Fallback — old simple badges when no explanation present */
+                              <div className="flex flex-wrap gap-2">
+                                {rec.match_details && (
+                                  <>
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                                      Semantic: {rec.match_details.sbert_score?.toFixed(1)}%
+                                    </span>
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-700 text-white text-[11px] font-bold border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a]">
+                                      Keyword: {rec.match_details.tfidf_score?.toFixed(1)}%
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </div>
 

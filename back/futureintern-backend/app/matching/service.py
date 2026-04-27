@@ -13,8 +13,8 @@ import re
 import logging
 import numpy as np
 from typing import List, Dict, Tuple, Optional
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import TfidfVectorizer  # type: ignore[import-untyped]
+from sklearn.metrics.pairwise import cosine_similarity  # type: ignore[import-untyped]
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ def _get_sbert_model(model_name: str):
     global _cached_sbert_model
     if _cached_sbert_model is None:
         try:
-            from sentence_transformers import SentenceTransformer
+            from sentence_transformers import SentenceTransformer  # type: ignore[import]
             logger.info(f"Loading SBERT model: {model_name}")
             _cached_sbert_model = SentenceTransformer(model_name)
             logger.info("SBERT model loaded and cached")
@@ -214,13 +214,104 @@ class HybridMatcher:
         results = []
         for rank, (idx, score) in enumerate(ranked, 1):
             internship = self.internships[idx].copy()
+            tfidf_pct = round(tfidf_scores.get(idx, 0.0) * 100, 2)
+            sbert_pct = round(sbert_scores.get(idx, 0.0) * 100, 2)
             internship["match_score"] = round(score * 100, 2)
             internship["match_rank"] = rank
-            internship["tfidf_score"] = round(tfidf_scores.get(idx, 0.0) * 100, 2)
-            internship["sbert_score"] = round(sbert_scores.get(idx, 0.0) * 100, 2)
+            internship["tfidf_score"] = tfidf_pct
+            internship["sbert_score"] = sbert_pct
+            internship["explanation"] = self._explain_match(student_profile, idx, tfidf_pct, sbert_pct)
             results.append(internship)
 
         return results
+
+    def _explain_match(self, student_profile: Dict, intern_idx: int, tfidf_score: float, sbert_score: float) -> Dict:
+        """
+        Generate XAI explanation for why a specific internship was recommended.
+        Returns matched skills, interests, major alignment, top TF-IDF keywords, and human-readable reasons.
+        """
+        def to_str(val):
+            if isinstance(val, list):
+                return " ".join(str(v) for v in val if v)
+            return str(val) if val else ""
+
+        def normalize_words(text: str) -> set:
+            return {
+                w.lower().strip(".,;:()[]\"'")
+                for w in re.split(r"[\s,/|+\-]+", text)
+                if len(w) > 2
+            }
+
+        internship = self.internships[intern_idx]
+
+        # ── Student tokens ────────────────────────────────────────────────────
+        student_skill_words = normalize_words(to_str(student_profile.get("skills", "")))
+        student_interest_words = normalize_words(to_str(student_profile.get("interests", "")))
+        student_major = str(student_profile.get("major", "")).lower().strip()
+
+        # ── Internship tokens ─────────────────────────────────────────────────
+        intern_skills_text = internship.get("skills", "") + " " + internship.get("requirements", "")
+        intern_skill_words = normalize_words(intern_skills_text)
+        intern_full_text = (
+            internship.get("title", "") + " " +
+            internship.get("description", "") + " " +
+            intern_skills_text
+        )
+        intern_full_words = normalize_words(intern_full_text)
+        intern_major = str(internship.get("major", "")).lower().strip()
+
+        # 1. Matched skills (student skills ∩ internship skills/requirements)
+        matched_skills = sorted(student_skill_words & intern_skill_words)[:6]
+
+        # 2. Matched interests (student interests ∩ full internship text)
+        matched_interests = sorted(student_interest_words & intern_full_words)[:4]
+
+        # 3. Major alignment
+        major_match = bool(
+            student_major and (
+                student_major in intern_full_text.lower() or
+                (intern_major and (student_major in intern_major or intern_major in student_major))
+            )
+        )
+
+        # 4. Top shared TF-IDF vocabulary terms
+        top_keywords: List[str] = []
+        if self.tfidf.fitted:
+            query = self._build_student_query(student_profile)
+            query_terms = set(preprocess_text(query).split())
+            intern_terms = set(preprocess_text(intern_full_text).split())
+            overlap = query_terms & intern_terms
+            try:
+                vocab = set(self.tfidf.vectorizer.get_feature_names_out().tolist())
+                top_keywords = sorted(
+                    [t for t in overlap if t in vocab],
+                    key=len, reverse=True
+                )[:6]
+            except Exception:
+                top_keywords = sorted(overlap, key=len, reverse=True)[:6]
+
+        # 5. Human-readable reasons
+        reasons: List[str] = []
+        if matched_skills:
+            reasons.append(f"Your skills match: {', '.join(matched_skills[:3])}")
+        if major_match and student_major:
+            reasons.append(f"Aligns with your major ({student_major})")
+        if matched_interests:
+            reasons.append(f"Matches your interests: {', '.join(matched_interests[:2])}")
+        if sbert_score > 50:
+            reasons.append("High semantic relevance to your overall profile")
+        elif sbert_score > 25:
+            reasons.append("Moderate semantic relevance to your profile")
+        if not reasons:
+            reasons.append("General profile alignment detected by AI")
+
+        return {
+            "matched_skills": matched_skills,
+            "matched_interests": matched_interests,
+            "major_match": major_match,
+            "top_keywords": top_keywords,
+            "reasons": reasons,
+        }
 
     def _build_student_query(self, profile: Dict) -> str:
         """Build a rich query string from all student profile fields."""

@@ -187,6 +187,7 @@ def get_recommendations():
                         'tfidf_score': match['tfidf_score'],
                         'sbert_score': match['sbert_score'],
                         'rank': match['match_rank'],
+                        'explanation': match.get('explanation', {}),
                     },
                     'internship': intern_obj.to_dict(include_company=True)
                 })
