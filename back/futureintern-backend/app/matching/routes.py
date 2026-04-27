@@ -1,7 +1,7 @@
 import json
 import time
-from flask import Blueprint, jsonify, request
-from flask_jwt_extended import jwt_required
+from flask import Blueprint, jsonify, request  # type: ignore[import]
+from flask_jwt_extended import jwt_required  # type: ignore[import]
 from app.utils.auth import role_required, get_current_user_id
 from app.models.user import User
 from app.models.intern import Internship
