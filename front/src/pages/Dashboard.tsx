@@ -72,12 +72,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   const focusApplied = useRef(false);
   const [applications, setApplications] = useState<any[]>([]);
   const [savedInternships, setSavedInternships] = useState<any[]>([]);
-  const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
+  const REC_KEY = `rec_${user?.id}`;
+  const [recommendedInternships, setRecommendedInternships] = useState<any[]>(() => {
+    try { const s = localStorage.getItem(REC_KEY); return s ? JSON.parse(s) : []; } catch { return []; }
+  });
   const [recommendError, setRecommendError] = useState<string | null>(null);
   const [pointsBalance, setPointsBalance] = useState<number>(user?.points ?? 0);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
-  const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
+  const [recommendationsLoaded, setRecommendationsLoaded] = useState<boolean>(() => {
+    try { return !!localStorage.getItem(REC_KEY); } catch { return false; }
+  });
   const [dailyRewardToast, setDailyRewardToast] = useState<string | null>(null);
   const [profileToast, setProfileToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [cvBuilderData, setCvBuilderData] = useState<{ headline?: string; summary?: string; sections_count: number } | null>(null);
@@ -177,15 +182,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
     fetchData();
   }, [user?.id]);
 
-  // Load recommendations only when user clicks the tab (costs points)
+  // Load recommendations only when user clicks (costs points)
   const loadRecommendations = async () => {
     if (recommendationsLoaded || isLoadingRecommendations) return;
     setIsLoadingRecommendations(true);
     setRecommendError(null);
     try {
       const recommended = await api.internships.listRecommendations();
-      setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
+      const recs = Array.isArray(recommended) ? recommended : [];
+      setRecommendedInternships(recs);
       setRecommendationsLoaded(true);
+      try { localStorage.setItem(REC_KEY, JSON.stringify(recs)); } catch {}
       // Refresh balance after charge
       const balRes = await api.points.getBalance().catch(() => ({ balance: 0 }));
       setPointsBalance(balRes.balance ?? 0);
@@ -198,6 +205,15 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
     } finally {
       setIsLoadingRecommendations(false);
     }
+  };
+
+  /** Clear cache + state, then fetch fresh recommendations (used by "Try Again" buttons) */
+  const refreshRecommendations = () => {
+    try { localStorage.removeItem(REC_KEY); } catch {}
+    setRecommendationsLoaded(false);
+    setRecommendedInternships([]);
+    // loadRecommendations checks the loaded flag, so schedule after state flush
+    setTimeout(loadRecommendations, 0);
   };
 
   const handleExportBuilderPDF = async () => {
@@ -563,7 +579,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                       <p className="text-yellow-700 dark:text-yellow-400 font-bold text-lg mb-2">Still Processing…</p>
                       <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">{recommendError}</p>
                       <button
-                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        onClick={() => { setRecommendError(null); refreshRecommendations(); }}
                         className="px-6 py-3 bg-yellow-500 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                       >
                         Check Result
@@ -574,7 +590,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                       <p className="text-gray-900 dark:text-white font-bold text-lg mb-2">Matching Failed — Points Refunded</p>
                       <p className="text-gray-600 dark:text-slate-400 mb-6 max-w-sm mx-auto">{recommendError}</p>
                       <button
-                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        onClick={() => { setRecommendError(null); refreshRecommendations(); }}
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                       >
                         Try Again
@@ -584,7 +600,7 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                     <>
                       <p className="text-red-600 dark:text-red-400 mb-6">{recommendError}</p>
                       <button
-                        onClick={() => { setRecommendError(null); loadRecommendations(); }}
+                        onClick={() => { setRecommendError(null); refreshRecommendations(); }}
                         className="px-6 py-3 bg-blue-600 text-white rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all font-bold"
                       >
                         Try Again

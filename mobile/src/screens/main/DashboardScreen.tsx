@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { api } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
@@ -44,10 +45,26 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
 
   // AI Recommendations
+  const REC_KEY = `rec_${user?.id}`;
   const [recommendedInternships, setRecommendedInternships] = useState<any[]>([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [recommendationsLoaded, setRecommendationsLoaded] = useState(false);
   const [recommendError, setRecommendError] = useState<string | null>(null);
+
+  // Restore cached recommendations on mount
+  useEffect(() => {
+    AsyncStorage.getItem(REC_KEY).then(val => {
+      if (val) {
+        try {
+          const cached = JSON.parse(val);
+          if (Array.isArray(cached) && cached.length > 0) {
+            setRecommendedInternships(cached);
+            setRecommendationsLoaded(true);
+          }
+        } catch {}
+      }
+    });
+  }, [REC_KEY]);
 
   const loadData = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -91,8 +108,10 @@ export default function DashboardScreen() {
     setRecommendError(null);
     try {
       const recommended = await api.internships.listRecommendations();
-      setRecommendedInternships(Array.isArray(recommended) ? recommended : []);
+      const recs = Array.isArray(recommended) ? recommended : [];
+      setRecommendedInternships(recs);
       setRecommendationsLoaded(true);
+      AsyncStorage.setItem(REC_KEY, JSON.stringify(recs)).catch(() => {});
       const balRes = await api.points.balance().catch(() => ({ balance: 0 }));
       setPoints((balRes as any).balance ?? 0);
     } catch (err: any) {
@@ -101,6 +120,14 @@ export default function DashboardScreen() {
     } finally {
       setIsLoadingRecommendations(false);
     }
+  };
+
+  /** Clear cache and re-fetch (explicit user action) */
+  const refreshRecommendations = () => {
+    AsyncStorage.removeItem(REC_KEY).catch(() => {});
+    setRecommendationsLoaded(false);
+    setRecommendedInternships([]);
+    setTimeout(loadRecommendations, 0);
   };
 
   const total    = applications.length;
@@ -300,10 +327,7 @@ export default function DashboardScreen() {
                   <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
                   <TouchableOpacity
                     style={{ backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
-                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
-                    activeOpacity={0.85}
-                  >
-                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Check Result</Text>
+                    onPress={() => { setRecommendError(null); refreshRecommendations(); }}
                   </TouchableOpacity>
                 </>
               ) : recommendError?.toLowerCase().includes('refunded') ? (
@@ -313,7 +337,7 @@ export default function DashboardScreen() {
                   <Text style={{ color: C.textSecondary, textAlign: 'center', marginTop: 6, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
                   <TouchableOpacity
                     style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
-                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
+                    onPress={() => { setRecommendError(null); refreshRecommendations(); }}
                     activeOpacity={0.85}
                   >
                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Try Again</Text>
@@ -324,7 +348,7 @@ export default function DashboardScreen() {
                   <Text style={{ color: '#ef4444', textAlign: 'center', marginTop: 12, marginBottom: 16, fontSize: 13 }}>{recommendError}</Text>
                   <TouchableOpacity
                     style={{ backgroundColor: '#2563eb', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
-                    onPress={() => { setRecommendError(null); loadRecommendations(); }}
+                    onPress={() => { setRecommendError(null); refreshRecommendations(); }}
                     activeOpacity={0.85}
                   >
                     <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Try Again</Text>
