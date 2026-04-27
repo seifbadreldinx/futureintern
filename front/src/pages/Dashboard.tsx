@@ -421,6 +421,85 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 Browse more internships →
               </Link>
             </div>
+
+            {/* ── Top AI Picks ── */}
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border-4 border-slate-900 dark:border-white shadow-[8px_8px_0px_0px_#0f172a] dark:shadow-[8px_8px_0px_0px_rgba(255,255,255,0.3)] p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-blue-500" />
+                    Top AI Picks
+                  </h2>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5">Your #1 · #2 · #3 ranked matches</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('recommended')}
+                  className="text-xs font-black text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  See all →
+                </button>
+              </div>
+
+              {!recommendationsLoaded && !isLoadingRecommendations ? (
+                <div className="flex flex-col items-center py-8 gap-3">
+                  <Sparkles className="w-10 h-10 text-blue-200 dark:text-blue-900" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400 text-center">AI recommendations cost 10 points per request.</p>
+                  <button
+                    onClick={() => { setActiveTab('recommended'); loadRecommendations(); }}
+                    className="px-5 py-2 bg-blue-600 text-white text-sm font-bold rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[4px_4px_0px_0px_#0f172a] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                  >
+                    Get AI Recommendations
+                  </button>
+                </div>
+              ) : isLoadingRecommendations ? (
+                <div className="flex items-center justify-center py-8 gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">Finding your best matches…</span>
+                </div>
+              ) : recommendedInternships.length === 0 ? (
+                <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-6">No recommendations yet. Complete your profile to get started.</p>
+              ) : (
+                <div className="space-y-3">
+                  {recommendedInternships.slice(0, 3).map((rec: any, index: number) => {
+                    const rankColors = ['bg-yellow-400', 'bg-slate-300 dark:bg-slate-500', 'bg-amber-600'];
+                    return (
+                      <Link
+                        key={rec.internship.id}
+                        to={`/internship/${rec.internship.id}`}
+                        className="flex items-center gap-3 p-4 border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/30 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
+                      >
+                        {/* Rank */}
+                        <div className={`w-8 h-8 rounded-lg border-[2px] border-slate-900 dark:border-white flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_#0f172a] ${rankColors[index]}`}>
+                          <span className="text-[11px] font-black text-slate-900">#{index + 1}</span>
+                        </div>
+                        {/* Logo */}
+                        {rec.internship.company?.profile_image ? (
+                          <img
+                            src={resolveLogoUrl(rec.internship.company.profile_image)}
+                            alt=""
+                            className="w-9 h-9 rounded-lg object-contain border-[2px] border-slate-200 dark:border-slate-600 bg-white flex-shrink-0"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        ) : (
+                          <div className="w-9 h-9 rounded-lg border-[2px] border-slate-200 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0">
+                            <Briefcase className="w-4 h-4 text-slate-400" />
+                          </div>
+                        )}
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-slate-900 dark:text-white text-sm truncate">{rec.internship.title}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{rec.internship.company?.name} · {rec.internship.location}</p>
+                        </div>
+                        {/* Score */}
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-400 rounded-full border-[2px] border-slate-900 shadow-[2px_2px_0px_0px_#0f172a] flex-shrink-0">
+                          <span className="text-[11px] font-black text-slate-900">{Math.round(rec.score)}%</span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         )}
 

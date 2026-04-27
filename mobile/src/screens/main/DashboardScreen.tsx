@@ -346,6 +346,71 @@ export default function DashboardScreen() {
           )}
         </View>
 
+        {/* ── Top AI Picks ── */}
+        <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Ionicons name="sparkles" size={16} color="#3b82f6" />
+              <Text style={[S.sectionTitle, { color: C.text, marginBottom: 0 }]}>TOP AI PICKS</Text>
+            </View>
+            <TouchableOpacity onPress={() => navigation.navigate('Main', { screen: 'Dashboard' } as any)}>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: '#3b82f6' }}>See all →</Text>
+            </TouchableOpacity>
+          </View>
+
+          {!recommendationsLoaded && !isLoadingRecommendations ? (
+            <View style={{ alignItems: 'center', paddingVertical: 16, gap: 10 }}>
+              <Ionicons name="sparkles-outline" size={36} color="#93c5fd" />
+              <Text style={{ color: C.textSecondary, fontSize: 12, textAlign: 'center' }}>AI recommendations cost 10 points per request.</Text>
+              <TouchableOpacity
+                style={{ backgroundColor: '#2563eb', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10 }}
+                onPress={loadRecommendations}
+                activeOpacity={0.85}
+              >
+                <Text style={{ color: '#fff', fontWeight: '800', fontSize: 13 }}>Get AI Recommendations</Text>
+              </TouchableOpacity>
+            </View>
+          ) : isLoadingRecommendations ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, paddingVertical: 16 }}>
+              <ActivityIndicator size="small" color="#2563eb" />
+              <Text style={{ color: C.textSecondary, fontSize: 13, fontWeight: '600' }}>Finding your best matches…</Text>
+            </View>
+          ) : recommendedInternships.length === 0 ? (
+            <Text style={{ color: C.textSecondary, fontSize: 12, textAlign: 'center', paddingVertical: 12 }}>
+              No recommendations yet. Complete your profile to get started.
+            </Text>
+          ) : (
+            <View style={{ gap: 8 }}>
+              {recommendedInternships.slice(0, 3).map((rec: any, index: number) => {
+                const rankColor = index === 0 ? '#facc15' : index === 1 ? '#94a3b8' : '#d97706';
+                const internship = rec.internship || {};
+                const company = internship.company || {};
+                return (
+                  <TouchableOpacity
+                    key={internship.id}
+                    style={[S.topPickRow, { borderColor: C.border, backgroundColor: C.background }]}
+                    onPress={() => navigation.navigate('InternshipDetail', { id: internship.id })}
+                    activeOpacity={0.85}
+                  >
+                    <View style={[S.rankBadge, { backgroundColor: rankColor }]}>
+                      <Text style={{ fontSize: 11, fontWeight: '900', color: '#0f172a' }}>#{index + 1}</Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text style={{ color: C.text, fontWeight: '800', fontSize: 13 }} numberOfLines={1}>{internship.title || 'Internship'}</Text>
+                      <Text style={{ color: C.textSecondary, fontSize: 11, marginTop: 1 }} numberOfLines={1}>
+                        {company.name}{internship.location ? ` · ${internship.location}` : ''}
+                      </Text>
+                    </View>
+                    <View style={S.matchBadge}>
+                      <Text style={{ fontSize: 11, fontWeight: '900', color: '#065f46' }}>{Math.round(rec.score ?? 0)}%</Text>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
         {/* ── Quick Actions (keeping as secondary) ── */}
         <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
           <Text style={[S.sectionTitle, { color: C.text }]}>QUICK ACTIONS</Text>
@@ -661,6 +726,11 @@ const S = StyleSheet.create({
   recCard: {
     borderWidth: 1.5, borderRadius: Radius.md,
     padding: 12, marginBottom: 10,
+  },
+  topPickRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderWidth: 1.5, borderRadius: Radius.md,
+    padding: 10,
   },
   recLogo: { width: 40, height: 40, borderRadius: 8 },
   rankBadge: {
