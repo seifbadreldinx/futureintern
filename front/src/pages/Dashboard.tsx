@@ -183,8 +183,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
   }, [user?.id]);
 
   // Load recommendations only when user clicks (costs points)
-  const loadRecommendations = async () => {
-    if (recommendationsLoaded || isLoadingRecommendations) return;
+  const loadRecommendations = async (force = false) => {
+    if (!force && (recommendationsLoaded || isLoadingRecommendations)) return;
     setIsLoadingRecommendations(true);
     setRecommendError(null);
     try {
@@ -207,13 +207,12 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
     }
   };
 
-  /** Clear cache + state, then fetch fresh recommendations (used by "Try Again" buttons) */
+  /** Clear cache + state, then force-fetch fresh recommendations */
   const refreshRecommendations = () => {
     try { localStorage.removeItem(REC_KEY); } catch {}
     setRecommendationsLoaded(false);
     setRecommendedInternships([]);
-    // loadRecommendations checks the loaded flag, so schedule after state flush
-    setTimeout(loadRecommendations, 0);
+    loadRecommendations(true);
   };
 
   const handleExportBuilderPDF = async () => {
@@ -477,7 +476,12 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
               ) : (
                 <div className="space-y-3">
                   {recommendedInternships.slice(0, 3).map((rec: any, index: number) => {
-                    const rankColors = ['bg-yellow-400', 'bg-slate-300 dark:bg-slate-500', 'bg-amber-600'];
+                    const rankColors = [
+                      'bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-500 text-yellow-900',
+                      'bg-slate-300 dark:bg-slate-500 border-slate-400 dark:border-slate-300 text-slate-800 dark:text-white',
+                      'bg-amber-700 dark:bg-amber-600 border-amber-900 dark:border-amber-400 text-white',
+                    ];
+                    const rankLabels = ['🥇', '🥈', '🥉'];
                     return (
                       <Link
                         key={rec.internship.id}
@@ -485,8 +489,8 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                         className="flex items-center gap-3 p-4 border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/30 rounded-xl shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all"
                       >
                         {/* Rank */}
-                        <div className={`w-8 h-8 rounded-lg border-[2px] border-slate-900 dark:border-white flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_#0f172a] ${rankColors[index]}`}>
-                          <span className="text-[11px] font-black text-slate-900">#{index + 1}</span>
+                        <div className={`w-9 h-9 rounded-lg border-[2px] flex items-center justify-center flex-shrink-0 shadow-[2px_2px_0px_0px_#0f172a] ${rankColors[index]}`}>
+                          <span className="text-sm font-black leading-none">{rankLabels[index]}</span>
                         </div>
                         {/* Logo */}
                         {rec.internship.company?.profile_image ? (
@@ -527,8 +531,19 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                   <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Recommended for You</h2>
                   <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Based on your skills, major, and interests</p>
                 </div>
-                <div className="p-2 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-2">
+                  {recommendationsLoaded && !isLoadingRecommendations && (
+                    <button
+                      onClick={refreshRecommendations}
+                      title="Get new recommendations (costs 10 points)"
+                      className="text-xs font-bold px-3 py-1.5 rounded-lg border-[2px] border-slate-900 dark:border-white bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 shadow-[2px_2px_0px_0px_#0f172a] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_0px_#0f172a] transition-all flex items-center gap-1"
+                    >
+                      ↻ New
+                    </button>
+                  )}
+                  <div className="p-2 bg-blue-600 rounded-xl border-[3px] border-slate-900 dark:border-white shadow-[3px_3px_0px_0px_#0f172a]">
+                    <Sparkles className="w-5 h-5 text-white" />
+                  </div>
                 </div>
               </div>
 
@@ -621,10 +636,15 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             {/* Rank badge */}
-                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg border-[2px] border-slate-900 dark:border-white flex items-center justify-center shadow-[2px_2px_0px_0px_#0f172a] ${
-                              index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-300 dark:bg-slate-500' : index === 2 ? 'bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'
+                            <div className={`flex-shrink-0 w-9 h-9 rounded-lg border-[2px] flex items-center justify-center shadow-[2px_2px_0px_0px_#0f172a] ${
+                              index === 0 ? 'bg-yellow-400 dark:bg-yellow-400 border-yellow-600 dark:border-yellow-500 text-yellow-900'
+                              : index === 1 ? 'bg-slate-300 dark:bg-slate-500 border-slate-400 dark:border-slate-300 text-slate-800 dark:text-white'
+                              : index === 2 ? 'bg-amber-700 dark:bg-amber-600 border-amber-900 dark:border-amber-400 text-white'
+                              : 'bg-blue-50 dark:bg-slate-700 border-slate-300 dark:border-slate-500 text-slate-500 dark:text-slate-300'
                             }`}>
-                              <span className="text-[11px] font-black text-slate-900 dark:text-white">#{index + 1}</span>
+                              <span className="text-sm font-black leading-none">
+                                {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                              </span>
                             </div>
                             {rec.internship.company?.profile_image ? (
                               <img

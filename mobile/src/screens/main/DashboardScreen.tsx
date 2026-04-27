@@ -102,8 +102,8 @@ export default function DashboardScreen() {
     }, []) // empty deps — only fires on actual screen focus, not on state change
   );
 
-  const loadRecommendations = async () => {
-    if (recommendationsLoaded || isLoadingRecommendations) return;
+  const loadRecommendations = async (force = false) => {
+    if (!force && (recommendationsLoaded || isLoadingRecommendations)) return;
     setIsLoadingRecommendations(true);
     setRecommendError(null);
     try {
@@ -127,7 +127,7 @@ export default function DashboardScreen() {
     AsyncStorage.removeItem(REC_KEY).catch(() => {});
     setRecommendationsLoaded(false);
     setRecommendedInternships([]);
-    setTimeout(loadRecommendations, 0);
+    loadRecommendations(true);
   };
 
   const total    = applications.length;
@@ -255,7 +255,18 @@ export default function DashboardScreen() {
         <View style={[S.section, { backgroundColor: C.card, borderColor: C.border }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={[S.sectionTitle, { color: C.text, marginBottom: 0 }]}>AI RECOMMENDATIONS</Text>
-            <Ionicons name="sparkles" size={18} color="#3b82f6" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              {recommendationsLoaded && !isLoadingRecommendations && (
+                <TouchableOpacity
+                  onPress={refreshRecommendations}
+                  style={{ backgroundColor: C.card, borderWidth: 2, borderColor: C.border, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 }}
+                  activeOpacity={0.75}
+                >
+                  <Text style={{ color: C.text, fontWeight: '700', fontSize: 12 }}>↻ New</Text>
+                </TouchableOpacity>
+              )}
+              <Ionicons name="sparkles" size={18} color="#3b82f6" />
+            </View>
           </View>
 
           {!recommendationsLoaded && !isLoadingRecommendations && !recommendError ? (
@@ -406,7 +417,10 @@ export default function DashboardScreen() {
           ) : (
             <View style={{ gap: 8 }}>
               {recommendedInternships.slice(0, 3).map((rec: any, index: number) => {
-                const rankColor = index === 0 ? '#facc15' : index === 1 ? '#94a3b8' : '#d97706';
+                const ovRankBg     = index === 0 ? '#F59E0B' : index === 1 ? '#94A3B8' : '#B45309';
+                const ovRankBorder = index === 0 ? '#D97706' : index === 1 ? '#64748B' : '#78350F';
+                const ovRankText   = index === 0 ? '#7C2D12' : index === 1 ? '#0F172A' : '#FFF7ED';
+                const ovRankLabel  = index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉';
                 const internship = rec.internship || {};
                 const company = internship.company || {};
                 return (
@@ -416,8 +430,8 @@ export default function DashboardScreen() {
                     onPress={() => navigation.navigate('InternshipDetail', { id: internship.id })}
                     activeOpacity={0.85}
                   >
-                    <View style={[S.rankBadge, { backgroundColor: rankColor }]}>
-                      <Text style={{ fontSize: 11, fontWeight: '900', color: '#0f172a' }}>#{index + 1}</Text>
+                    <View style={[S.rankBadge, { backgroundColor: ovRankBg, borderColor: ovRankBorder, borderWidth: 2 }]}>
+                      <Text style={{ fontSize: 14, fontWeight: '900', color: ovRankText }}>{ovRankLabel}</Text>
                     </View>
                     <View style={{ flex: 1, minWidth: 0 }}>
                       <Text style={{ color: C.text, fontWeight: '800', fontSize: 13 }} numberOfLines={1}>{internship.title || 'Internship'}</Text>
@@ -549,8 +563,10 @@ function RecCard({ rec, rank, C, onPress }: { rec: any; rank: number; C: any; on
   const sbert = rec.match_details?.sbert_score ?? 0;
   const tfidf = rec.match_details?.tfidf_score ?? 0;
 
-  const rankColor = rank === 1 ? '#facc15' : rank === 2 ? '#94a3b8' : rank === 3 ? '#d97706' : '#e2e8f0';
-  const rankTextColor = rank <= 3 ? '#0f172a' : '#64748b';
+  const rankBg    = rank === 1 ? '#F59E0B' : rank === 2 ? '#94A3B8' : rank === 3 ? '#B45309' : C.card;
+  const rankBorder = rank === 1 ? '#D97706' : rank === 2 ? '#64748B' : rank === 3 ? '#78350F' : C.border;
+  const rankText   = rank === 1 ? '#7C2D12' : rank === 2 ? '#0F172A' : rank === 3 ? '#FFF7ED' : C.textSecondary;
+  const rankLabel  = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
 
   return (
     <TouchableOpacity
@@ -561,8 +577,8 @@ function RecCard({ rec, rank, C, onPress }: { rec: any; rank: number; C: any; on
       {/* ── Header row ── */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         {/* Rank badge */}
-        <View style={[S.rankBadge, { backgroundColor: rankColor }]}>
-          <Text style={{ fontSize: 11, fontWeight: '900', color: rankTextColor }}>#{rank}</Text>
+        <View style={[S.rankBadge, { backgroundColor: rankBg, borderColor: rankBorder, borderWidth: 2 }]}>
+          <Text style={{ fontSize: rank <= 3 ? 14 : 11, fontWeight: '900', color: rankText }}>{rankLabel}</Text>
         </View>
         <Image
           source={{ uri: imgSrc }}
