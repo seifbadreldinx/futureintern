@@ -12,6 +12,20 @@ class RecommendationAPI:
         """
         Return recommended internships with optional post-filters.
         Uses HybridMatcher (TF-IDF 30% + SBERT 70%).
+
+        Each result dict includes:
+          - match_score   : float 0-100
+          - match_rank    : int
+          - tfidf_score   : float 0-100
+          - sbert_score   : float 0-100
+          - explanation   : {
+                matched_skills   : List[str],
+                matched_interests: List[str],
+                major_match      : bool,
+                top_keywords     : List[str],
+                reasons          : List[str],   # human-readable XAI reasons
+            }
+          - (all other internship fields)
         """
         matcher = HybridMatcher()
         matcher.fit(internships)
