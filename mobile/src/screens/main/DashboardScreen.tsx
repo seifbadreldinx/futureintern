@@ -339,6 +339,9 @@ export default function DashboardScreen() {
                   <TouchableOpacity
                     style={{ backgroundColor: '#f59e0b', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 12 }}
                     onPress={() => { setRecommendError(null); refreshRecommendations(); }}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={{ color: '#fff', fontWeight: '800', fontSize: 14 }}>Check Result</Text>
                   </TouchableOpacity>
                 </>
               ) : recommendError?.toLowerCase().includes('refunded') ? (
