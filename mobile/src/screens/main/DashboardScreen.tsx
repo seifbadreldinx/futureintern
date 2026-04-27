@@ -456,12 +456,17 @@ function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void })
   const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName || 'C')}&background=eff6ff&color=2563eb&size=128&bold=true`;
   const [imgSrc, setImgSrc] = useState<string>(logoUrl || avatarUrl);
 
+  const explanation = rec.match_details?.explanation;
+  const sbert = rec.match_details?.sbert_score ?? 0;
+  const tfidf = rec.match_details?.tfidf_score ?? 0;
+
   return (
     <TouchableOpacity
       style={[S.recCard, { borderColor: C.border, backgroundColor: C.background }]}
       onPress={onPress}
       activeOpacity={0.85}
     >
+      {/* ── Header row ── */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
         <Image
           source={{ uri: imgSrc }}
@@ -485,13 +490,83 @@ function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void })
           </Text>
         </View>
       </View>
+
+      {/* ── Location ── */}
       {internship.location ? (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 10 }}>
           <Ionicons name="location-outline" size={12} color={C.textSecondary} />
           <Text style={{ color: C.textSecondary, fontSize: 12 }}>{internship.location}</Text>
         </View>
       ) : null}
+
+      {/* ── XAI Explanation ── */}
+      {explanation ? (
+        <View style={[S.xaiBox, { borderColor: C.border }]}>
+          <Text style={{ fontSize: 9, fontWeight: '900', color: '#3b82f6', letterSpacing: 0.8, marginBottom: 6 }}>
+            WHY WE RECOMMEND THIS
+          </Text>
+
+          {/* Matched skill tags */}
+          {explanation.matched_skills?.length > 0 && (
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginBottom: 6 }}>
+              {explanation.matched_skills.map((skill: string) => (
+                <View key={skill} style={S.skillTag}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#166534' }}>✓ {skill}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Human-readable reasons */}
+          {explanation.reasons?.length > 0 && (
+            <View style={{ gap: 3, marginBottom: 8 }}>
+              {explanation.reasons.map((reason: string, i: number) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6 }}>
+                  <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: '#3b82f6', marginTop: 4 }} />
+                  <Text style={{ fontSize: 11, color: C.textSecondary, flex: 1, lineHeight: 16 }}>{reason}</Text>
+                </View>
+              ))}
+            </View>
+          )}
+
+          {/* Score bars */}
+          <View style={{ gap: 5, marginBottom: 6 }}>
+            <ScoreBar label="Semantic 70%" value={sbert} color="#3b82f6" C={C} />
+            <ScoreBar label="Keyword  30%" value={tfidf} color="#64748b" C={C} />
+          </View>
+
+          {/* Extra badges */}
+          {(explanation.major_match || explanation.matched_interests?.length > 0) && (
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              {explanation.major_match && (
+                <View style={[S.xaiBadge, { backgroundColor: '#7c3aed' }]}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff' }}>Major Match</Text>
+                </View>
+              )}
+              {explanation.matched_interests?.length > 0 && (
+                <View style={[S.xaiBadge, { backgroundColor: '#d97706' }]}>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#fff' }}>Interest Fit</Text>
+                </View>
+              )}
+            </View>
+          )}
+        </View>
+      ) : null}
     </TouchableOpacity>
+  );
+}
+
+function ScoreBar({ label, value, color, C }: { label: string; value: number; color: string; C: any }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+      <Text style={{ fontSize: 9, fontWeight: '700', color: C.textSecondary, width: 72 }}>{label}</Text>
+      <View style={{ flex: 1, height: 6, borderRadius: 4, backgroundColor: C.border, overflow: 'hidden' }}>
+        <View style={{ width: `${Math.min(value, 100)}%`, height: '100%', borderRadius: 4, backgroundColor: color }} />
+      </View>
+      <Text style={{ fontSize: 9, fontWeight: '900', color, width: 34, textAlign: 'right' }}>
+        {value.toFixed(1)}%
+      </Text>
+    </View>
   );
 }
 
@@ -584,5 +659,17 @@ const S = StyleSheet.create({
   matchBadge: {
     backgroundColor: '#d1fae5', borderRadius: 20,
     paddingHorizontal: 8, paddingVertical: 3,
+  },
+
+  // XAI explanation panel
+  xaiBox: {
+    borderTopWidth: 1, paddingTop: 10, marginTop: 2,
+  },
+  skillTag: {
+    backgroundColor: '#dcfce7', borderRadius: 6, borderWidth: 1, borderColor: '#86efac',
+    paddingHorizontal: 7, paddingVertical: 3,
+  },
+  xaiBadge: {
+    borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3,
   },
 });
