@@ -520,11 +520,17 @@ function StudentDashboard({ activeTab, setActiveTab, focusField, user, logout }:
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-4">
-                  {(recommendedInternships || []).map((rec: any) => (
+                  {(recommendedInternships || []).map((rec: any, index: number) => (
                     <div key={rec.internship.id} className="group border-[3px] border-slate-900 dark:border-white bg-slate-50 dark:bg-slate-800/20 rounded-xl p-6 shadow-[4px_4px_0px_0px_#0f172a] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_#0f172a] transition-all">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
+                            {/* Rank badge */}
+                            <div className={`flex-shrink-0 w-8 h-8 rounded-lg border-[2px] border-slate-900 dark:border-white flex items-center justify-center shadow-[2px_2px_0px_0px_#0f172a] ${
+                              index === 0 ? 'bg-yellow-400' : index === 1 ? 'bg-slate-300 dark:bg-slate-500' : index === 2 ? 'bg-amber-600' : 'bg-slate-200 dark:bg-slate-700'
+                            }`}>
+                              <span className="text-[11px] font-black text-slate-900 dark:text-white">#{index + 1}</span>
+                            </div>
                             {rec.internship.company?.profile_image ? (
                               <img
                                 src={resolveLogoUrl(rec.internship.company.profile_image)}

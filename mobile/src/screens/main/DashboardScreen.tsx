@@ -340,8 +340,8 @@ export default function DashboardScreen() {
               </Text>
             </View>
           ) : (
-            recommendedInternships.map((rec: any) => (
-              <RecCard key={rec.internship?.id} rec={rec} C={C} onPress={() => navigation.navigate('InternshipDetail', { id: rec.internship?.id })} />
+            recommendedInternships.map((rec: any, index: number) => (
+              <RecCard key={rec.internship?.id} rec={rec} rank={index + 1} C={C} onPress={() => navigation.navigate('InternshipDetail', { id: rec.internship?.id })} />
             ))
           )}
         </View>
@@ -448,7 +448,7 @@ const resolveLogoUrl = (url: string | null | undefined): string | null => {
   return null;
 };
 
-function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void }) {
+function RecCard({ rec, rank, C, onPress }: { rec: any; rank: number; C: any; onPress: () => void }) {
   const internship = rec.internship || {};
   const company = internship.company || {};
   const companyName = company.name || '';
@@ -460,6 +460,9 @@ function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void })
   const sbert = rec.match_details?.sbert_score ?? 0;
   const tfidf = rec.match_details?.tfidf_score ?? 0;
 
+  const rankColor = rank === 1 ? '#facc15' : rank === 2 ? '#94a3b8' : rank === 3 ? '#d97706' : '#e2e8f0';
+  const rankTextColor = rank <= 3 ? '#0f172a' : '#64748b';
+
   return (
     <TouchableOpacity
       style={[S.recCard, { borderColor: C.border, backgroundColor: C.background }]}
@@ -468,6 +471,10 @@ function RecCard({ rec, C, onPress }: { rec: any; C: any; onPress: () => void })
     >
       {/* ── Header row ── */}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+        {/* Rank badge */}
+        <View style={[S.rankBadge, { backgroundColor: rankColor }]}>
+          <Text style={{ fontSize: 11, fontWeight: '900', color: rankTextColor }}>#{rank}</Text>
+        </View>
         <Image
           source={{ uri: imgSrc }}
           style={S.recLogo}
@@ -656,6 +663,10 @@ const S = StyleSheet.create({
     padding: 12, marginBottom: 10,
   },
   recLogo: { width: 40, height: 40, borderRadius: 8 },
+  rankBadge: {
+    width: 28, height: 28, borderRadius: 8, borderWidth: 1.5, borderColor: '#0f172a',
+    alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+  },
   matchBadge: {
     backgroundColor: '#d1fae5', borderRadius: 20,
     paddingHorizontal: 8, paddingVertical: 3,
