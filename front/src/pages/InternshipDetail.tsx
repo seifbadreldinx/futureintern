@@ -23,9 +23,25 @@ export function InternshipDetail() {
       return;
     }
 
-    // If internship has an external application link, open it
+    // Only students can apply
+    if (user && user.role !== 'student') {
+      alert(`Only students can apply for internships. Your current role is ${user.role}.`);
+      return;
+    }
+
+    // If internship has an external application link, record the application then open the link
     if (internship?.application_link) {
+      try {
+        await api.applications.create(internship.id);
+      } catch (err) {
+        // Ignore duplicate application errors so the link still opens
+        const message = err instanceof Error ? err.message : '';
+        if (!message.toLowerCase().includes('already')) {
+          console.error('Apply error:', err);
+        }
+      }
       window.open(internship.application_link, '_blank');
+      navigate('/dashboard?tab=applications');
       return;
     }
 
@@ -35,16 +51,10 @@ export function InternshipDetail() {
       return;
     }
 
-    // Only students can use the internal application system
-    if (user && user.role !== 'student') {
-      alert(`Only students can apply for internships. Your current role is ${user.role}.`);
-      return;
-    }
-
     try {
       await api.applications.create(internship.id);
       alert('Application submitted successfully.');
-      navigate('/dashboard');
+      navigate('/dashboard?tab=applications');
     } catch (err) {
       console.error('Apply error:', err);
       const message = err instanceof Error ? err.message : 'Unable to apply at this time.';
