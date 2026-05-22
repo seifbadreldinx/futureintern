@@ -12,27 +12,31 @@ def run_migrations(engine):
     """Add any missing columns to existing tables."""
     import sqlalchemy as sa
     with engine.connect() as conn:
-        # Get existing columns in users table
-        result = conn.execute(sa.text("PRAGMA table_info(users)"))
-        existing_columns = {row[1] for row in result.fetchall()}
+        # Get existing columns - works with both PostgreSQL and SQLite
+        inspector = sa.inspect(engine)
+        existing_columns = {col['name'] for col in inspector.get_columns('users')}
 
         # Map of column_name -> ALTER TABLE statement
         migrations = {
             'google_id':             "ALTER TABLE users ADD COLUMN google_id TEXT",
             'auth_provider':         "ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local'",
             'location':              "ALTER TABLE users ADD COLUMN location TEXT",
-            'two_factor_enabled':    "ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT 0",
+            'two_factor_enabled':    "ALTER TABLE users ADD COLUMN two_factor_enabled BOOLEAN DEFAULT false",
             'failed_login_attempts': "ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0",
-            'locked_until':          "ALTER TABLE users ADD COLUMN locked_until DATETIME",
-            'is_verified':           "ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT 0",
+            'locked_until':          "ALTER TABLE users ADD COLUMN locked_until TIMESTAMP",
+            'is_verified':           "ALTER TABLE users ADD COLUMN is_verified BOOLEAN DEFAULT false",
         }
 
         for col, sql in migrations.items():
             if col not in existing_columns:
                 print(f"🔧 Migration: adding column '{col}' to users table...")
-                conn.execute(sa.text(sql))
-                conn.commit()
-                print(f"✅ Column '{col}' added.")
+                try:
+                    conn.execute(sa.text(sql))
+                    conn.commit()
+                    print(f"✅ Column '{col}' added.")
+                except Exception as e:
+                    conn.rollback()
+                    print(f"⚠️  Could not add column '{col}': {e}")
 
 
 def init_database():
