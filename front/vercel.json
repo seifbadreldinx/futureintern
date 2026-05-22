@@ -3,6 +3,9 @@
     "outputDirectory": "dist",
     "installCommand": "npm install",
     "framework": "vite",
+    "env": [
+        "VITE_API_BASE_URL"
+    ],
     "rewrites": [
         {
             "source": "/(.*)",
