@@ -325,15 +325,55 @@ def list_all_users():
 def delete_user(user_id):
     """Delete a user and all related data - Admin only"""
     try:
-        user = User.query.get(user_id)
+        user = db.session.get(User, user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
-        
+
         # Prevent deleting admin users
         if user.role == 'admin':
             return jsonify({'error': 'Cannot delete admin users'}), 403
-        
-        # Delete user (cascading should handle related data if configured)
+
+        # Manually delete related records that lack ondelete=CASCADE
+        from app.models.application import Application
+        Application.query.filter_by(student_id=user_id).delete(synchronize_session=False)
+        Application.query.filter_by(reviewer_id=user_id).delete(synchronize_session=False)
+
+        # Email verification tokens
+        try:
+            from app.models.email_verification import EmailVerificationToken
+            EmailVerificationToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # Password reset tokens
+        try:
+            from app.models.password_reset import PasswordResetToken
+            PasswordResetToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # Token blacklist entries
+        try:
+            from app.models.token_blacklist import TokenBlacklist
+            TokenBlacklist.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # 2FA codes
+        try:
+            from app.models.two_factor import TwoFactorCode
+            TwoFactorCode.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # Notifications / push tokens
+        try:
+            from app.models.push_token import UserPushToken
+            UserPushToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
+        except Exception:
+            pass
+
+        # Now delete the user (ORM cascade handles CVs, points, audit logs)
         db.session.delete(user)
         db.session.commit()
 
@@ -345,9 +385,9 @@ def delete_user(user_id):
                       user_id=int(get_jwt_identity()))
         except Exception:
             pass
-        
+
         return jsonify({'message': 'User and all related data deleted successfully'}), 200
-        
+
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
