@@ -129,9 +129,9 @@ def set_password():
 
 @auth_bp.route("/verify-email", methods=["POST"])
 def verify_email():
-    """Verify a user's email address using the token from the verification email."""
+    """Verify email and create the real user account from pending registration."""
     try:
-        from app.models.email_verification import EmailVerificationToken
+        from app.models.pending_registration import PendingRegistration
 
         data = request.get_json() or {}
         raw_token = data.get('token', '').strip()
@@ -139,18 +139,41 @@ def verify_email():
         if not raw_token:
             return jsonify({'error': 'Verification token is required'}), 400
 
-        token_hash = EmailVerificationToken.hash_token(raw_token)
-        record = EmailVerificationToken.query.filter_by(token_hash=token_hash).first()
+        token_hash = PendingRegistration.hash_token(raw_token)
+        pending = PendingRegistration.query.filter_by(token_hash=token_hash).first()
 
-        if not record or not record.is_valid():
+        if not pending or not pending.is_valid():
             return jsonify({'error': 'Invalid or expired verification link'}), 400
 
-        user = db.session.get(User, record.user_id)
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
+        # Check email isn't already taken (race condition guard)
+        if User.query.filter_by(email=pending.email).first():
+            db.session.delete(pending)
+            db.session.commit()
+            return jsonify({'error': 'Email already registered'}), 400
 
-        user.email_verified = True
-        record.mark_used()
+        # Create real user
+        user = User(
+            name=pending.name,
+            email=pending.email,
+            role=pending.role,
+            university=pending.university,
+            major=pending.major,
+            company_name=pending.company_name,
+            email_verified=True,
+            points=0,
+        )
+        user.password_hash = pending.password_hash  # already hashed
+
+        db.session.add(user)
+        db.session.flush()  # get user.id
+
+        # Grant signup bonus for students
+        if user.role == 'student':
+            from app.utils.points import grant_signup_bonus
+            grant_signup_bonus(user, bonus=50)
+
+        # Clean up pending record
+        db.session.delete(pending)
         db.session.commit()
 
         log_audit('email_verified', resource='user', resource_id=user.id, user_id=user.id)
@@ -164,9 +187,9 @@ def verify_email():
 @auth_bp.route("/resend-verification", methods=["POST"])
 @rate_limit_auth
 def resend_verification():
-    """Resend the email verification link. Rate-limited to prevent abuse."""
+    """Resend the email verification link from pending registration."""
     try:
-        from app.models.email_verification import EmailVerificationToken
+        from app.models.pending_registration import PendingRegistration
         from app.utils.email import send_verification_email
 
         data = request.get_json() or {}
@@ -178,19 +201,28 @@ def resend_verification():
         if not validate_email(email):
             return jsonify({'error': 'Invalid email format'}), 400
 
-        # Don't reveal user existence (same message regardless)
-        user = User.query.filter_by(email=email).first()
-        if not user or user.email_verified:
-            return jsonify({'message': 'If the email is registered and unverified, a new link has been sent.'}), 200
+        # Generic message regardless of outcome (security)
+        generic_msg = 'If the email is registered and unverified, a new link has been sent.'
 
-        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
+        pending = PendingRegistration.query.filter_by(email=email).first()
+        if not pending:
+            return jsonify({'message': generic_msg}), 200
+
+        # Generate a fresh token
+        raw_token = pending.generate_token()
         db.session.commit()
 
-        success, _err = send_verification_email(user, raw_token)
-        if not success:
-            current_app.logger.warning('Resend verification email failed for user %s', user.id)
+        # Build a lightweight user-like object for the email template
+        class _FakeUser:
+            def __init__(self, name, email):
+                self.name = name
+                self.email = email
 
-        return jsonify({'message': 'If the email is registered and unverified, a new link has been sent.'}), 200
+        success, _err = send_verification_email(_FakeUser(pending.name, pending.email), raw_token)
+        if not success:
+            current_app.logger.warning('Resend verification email failed for %s: %s', email, _err)
+
+        return jsonify({'message': generic_msg}), 200
 
     except Exception as e:
         db.session.rollback()
@@ -201,46 +233,12 @@ def resend_verification():
 
 @auth_bp.route("/register/student", methods=["POST"])
 def register_student():
-    """
-    Register Student
-    ---
-    tags:
-      - Authentication
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - name
-            - email
-            - password
-            - university
-            - major
-          properties:
-            name:
-              type: string
-              example: Ahmed Ali
-            email:
-              type: string
-              example: student@example.com
-            password:
-              type: string
-              example: password123
-            university:
-              type: string
-              example: Cairo University
-            major:
-              type: string
-              example: Computer Science
-    responses:
-      201:
-        description: Student registered successfully
-      400:
-        description: Validation error
-    """
+    """Register Student — saves to pending_registrations until email is verified."""
     try:
+        from app.models.pending_registration import PendingRegistration
+        from app.utils.email import send_verification_email
+        from werkzeug.security import generate_password_hash
+
         data = request.get_json()
         
         # Validation
@@ -264,46 +262,51 @@ def register_student():
         if not is_valid:
             return jsonify({'error': error_msg}), 400
         
-        # Check if email already exists
+        # Check if email already exists in users table
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Create new student with signup bonus
-        user = User(
-            name=name,
-            email=email,
-            role='student',
-            university=university,
-            major=major,
-            points=0,
-            email_verified=False,
-        )
-        user.set_password(data['password'])  # Hash password
-        
-        db.session.add(user)
-        db.session.flush()  # get user.id before recording transaction
+        # Check if already pending — update if so
+        pending = PendingRegistration.query.filter_by(email=email).first()
+        if pending:
+            pending.name = name
+            pending.password_hash = generate_password_hash(data['password'])
+            pending.university = university
+            pending.major = major
+            raw_token = pending.generate_token()
+        else:
+            pending = PendingRegistration(
+                name=name,
+                email=email,
+                password_hash=generate_password_hash(data['password']),
+                role='student',
+                university=university,
+                major=major,
+                token_hash='temp',  # will be set by generate_token
+                expires_at=None,    # will be set by generate_token
+            )
+            db.session.add(pending)
+            db.session.flush()
+            raw_token = pending.generate_token()
 
-        from app.utils.points import grant_signup_bonus
-        grant_signup_bonus(user, bonus=50)
-
-        # Send verification email (graceful fallback)
-        from app.models.email_verification import EmailVerificationToken
-        from app.utils.email import send_verification_email
-        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
         db.session.commit()
 
+        # Send verification email
+        class _FakeUser:
+            def __init__(self, name, email):
+                self.name = name
+                self.email = email
+
         email_sent = True
-        success, _err = send_verification_email(user, raw_token)
+        success, _err = send_verification_email(_FakeUser(name, email), raw_token)
         if not success:
             email_sent = False
-            current_app.logger.warning('Verification email failed for user %s: %s', user.id, _err)
-
-        log_audit('register_student', resource='user', resource_id=user.id, user_id=user.id)
+            current_app.logger.warning('Verification email failed for %s: %s', email, _err)
 
         return jsonify({
-            'message': 'Student registered successfully. Please check your email to verify your account.',
-            'user': user.to_dict(),
+            'message': 'Registration received. Please check your email to verify your account.',
             'email_sent': email_sent,
+            'user': {'name': name, 'email': email, 'role': 'student'},
         }), 201
         
     except Exception as e:
@@ -312,8 +315,12 @@ def register_student():
 
 @auth_bp.route("/register/company", methods=["POST"])
 def register_company():
-    """تسجيل شركة جديدة"""
+    """Register Company — saves to pending_registrations until email is verified."""
     try:
+        from app.models.pending_registration import PendingRegistration
+        from app.utils.email import send_verification_email
+        from werkzeug.security import generate_password_hash
+
         data = request.get_json()
         
         # Validation
@@ -336,41 +343,49 @@ def register_company():
         if not is_valid:
             return jsonify({'error': error_msg}), 400
         
-        # Check if email already exists
+        # Check if email already exists in users table
         if User.query.filter_by(email=email).first():
             return jsonify({'error': 'Email already registered'}), 400
         
-        # Create new company
-        user = User(
-            name=name,
-            email=email,
-            role='company',
-            company_name=company_name,
-            email_verified=False,
-        )
-        user.set_password(data['password'])  # Hash password
-        
-        db.session.add(user)
-        db.session.flush()
+        # Check if already pending — update if so
+        pending = PendingRegistration.query.filter_by(email=email).first()
+        if pending:
+            pending.name = name
+            pending.password_hash = generate_password_hash(data['password'])
+            pending.company_name = company_name
+            raw_token = pending.generate_token()
+        else:
+            pending = PendingRegistration(
+                name=name,
+                email=email,
+                password_hash=generate_password_hash(data['password']),
+                role='company',
+                company_name=company_name,
+                token_hash='temp',
+                expires_at=None,
+            )
+            db.session.add(pending)
+            db.session.flush()
+            raw_token = pending.generate_token()
 
-        # Send verification email (graceful fallback)
-        from app.models.email_verification import EmailVerificationToken
-        from app.utils.email import send_verification_email
-        raw_token, _record = EmailVerificationToken.create_for_user(user.id)
         db.session.commit()
 
+        # Send verification email
+        class _FakeUser:
+            def __init__(self, name, email):
+                self.name = name
+                self.email = email
+
         email_sent = True
-        success, _err = send_verification_email(user, raw_token)
+        success, _err = send_verification_email(_FakeUser(name, email), raw_token)
         if not success:
             email_sent = False
-            current_app.logger.warning('Verification email failed for user %s: %s', user.id, _err)
-
-        log_audit('register_company', resource='user', resource_id=user.id, user_id=user.id)
+            current_app.logger.warning('Verification email failed for %s: %s', email, _err)
 
         return jsonify({
-            'message': 'Company registered successfully. Please check your email to verify your account.',
-            'user': user.to_dict(),
+            'message': 'Registration received. Please check your email to verify your account.',
             'email_sent': email_sent,
+            'user': {'name': name, 'email': email, 'role': 'company', 'company_name': company_name},
         }), 201
         
     except Exception as e:
