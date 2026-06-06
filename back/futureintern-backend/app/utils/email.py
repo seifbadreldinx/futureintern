@@ -127,37 +127,46 @@ def _send_via_smtp(msg):
 
 def _send(to_email: str, subject: str, html: str, text: str, flask_mail_msg=None, to_name: str = ''):
     """Try Mailjet → Brevo → Resend → SMTP (in order)."""
+    import os
+
     # 1. Mailjet (best free option — sends to any email, no domain needed)
     if current_app.config.get('MAILJET_API_KEY') and current_app.config.get('MAILJET_SENDER_EMAIL'):
         ok, err = _send_via_mailjet(to_email, to_name or to_email, subject, html, text)
         if ok:
-            current_app.logger.info('Email sent via Mailjet to %s', to_email)
+            current_app.logger.warning('✅ Email sent via Mailjet to %s', to_email)
             return True, None
         current_app.logger.warning('Mailjet failed: %s — trying Brevo', err)
 
     # 2. Brevo (300/day free, needs verified sender)
     if current_app.config.get('BREVO_API_KEY') and current_app.config.get('BREVO_SENDER_EMAIL'):
+        current_app.logger.warning('Attempting Brevo send to %s ...', to_email)
         ok, err = _send_via_brevo(to_email, subject, html, text)
         if ok:
-            current_app.logger.info('✅ Email sent via Brevo to %s', to_email)
+            current_app.logger.warning('✅ Email sent via Brevo to %s', to_email)
             return True, None
-        current_app.logger.warning('Brevo failed: %s — trying Resend', err)
+        current_app.logger.warning('❌ Brevo failed: %s — trying Resend', err)
+    else:
+        current_app.logger.warning('⚠️ Brevo not configured — BREVO_API_KEY=%s BREVO_SENDER_EMAIL=%s',
+                                   bool(current_app.config.get('BREVO_API_KEY')),
+                                   current_app.config.get('BREVO_SENDER_EMAIL'))
 
     # 3. Resend (limited to your own email on free tier without domain)
     if current_app.config.get('RESEND_API_KEY') and current_app.config.get('RESEND_FROM'):
         ok, err = _send_via_resend(to_email, subject, html, text)
         if ok:
-            current_app.logger.info('Email sent via Resend to %s', to_email)
+            current_app.logger.warning('✅ Email sent via Resend to %s', to_email)
             return True, None
         current_app.logger.warning('Resend failed: %s — trying SMTP', err)
 
     # 4. SMTP fallback — skip on Railway (always blocked, just adds latency)
-    import os
-    if flask_mail_msg is not None and not os.environ.get('RAILWAY_ENVIRONMENT'):
+    #    Detect Railway via RAILWAY_PROJECT_ID (always set by Railway)
+    is_railway = bool(os.environ.get('RAILWAY_PROJECT_ID') or os.environ.get('RAILWAY_ENVIRONMENT'))
+    if flask_mail_msg is not None and not is_railway:
         return _send_via_smtp(flask_mail_msg)
 
     current_app.logger.error('❌ ALL email providers failed for %s', to_email)
     return False, 'All email providers failed. Check BREVO_API_KEY and BREVO_SENDER_EMAIL in Railway.'
+
 
 
 
