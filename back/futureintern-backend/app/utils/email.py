@@ -139,7 +139,7 @@ def _send(to_email: str, subject: str, html: str, text: str, flask_mail_msg=None
     if current_app.config.get('BREVO_API_KEY') and current_app.config.get('BREVO_SENDER_EMAIL'):
         ok, err = _send_via_brevo(to_email, subject, html, text)
         if ok:
-            current_app.logger.info('Email sent via Brevo to %s', to_email)
+            current_app.logger.info('✅ Email sent via Brevo to %s', to_email)
             return True, None
         current_app.logger.warning('Brevo failed: %s — trying Resend', err)
 
@@ -151,11 +151,14 @@ def _send(to_email: str, subject: str, html: str, text: str, flask_mail_msg=None
             return True, None
         current_app.logger.warning('Resend failed: %s — trying SMTP', err)
 
-    # 4. SMTP fallback (blocked on Railway)
-    if flask_mail_msg is not None:
+    # 4. SMTP fallback — skip on Railway (always blocked, just adds latency)
+    import os
+    if flask_mail_msg is not None and not os.environ.get('RAILWAY_ENVIRONMENT'):
         return _send_via_smtp(flask_mail_msg)
 
-    return False, 'No email provider configured. Set MAILJET_API_KEY + MAILJET_API_SECRET + MAILJET_SENDER_EMAIL in Railway variables.'
+    current_app.logger.error('❌ ALL email providers failed for %s', to_email)
+    return False, 'All email providers failed. Check BREVO_API_KEY and BREVO_SENDER_EMAIL in Railway.'
+
 
 
 def send_via_any_provider(to_email: str, to_name: str, subject: str, html: str, text: str):
