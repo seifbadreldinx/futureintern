@@ -92,6 +92,46 @@ def reset_password():
 def index():
     return jsonify({"message": "Auth API - Endpoints: /register, /login, /refresh"})
 
+@auth_bp.route("/test-email", methods=["GET"])
+def test_email():
+    """Temporary diagnostic endpoint — tests email sending and returns exact errors."""
+    from app.utils.email import _send_via_brevo, _send_via_mailjet
+    results = {}
+
+    # Test Brevo
+    ok, err = _send_via_brevo(
+        to_email='seifmohamed2024@outlook.com',
+        subject='FutureIntern Email Test',
+        html='<p>Test email from FutureIntern backend.</p>',
+        text='Test email from FutureIntern backend.'
+    )
+    results['brevo'] = {'success': ok, 'error': err}
+
+    # Test Mailjet
+    ok2, err2 = _send_via_mailjet(
+        to_email='seifmohamed2024@outlook.com',
+        to_name='Seif',
+        subject='FutureIntern Email Test',
+        html='<p>Test email from FutureIntern backend.</p>',
+        text='Test email from FutureIntern backend.'
+    )
+    results['mailjet'] = {'success': ok2, 'error': err2}
+
+    # Show current config (masked)
+    import os
+    brevo_key = os.environ.get('BREVO_API_KEY', '')
+    mailjet_key = os.environ.get('MAILJET_API_KEY', '')
+    results['config'] = {
+        'brevo_key_set': bool(brevo_key),
+        'brevo_key_prefix': brevo_key[:12] + '...' if brevo_key else 'NOT SET',
+        'brevo_sender': os.environ.get('BREVO_SENDER_EMAIL', 'NOT SET'),
+        'mailjet_key_set': bool(mailjet_key),
+        'mailjet_key_prefix': mailjet_key[:8] + '...' if mailjet_key else 'NOT SET',
+        'mailjet_sender': os.environ.get('MAILJET_SENDER_EMAIL', 'NOT SET'),
+    }
+
+    return jsonify(results), 200
+
 
 @auth_bp.route("/set-password", methods=["POST"])
 @jwt_required()
