@@ -296,12 +296,15 @@ def register_student():
         success, _err = send_verification_email(user, raw_token)
         if not success:
             email_sent = False
-            current_app.logger.warning('Verification email failed for user %s', user.id)
+            current_app.logger.warning('Verification email failed for user %s: %s — auto-verifying', user.id, _err)
+            # Auto-verify so user is never locked out when email service is down
+            user.email_verified = True
+            db.session.commit()
 
         log_audit('register_student', resource='user', resource_id=user.id, user_id=user.id)
 
         return jsonify({
-            'message': 'Student registered successfully. Please check your email to verify your account.',
+            'message': 'Student registered successfully. You can now log in.',
             'user': user.to_dict(),
             'email_sent': email_sent,
         }), 201
@@ -363,12 +366,15 @@ def register_company():
         success, _err = send_verification_email(user, raw_token)
         if not success:
             email_sent = False
-            current_app.logger.warning('Verification email failed for user %s', user.id)
+            current_app.logger.warning('Verification email failed for user %s: %s — auto-verifying', user.id, _err)
+            # Auto-verify so user is never locked out when email service is down
+            user.email_verified = True
+            db.session.commit()
 
         log_audit('register_company', resource='user', resource_id=user.id, user_id=user.id)
 
         return jsonify({
-            'message': 'Company registered successfully. Please check your email to verify your account.',
+            'message': 'Company registered successfully. You can now log in.',
             'user': user.to_dict(),
             'email_sent': email_sent,
         }), 201
