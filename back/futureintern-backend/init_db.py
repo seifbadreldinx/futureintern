@@ -63,7 +63,8 @@ def init_database():
                 email=student_email,
                 role='student',
                 university='Cairo University',
-                major='Computer Science'
+                major='Computer Science',
+                email_verified=True
             )
             student.set_password('student123')
             db.session.add(student)
@@ -79,17 +80,21 @@ def init_database():
             admin = User(
                 name="Admin",
                 email=admin_email,
-                role="admin"
+                role="admin",
+                email_verified=True,
+                is_verified=True
             )
             admin.set_password("admin123")
             db.session.add(admin)
             db.session.commit()
             print(f"✅ Default admin user created ({admin_email} / admin123)")
         else:
-            # Ensure it has the admin role
+            # Ensure it has the admin role and is verified
             admin.role = "admin"
+            admin.email_verified = True
+            admin.is_verified = True
             db.session.commit()
-            print(f"ℹ️ Admin user already exists: {admin_email}")
+            print(f"ℹ️ Admin user already exists: {admin_email} — verified")
 
 if __name__ == "__main__":
     init_database()
