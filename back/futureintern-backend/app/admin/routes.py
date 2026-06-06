@@ -333,47 +333,64 @@ def delete_user(user_id):
         if user.role == 'admin':
             return jsonify({'error': 'Cannot delete admin users'}), 403
 
-        # Manually delete related records that lack ondelete=CASCADE
+        from sqlalchemy import text
+
+        # 1. Saved internships (raw association table — no ORM model)
+        db.session.execute(text('DELETE FROM saved_internships WHERE user_id = :uid'), {'uid': user_id})
+
+        # 2. Applications the user submitted as a student
         from app.models.application import Application
         Application.query.filter_by(student_id=user_id).delete(synchronize_session=False)
-        Application.query.filter_by(reviewer_id=user_id).delete(synchronize_session=False)
 
-        # Email verification tokens
+        # 3. If company: delete their internships (and cascade applications on those internships)
+        if user.role == 'company':
+            company_internship_ids = [i.id for i in Internship.query.filter_by(company_id=user_id).all()]
+            if company_internship_ids:
+                Application.query.filter(
+                    Application.internship_id.in_(company_internship_ids)
+                ).delete(synchronize_session=False)
+                db.session.execute(
+                    text('DELETE FROM saved_internships WHERE internship_id = ANY(:ids)'),
+                    {'ids': company_internship_ids}
+                )
+                Internship.query.filter_by(company_id=user_id).delete(synchronize_session=False)
+
+        # 4. Email verification tokens
         try:
             from app.models.email_verification import EmailVerificationToken
             EmailVerificationToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         except Exception:
             pass
 
-        # Password reset tokens
+        # 5. Password reset tokens
         try:
             from app.models.password_reset import PasswordResetToken
             PasswordResetToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         except Exception:
             pass
 
-        # Token blacklist entries
+        # 6. Token blacklist
         try:
             from app.models.token_blacklist import TokenBlacklist
             TokenBlacklist.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         except Exception:
             pass
 
-        # 2FA codes
+        # 7. 2FA codes
         try:
             from app.models.two_factor import TwoFactorCode
             TwoFactorCode.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         except Exception:
             pass
 
-        # Notifications / push tokens
+        # 8. Push tokens
         try:
             from app.models.push_token import UserPushToken
             UserPushToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
         except Exception:
             pass
 
-        # Now delete the user (ORM cascade handles CVs, points, audit logs)
+        # 9. Now delete the user (ORM cascade handles CVs, points transactions, audit logs)
         db.session.delete(user)
         db.session.commit()
 
