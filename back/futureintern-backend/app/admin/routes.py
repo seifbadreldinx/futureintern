@@ -323,82 +323,95 @@ def list_all_users():
 @jwt_required()
 @role_required('admin')
 def delete_user(user_id):
-    """Delete a user and all related data - Admin only"""
+    """Delete a user and all related data - Admin only.
+
+    Uses raw SQL to avoid ORM-level FK constraint issues.
+    """
     try:
         user = db.session.get(User, user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
 
-        # Prevent deleting admin users
         if user.role == 'admin':
             return jsonify({'error': 'Cannot delete admin users'}), 403
 
+        deleted_email = user.email
+        deleted_role = user.role
+
         from sqlalchemy import text
 
-        # 1. Saved internships (raw association table — no ORM model)
+        # If user is a company, first remove their internships and all related data
+        if user.role == 'company':
+            # Get company's internship IDs
+            rows = db.session.execute(
+                text('SELECT id FROM internships WHERE company_id = :uid'), {'uid': user_id}
+            ).fetchall()
+            intern_ids = [r[0] for r in rows]
+
+            if intern_ids:
+                # Delete applications on those internships
+                for iid in intern_ids:
+                    db.session.execute(
+                        text('DELETE FROM applications WHERE internship_id = :iid'), {'iid': iid}
+                    )
+                    db.session.execute(
+                        text('DELETE FROM saved_internships WHERE internship_id = :iid'), {'iid': iid}
+                    )
+                # Delete the internships themselves
+                db.session.execute(
+                    text('DELETE FROM internships WHERE company_id = :uid'), {'uid': user_id}
+                )
+
+        # Delete applications submitted by this user (student)
+        db.session.execute(text('DELETE FROM applications WHERE student_id = :uid'), {'uid': user_id})
+
+        # Delete saved internships
         db.session.execute(text('DELETE FROM saved_internships WHERE user_id = :uid'), {'uid': user_id})
 
-        # 2. Applications the user submitted as a student
-        from app.models.application import Application
-        Application.query.filter_by(student_id=user_id).delete(synchronize_session=False)
+        # Delete CV sections first, then CVs
+        db.session.execute(text(
+            'DELETE FROM cv_sections WHERE cv_id IN (SELECT id FROM cvs WHERE student_id = :uid)'
+        ), {'uid': user_id})
+        db.session.execute(text('DELETE FROM cvs WHERE student_id = :uid'), {'uid': user_id})
 
-        # 3. If company: delete their internships (and cascade applications on those internships)
-        if user.role == 'company':
-            company_internship_ids = [i.id for i in Internship.query.filter_by(company_id=user_id).all()]
-            if company_internship_ids:
-                Application.query.filter(
-                    Application.internship_id.in_(company_internship_ids)
-                ).delete(synchronize_session=False)
-                db.session.execute(
-                    text('DELETE FROM saved_internships WHERE internship_id = ANY(:ids)'),
-                    {'ids': company_internship_ids}
-                )
-                Internship.query.filter_by(company_id=user_id).delete(synchronize_session=False)
+        # Delete points transactions
+        db.session.execute(text('DELETE FROM points_transactions WHERE user_id = :uid'), {'uid': user_id})
 
-        # 4. Email verification tokens
-        try:
-            from app.models.email_verification import EmailVerificationToken
-            EmailVerificationToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
-        except Exception:
-            pass
+        # Nullify purchase_requests.reviewed_by, then delete user's own purchase requests
+        db.session.execute(text(
+            'UPDATE purchase_requests SET reviewed_by = NULL WHERE reviewed_by = :uid'
+        ), {'uid': user_id})
+        db.session.execute(text('DELETE FROM purchase_requests WHERE user_id = :uid'), {'uid': user_id})
 
-        # 5. Password reset tokens
-        try:
-            from app.models.password_reset import PasswordResetToken
-            PasswordResetToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
-        except Exception:
-            pass
+        # Delete email verification tokens
+        db.session.execute(text('DELETE FROM email_verification_tokens WHERE user_id = :uid'), {'uid': user_id})
 
-        # 6. Token blacklist
-        try:
-            from app.models.token_blacklist import TokenBlacklist
-            TokenBlacklist.query.filter_by(user_id=user_id).delete(synchronize_session=False)
-        except Exception:
-            pass
+        # Delete password reset tokens
+        db.session.execute(text('DELETE FROM password_reset_tokens WHERE user_id = :uid'), {'uid': user_id})
 
-        # 7. 2FA codes
-        try:
-            from app.models.two_factor import TwoFactorCode
-            TwoFactorCode.query.filter_by(user_id=user_id).delete(synchronize_session=False)
-        except Exception:
-            pass
+        # Delete token blacklist entries
+        db.session.execute(text('DELETE FROM token_blacklist WHERE user_id = :uid'), {'uid': user_id})
 
-        # 8. Push tokens
-        try:
-            from app.models.push_token import UserPushToken
-            UserPushToken.query.filter_by(user_id=user_id).delete(synchronize_session=False)
-        except Exception:
-            pass
+        # Delete 2FA codes
+        db.session.execute(text('DELETE FROM two_factor_codes WHERE user_id = :uid'), {'uid': user_id})
 
-        # 9. Now delete the user (ORM cascade handles CVs, points transactions, audit logs)
-        db.session.delete(user)
+        # Delete push tokens
+        db.session.execute(text('DELETE FROM user_push_tokens WHERE user_id = :uid'), {'uid': user_id})
+
+        # Nullify audit log references (has ondelete=SET NULL but do it explicitly)
+        db.session.execute(text(
+            'UPDATE audit_logs SET user_id = NULL WHERE user_id = :uid'
+        ), {'uid': user_id})
+
+        # Finally delete the user
+        db.session.execute(text('DELETE FROM users WHERE id = :uid'), {'uid': user_id})
         db.session.commit()
 
         try:
             from flask_jwt_extended import get_jwt_identity
             from app.utils.logger import log_audit
             log_audit('admin_delete_user', resource='user', resource_id=user_id,
-                      details={'deleted_email': user.email, 'deleted_role': user.role},
+                      details={'deleted_email': deleted_email, 'deleted_role': deleted_role},
                       user_id=int(get_jwt_identity()))
         except Exception:
             pass
@@ -407,6 +420,8 @@ def delete_user(user_id):
 
     except Exception as e:
         db.session.rollback()
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
 @admin_bp.route("/users/<int:user_id>", methods=["PUT"])
