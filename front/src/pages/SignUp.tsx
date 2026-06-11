@@ -295,6 +295,7 @@ export function SignUp() {
   };
 
   const googleSignUp = useGoogleLogin({
+    flow: 'implicit',
     prompt: 'select_account',
     onSuccess: async (tokenResponse) => {
       setLoading(true);
@@ -314,6 +315,16 @@ export function SignUp() {
       }
     },
     onError: () => setSubmitError('Google sign-up failed. Please try again.'),
+    onNonOAuthError: (err) => {
+      console.error('Google non-OAuth error:', err);
+      if (err?.type === 'popup_closed') {
+        setSubmitError('Sign-in popup was closed. Please try again.');
+      } else if (err?.type === 'popup_failed_to_open') {
+        setSubmitError('Popup was blocked. Please allow popups for this site and try again.');
+      } else {
+        setSubmitError('Google sign-in is temporarily unavailable. Please use email sign-up.');
+      }
+    },
   });
 
   const totalSteps = 3;

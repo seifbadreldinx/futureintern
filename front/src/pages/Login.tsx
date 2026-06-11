@@ -88,6 +88,7 @@ export function Login() {
   };
 
   const googleLogin = useGoogleLogin({
+    flow: 'implicit',
     prompt: 'select_account',
     onSuccess: async (tokenResponse) => {
       setLoading(true);
@@ -108,7 +109,20 @@ export function Login() {
         setLoading(false);
       }
     },
-    onError: () => setError('Google sign-in failed. Please try again.'),
+    onError: (err) => {
+      console.error('Google OAuth error:', err);
+      setError('Google sign-in failed. Please try again.');
+    },
+    onNonOAuthError: (err) => {
+      console.error('Google non-OAuth error:', err);
+      if (err?.type === 'popup_closed') {
+        setError('Sign-in popup was closed. Please try again.');
+      } else if (err?.type === 'popup_failed_to_open') {
+        setError('Popup was blocked. Please allow popups for this site and try again.');
+      } else {
+        setError('Google sign-in is temporarily unavailable. Please use email login.');
+      }
+    },
   });
 
   return (
