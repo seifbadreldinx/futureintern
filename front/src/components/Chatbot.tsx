@@ -92,13 +92,20 @@ export function Chatbot() {
       };
       setMessages(prev => [...prev, botMsg]);
     } catch (err: any) {
+      const errMsg = err?.message || '';
+      let botText: string;
+      if (errMsg.includes('401')) {
+        botText = "🔒 Please **sign in** to use the AI chatbot. You can create a free account to get started!";
+      } else if (errMsg.includes('402')) {
+        botText = "⚠️ You've run out of chatbot points. Visit the Points Store to get more!";
+      } else {
+        botText = "Sorry, I couldn't connect right now. Please try again in a moment.";
+      }
       setMessages(prev => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          text: err?.message?.includes('402')
-            ? "⚠️ You've run out of chatbot points. Visit the Points Store to get more!"
-            : "Sorry, I couldn't connect right now. Please try again in a moment.",
+          text: botText,
           sender: 'bot',
           timestamp: new Date(),
         },
