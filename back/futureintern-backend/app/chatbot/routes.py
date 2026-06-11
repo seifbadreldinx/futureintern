@@ -76,9 +76,9 @@ def status():
 
 
 @chatbot_bp.route("/chat", methods=["POST"])
-@jwt_required()
+@jwt_required(optional=True)
 def chat():
-    """Main AI chat endpoint. Requires authentication."""
+    """Main AI chat endpoint. Works for everyone; points charged only for logged-in students."""
     try:
         data = request.get_json() or {}
         user_message = (data.get("message") or "").strip()
@@ -93,23 +93,24 @@ def chat():
 
         # ── Points check for authenticated students ──
         points_charged = False
-        try:
-            from app.models.user import User
-            from app.models import db
-            from app.utils.points import check_and_charge
-            user_id = get_jwt_identity()
-            user = db.session.get(User, int(user_id))
-            if user and user.role == "student":
-                success, msg, _ = check_and_charge(user, "chatbot")
-                if not success:
-                    return jsonify({
-                        "response": msg,
-                        "provider": "system",
-                        "timestamp": datetime.utcnow().isoformat(),
-                    }), 402
-                points_charged = True
-        except Exception:
-            pass
+        user_id = get_jwt_identity()
+        if user_id:
+            try:
+                from app.models.user import User
+                from app.models import db
+                from app.utils.points import check_and_charge
+                user = db.session.get(User, int(user_id))
+                if user and user.role == "student":
+                    success, msg, _ = check_and_charge(user, "chatbot")
+                    if not success:
+                        return jsonify({
+                            "response": msg,
+                            "provider": "system",
+                            "timestamp": datetime.utcnow().isoformat(),
+                        }), 402
+                    points_charged = True
+            except Exception:
+                pass
 
         # ── Build message list (sanitize history entries) ──
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
